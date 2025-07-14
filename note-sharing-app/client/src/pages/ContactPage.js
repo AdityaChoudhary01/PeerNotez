@@ -17,7 +17,7 @@ const ContactPage = () => {
         e.preventDefault();
         setStatus('Sending...');
         try {
-            const res = await axios.post('http://localhost:5001/api/contact', formData);
+            const res = await axios.post('https://peernotez.onrender.com/api/contact', formData);
             setStatus(res.data.message);
             setFormData({ name: '', email: '', message: '' }); // Clear form
         } catch (error) {
