@@ -15,8 +15,7 @@ const PORT = process.env.PORT || 5001;
 
 // Allow only Netlify frontend
 app.use(cors({
-  origin: 'https://peernotez.netlify.app/', // Replace with your actual Netlify URL
-  credentials: true
+  origin: 'https://peernotez.netlify.app/',
 }));
 app.use(express.json());
 
