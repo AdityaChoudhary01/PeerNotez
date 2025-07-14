@@ -24,7 +24,7 @@ router.post('/', async (req, res) => {
   const mailOptions = {
     from: `"${name}" <${email}>`, // Sender address shows name and email
     to: process.env.EMAIL_USER,    // List of receivers (sends to yourself)
-    subject: `New Message from NoteShare Contact Form`,
+    subject: `New Message from PeerNotez Contact Form`,
     text: `You have a new message from:\n\nName: ${name}\nEmail: ${email}\n\nMessage:\n${message}`,
   };
 
