@@ -10,7 +10,7 @@ const ViewNotePage = () => {
     useEffect(() => {
         const fetchNote = async () => {
             try {
-                const { data } = await axios.get(`http://localhost:5001/api/notes/${noteId}`);
+                const { data } = await axios.get(`https://peernotez.onrender.com/api/notes/${noteId}`);
                 setNote(data);
             } catch (err) {
                 setError('Could not load the note. Please ensure the URL is correct.');
