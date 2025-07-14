@@ -16,7 +16,11 @@ const PORT = process.env.PORT || 5001;
 // Allow only Netlify frontend
 app.use(cors({
   origin: 'https://peernotez.netlify.app',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
 }));
+
 app.use(express.json());
 
 mongoose.connect(process.env.MONGO_URI)
