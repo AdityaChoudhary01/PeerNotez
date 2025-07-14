@@ -13,7 +13,6 @@ const contactRoutes = require('./routes/contactRoutes');
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-app.use(cors());
 const cors = require('cors');
 app.use(cors({
   origin: 'https://peernotez.netlify.app/', // Replace with your Netlify frontend URL
