@@ -9,7 +9,7 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [loading, setLoading] = useState(true);
 
-  const API_URL = 'http://localhost:5001/api/auth';
+  const API_URL = 'https://peernotez.onrender.com/api/auth';
 
   useEffect(() => {
     if (token) {
