@@ -10,7 +10,7 @@ const HomePage = () => {
         const fetchNotes = async () => {
             try {
                 // Fetch all notes without any filter parameters
-          const { data } = await axios.get('https://peernotez.onrender.com/api/notes');
+          const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/notes`);
                 setNotes(data);
             } catch (error) {
                 console.error("Failed to fetch notes", error);
