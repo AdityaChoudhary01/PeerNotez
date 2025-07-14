@@ -12,7 +12,7 @@ const SearchPage = () => {
     if (query) {
       const fetchNotes = async () => {
         try {
-          const { data } = await axios.get(`http://localhost:5001/api/notes?search=${query}`);
+          const { data } = await axios.get(`https://peernotez.onrender.com/api/notes?search=${query}`);
           setNotes(data);
         } catch (error) {
           console.error("Failed to fetch search results", error);
