@@ -1,0 +1,13 @@
+
+=================================================
+DATABASE SAVE ERROR: 2025-07-14T08:07:44.422Z
+Error Message: Note validation failed: cloudinaryId: Path `cloudinaryId` is required.
+Stack Trace:
+ValidationError: Note validation failed: cloudinaryId: Path `cloudinaryId` is required.
+    at Document.invalidate (C:\Users\aditya\Documents\Programs\note-sharing-app\server\node_modules\mongoose\lib\document.js:3354:32)
+    at C:\Users\aditya\Documents\Programs\note-sharing-app\server\node_modules\mongoose\lib\document.js:3115:17
+    at C:\Users\aditya\Documents\Programs\note-sharing-app\server\node_modules\mongoose\lib\schemaType.js:1410:9
+    at process.processTicksAndRejections (node:internal/process/task_queues:85:11)
+=================================================
+
+    
