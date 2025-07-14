@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://peernotez.netlify.app/sitemap.xml
