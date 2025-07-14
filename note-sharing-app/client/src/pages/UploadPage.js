@@ -23,7 +23,7 @@ const UploadPage = () => {
         data.append('file', file);
 
         try {
-            await axios.post('http://localhost:5001/api/notes/upload', data, {
+            await axios.post('https://peernotez.onrender.com/api/notes/upload', data, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             alert('Note uploaded successfully!');
