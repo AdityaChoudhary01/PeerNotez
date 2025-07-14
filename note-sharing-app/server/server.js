@@ -14,6 +14,11 @@ const app = express();
 const PORT = process.env.PORT || 5001;
 
 app.use(cors());
+const cors = require('cors');
+app.use(cors({
+  origin: 'https://your-frontend.netlify.app', // Replace with your Netlify frontend URL
+  credentials: true
+}));
 app.use(express.json());
 
 mongoose.connect(process.env.MONGO_URI)
