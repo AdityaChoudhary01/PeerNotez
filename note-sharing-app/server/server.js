@@ -13,9 +13,9 @@ const contactRoutes = require('./routes/contactRoutes');
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-const cors = require('cors');
+// Allow only Netlify frontend
 app.use(cors({
-  origin: 'https://peernotez.netlify.app/', // Replace with your Netlify frontend URL
+  origin: 'https://peernotez.netlify.app/', // Replace with your actual Netlify URL
   credentials: true
 }));
 app.use(express.json());
