@@ -604,121 +604,16 @@ h1, h2 {
 }
 
 /* Upload Form */
-/* ======================================= */
-/* === ENHANCED & EYE-CATCHY UPLOAD FORM === */
-/* ======================================= */
-
-/* A subtle gradient for the body to make the form pop */
-body {
-  background: #121220 linear-gradient(180deg, rgba(83, 114, 240, 0.1) 0%, rgba(18, 18, 32, 0) 30%);
-}
-
 .upload-form {
   max-width: 700px;
-  margin: 3rem auto;
-  
-  /* --- Frosted Glass Effect --- */
-  background: rgba(26, 39, 68, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 2.5rem 3rem;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-  
-  /* --- Entrance Animation --- */
-  animation: fadeUp 0.6s ease-out forwards;
+  margin: 2rem auto;
+  padding: 2.5rem;
+  background-color: #1a2744;
+  border-radius: 12px;
+  border: 1px solid #2a3858;
+  animation: fadeUp 0.5s ease-out; /* Added animation */
 }
 
-.upload-form h2 {
-  text-align: center;
-  border: none;
-  padding: 0;
-  margin-top: 0;
-  margin-bottom: 2.5rem;
-  font-size: 2rem;
-  font-weight: bold;
-  color: #ffffff;
-}
-
-.form-group {
-  margin-bottom: 1.5rem;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 0.75rem;
-  font-weight: 500;
-  color: #c0c0c0;
-  font-size: 1rem;
-}
-
-.upload-form input[type="text"],
-.upload-form input[type="number"],
-.upload-form input[type="file"] {
-  width: 100%;
-  padding: 0.9rem 1.1rem;
-  font-size: 1rem;
-  border-radius: 8px;
-  border: 1px solid #3a3a5c;
-  background-color: rgba(15, 23, 42, 0.8);
-  color: #ffffff;
-  box-sizing: border-box;
-  transition: all 0.3s ease;
-}
-
-/* --- Glowing Focus State for Inputs --- */
-.upload-form input[type="text"]:focus,
-.upload-form input[type="number"]:focus {
-  border-color: #5372f0;
-  box-shadow: 0 0 0 4px rgba(83, 114, 240, 0.3);
-  outline: none;
-}
-
-.upload-form input[type="file"] {
-  padding: 0.6rem 1rem;
-  cursor: pointer;
-}
-
-/* --- Gradient Button with Hover Effect --- */
-.upload-form button {
-  width: 100%;
-  padding: 1rem;
-  margin-top: 1.5rem;
-  font-size: 1.1rem;
-  font-weight: bold;
-  color: #ffffff;
-  background: linear-gradient(45deg, #6a11cb 0%, #2575fc 100%);
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.upload-form button:hover {
-  transform: translateY(-3px) scale(1.02);
-  box-shadow: 0 6px 20px rgba(37, 117, 252, 0.3);
-}
-
-.upload-form button:disabled {
-  background: #2c3e50;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-/* --- Animation Keyframes (if not already present) --- */
-@keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 /* Other .upload-form styles remain the same... */
 
 
@@ -869,140 +764,198 @@ body {
 .content-page ul li {
     padding-left: 1rem;
     margin-bottom: 1rem;
-}/* ======================================= */
-/* === FINAL ENHANCED DONATE PAGE STYLES === */
-/* ======================================= */
+}/* --- ENHANCED PROFILE PAGE HEADER --- */
 
-.donate-page .donate-intro {
-    text-align: center;
-    max-width: 700px;
-    margin: 0 auto 3rem auto;
-    animation: fadeUp 0.5s ease-out;
+.profile-header {
+  display: flex;
+  flex-direction: column; /* Stack vertically on small screens */
+  align-items: center;
+  gap: 1.5rem;
+  text-align: center;
+  background-color: #1a2744;
+  padding: 2rem;
+  border-radius: 12px;
+  animation: fadeUp 0.5s ease-out;
 }
 
-.support-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 4rem;
-}
-
-.support-item {
-    /* --- Frosted Glass Effect --- */
-    background: rgba(26, 39, 68, 0.6);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    
-    padding: 1.5rem;
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: all 0.3s ease;
-    animation: fadeUp 0.5s ease-out forwards;
-    opacity: 0; /* Start hidden for staggered animation */
-}
-
-/* --- Staggered Animation Effect --- */
-.support-item:nth-child(1) { animation-delay: 0.2s; }
-.support-item:nth-child(2) { animation-delay: 0.3s; }
-.support-item:nth-child(3) { animation-delay: 0.4s; }
-
-
-.support-item:hover {
-    transform: translateY(-5px);
-    border-color: rgba(83, 114, 240, 0.5);
-}
-
-.support-item h3 {
-    margin-top: 0;
-    color: #5372f0;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.donation-methods {
-    display: flex;
-    justify-content: center;
-    align-items: stretch; /* Make cards same height */
+/* On wider screens, display side-by-side */
+@media screen and (min-width: 768px) {
+  .profile-header {
+    flex-direction: row;
+    text-align: left;
     gap: 2rem;
-    margin-top: 2rem;
-    flex-wrap: wrap;
-}
-
-.donation-card {
-    /* --- Frosted Glass Effect --- */
-    background: rgba(26, 39, 68, 0.6);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-
-    padding: 2.5rem;
-    border-radius: 16px;
-    text-align: center;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    flex: 1;
-    min-width: 320px;
-    max-width: 420px;
-    transition: all 0.3s ease;
-    animation: fadeUp 0.5s ease-out 0.5s forwards; /* Delay this animation */
-    opacity: 0;
-}
-
-.donation-card:hover {
-    transform: scale(1.03);
-    border-color: rgba(83, 114, 240, 0.5);
-    box-shadow: 0 8px 30px rgba(0,0,0,0.2);
-}
-
-.donation-card h3 {
-    margin-top: 0;
-    color: #ffffff;
-}
-
-.qr-code-wrapper {
-    background-color: white;
-    padding: 1rem;
-    border-radius: 8px;
-    margin: 1rem auto;
-    width: fit-content;
-}
-
-.qr-code-img {
-    max-width: 180px;
-    width: 100%;
-    display: block;
-}
-
-.bmac-button {
-    display: inline-block;
-    margin-top: 2rem;
-    padding: 0.9rem 2.5rem;
-    background: linear-gradient(45deg, #ffdd00, #ffc400);
-    color: #000000;
-    font-size: 1.1rem;
-    font-weight: bold;
-    text-decoration: none;
-    border-radius: 8px;
-    transition: all 0.2s ease;
-    box-shadow: 0 4px 15px rgba(255, 221, 0, 0.2);
-}
-
-.bmac-button:hover {
-    transform: scale(1.05) translateY(-2px);
-    box-shadow: 0 6px 20px rgba(255, 221, 0, 0.3);
-}
-
-/* Animation keyframes (if you don't already have it) */
-@keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+}
+
+.avatar-container {
+  position: relative; /* Required for the overlay */
+  cursor: pointer;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  flex-shrink: 0; /* Prevents the avatar from shrinking */
+}
+
+.profile-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  border: 3px solid #5372f0;
+  transition: filter 0.3s ease; /* Animate the darken effect */
+}
+
+/* The overlay label */
+.avatar-upload-label {
+  /* Cover the entire avatar */
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  
+  /* Center the text and icon */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  
+  /* Appearance */
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 50%; /* Make the overlay circular */
+
+  /* Animation */
+  opacity: 0; /* Hidden by default */
+  transition: opacity 0.3s ease;
+}
+
+/* Show the overlay on hover */
+.avatar-container:hover .avatar-upload-label {
+  opacity: 1;
+}
+
+/* Darken the image on hover to make text pop */
+.avatar-container:hover .profile-avatar {
+  filter: brightness(0.5);
+}
+
+.profile-info h1 {
+  margin: 0;
+  border: none;
+  font-size: 2.2rem;
+}
+.profile-info p {
+  margin: 0.5rem 0 0 0;
+  color: #a0a0c0;
+  font-size: 1.1rem;
+}
+/* --- PROFILE TABS --- */
+.profile-tabs {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 1px solid #3a3a5c;
+  margin-bottom: 2rem;
+}
+.profile-tabs button {
+  padding: 0.8rem 1.5rem;
+  border: none;
+  background-color: transparent;
+  color: #a0a0c0;
+  cursor: pointer;
+  font-size: 1.1rem;
+  border-bottom: 3px solid transparent;
+}
+.profile-tabs button.active {
+  color: #ffffff;
+  border-bottom-color: #5372f0;
+}
+
+/* --- SAVE BUTTON --- */
+/* --- SAVE BUTTON --- */
+.save-btn {
+  background-color: #3e5670;
+  color: white;
+  cursor: pointer; /* This makes the cursor a hand */
+  transition: background-color 0.2s ease;
+}
+
+.save-btn:hover {
+  background-color: #4f6d8a;
+}
+
+.save-btn.saved {
+  background-color: #1abc9c; /* Green color when saved */
+}
+
+.save-btn.saved:hover {
+  background-color: #16a085;
+}
+/* --- NAVBAR AVATAR --- */
+.navbar-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #5372f0;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.navbar-avatar:hover {
+  transform: scale(1.1);
+}
+/* --- PROFILE NAME EDITING --- */
+.name-display, .name-edit-form {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.edit-name-btn {
+  background: none;
+  border: 1px solid #3e5670;
+  color: #a0a0c0;
+  padding: 0.3rem 0.8rem;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.edit-name-btn:hover {
+  background-color: #3e5670;
+  color: white;
+}
+
+.name-edit-input {
+  padding: 0.6rem 1rem;
+  font-size: 1.5rem; /* Match the h1 size */
+  font-weight: bold;
+  border-radius: 5px;
+  border: 1px solid #5372f0;
+  background-color: #0f172a;
+  color: #ffffff;
+  outline: none;
+}
+
+.name-edit-form .save-btn {
+  background-color: #5372f0;
+  color: white;
+  border: none;
+  padding: 0.6rem 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.name-edit-form .cancel-btn {
+  background-color: #2c3e50;
+  color: white;
+  border: none;
+  padding: 0.6rem 1rem;
+  border-radius: 5px;
+  cursor: pointer;
 }
