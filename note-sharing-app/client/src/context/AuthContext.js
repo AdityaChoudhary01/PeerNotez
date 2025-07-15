@@ -1,6 +1,5 @@
 import React, { createContext, useState, useEffect } from 'react';
 import axios from 'axios';
-import { jwtDecode } from 'jwt-decode'; // Corrected import
 
 const AuthContext = createContext();
 
@@ -9,46 +8,64 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [loading, setLoading] = useState(true);
 
-  const API_URL = 'https://peernotez.onrender.com/api/auth';
+  axios.defaults.baseURL = process.env.REACT_APP_API_URL || 'https://peernotez.onrender.com/api';
 
   useEffect(() => {
-    if (token) {
+    const storedUser = localStorage.getItem('user');
+    if (token && storedUser) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      const decoded = jwtDecode(token); // Corrected function call
-      setUser({ email: decoded.email, name: decoded.name, id: decoded.id });
+      setUser(JSON.parse(storedUser));
     }
     setLoading(false);
   }, [token]);
 
-  const login = async (email, password) => {
-    const res = await axios.post(`${API_URL}/login`, { email, password });
-    const { token } = res.data;
+  const storeAuthData = (data) => {
+    const { token, ...userData } = data;
     localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(userData));
     setToken(token);
+    setUser(userData);
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    const decoded = jwtDecode(token); // Corrected function call
-    setUser({ email: decoded.email, name: decoded.name, id: decoded.id });
+  };
+
+  const login = async (email, password) => {
+    const res = await axios.post('/auth/login', { email, password });
+    storeAuthData(res.data);
   };
 
   const signup = async (name, email, password) => {
-    const res = await axios.post(`${API_URL}/register`, { name, email, password });
-    const { token } = res.data;
-    localStorage.setItem('token', token);
-    setToken(token);
-    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    const decoded = jwtDecode(token); // Corrected function call
-    setUser({ email: decoded.email, name: decoded.name, id: decoded.id });
+    const res = await axios.post('/auth/register', { name, email, password });
+    storeAuthData(res.data);
   };
 
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
     setToken(null);
     setUser(null);
     delete axios.defaults.headers.common['Authorization'];
   };
+  
+  const updateUser = (newUserData) => {
+    const updatedUser = { ...user, ...newUserData };
+    setUser(updatedUser);
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+  };
+  
+  const saveNote = (noteId) => {
+    if (!user) return;
+    const updatedUser = { ...user, savedNotes: [...user.savedNotes, noteId] };
+    updateUser(updatedUser);
+  };
+
+  const unsaveNote = (noteId) => {
+    if (!user) return;
+    const updatedUser = { ...user, savedNotes: user.savedNotes.filter(id => id !== noteId) };
+    updateUser(updatedUser);
+  };
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, signup, logout }}>
+    <AuthContext.Provider value={{ user, token, loading, login, signup, logout, updateUser, saveNote, unsaveNote }}>
       {!loading && children}
     </AuthContext.Provider>
   );
