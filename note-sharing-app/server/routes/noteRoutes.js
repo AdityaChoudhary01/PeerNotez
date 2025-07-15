@@ -34,15 +34,20 @@ router.get('/mynotes', protect, async (req, res) => {
 // GET route for a single note by ID
 router.get('/:id', async (req, res) => {
   try {
-    const note = await Note.findById(req.params.id).populate('user', 'name avatar');
+    const note = await Note.findById(req.params.id).populate('user', 'name');
     if (!note) {
       return res.status(404).json({ message: 'Note not found' });
     }
     res.json(note);
-  } catch (error) {
+  } catch (err) {
+    console.error(err.message);
+    if (err.kind === 'ObjectId') {
+      return res.status(400).json({ message: 'Invalid Note ID' });
+    }
     res.status(500).json({ message: 'Server Error' });
   }
 });
+
 
 // GET notes for the logged-in user
 router.get('/mynotes', protect, async (req, res) => {
@@ -72,19 +77,4 @@ router.put('/:id', protect, async (req, res) => {
     res.status(500).json({ message: 'Server Error' });
   }
 });
-
-// DELETE route to remove a note
-router.delete('/:id', protect, async (req, res) => {
-  try {
-    const note = await Note.findById(req.params.id);
-    if (!note) return res.status(404).json({ message: 'Note not found' });
-    if (note.user.toString() !== req.user.id) return res.status(401).json({ message: 'Not authorized' });
-
-    await note.deleteOne();
-    res.json({ message: 'Note removed' });
-  } catch (error) {
-    res.status(500).json({ message: 'Server Error' });
-  }
-});
-
 module.exports = router;
