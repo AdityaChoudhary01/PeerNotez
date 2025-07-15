@@ -1066,3 +1066,140 @@ h1, h2 {
     transform: translateY(0);
   }
 }
+/* ======================================= */
+/* === FINAL ENHANCED DONATE PAGE STYLES === */
+/* ======================================= */
+
+.donate-page .donate-intro {
+    text-align: center;
+    max-width: 700px;
+    margin: 0 auto 3rem auto;
+    animation: fadeUp 0.5s ease-out;
+}
+
+.support-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 4rem;
+}
+
+.support-item {
+    /* --- Frosted Glass Effect --- */
+    background: rgba(26, 39, 68, 0.6);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+    animation: fadeUp 0.5s ease-out forwards;
+    opacity: 0; /* Start hidden for staggered animation */
+}
+
+/* --- Staggered Animation Effect --- */
+.support-item:nth-child(1) { animation-delay: 0.2s; }
+.support-item:nth-child(2) { animation-delay: 0.3s; }
+.support-item:nth-child(3) { animation-delay: 0.4s; }
+
+
+.support-item:hover {
+    transform: translateY(-5px);
+    border-color: rgba(83, 114, 240, 0.5);
+}
+
+.support-item h3 {
+    margin-top: 0;
+    color: #5372f0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.donation-methods {
+    display: flex;
+    justify-content: center;
+    align-items: stretch; /* Make cards same height */
+    gap: 2rem;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+}
+
+.donation-card {
+    /* --- Frosted Glass Effect --- */
+    background: rgba(26, 39, 68, 0.6);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+
+    padding: 2.5rem;
+    border-radius: 16px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    flex: 1;
+    min-width: 320px;
+    max-width: 420px;
+    transition: all 0.3s ease;
+    animation: fadeUp 0.5s ease-out 0.5s forwards; /* Delay this animation */
+    opacity: 0;
+}
+
+.donation-card:hover {
+    transform: scale(1.03);
+    border-color: rgba(83, 114, 240, 0.5);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+}
+
+.donation-card h3 {
+    margin-top: 0;
+    color: #ffffff;
+}
+
+.qr-code-wrapper {
+    background-color: white;
+    padding: 1rem;
+    border-radius: 8px;
+    margin: 1rem auto;
+    width: fit-content;
+}
+
+.qr-code-img {
+    max-width: 180px;
+    width: 100%;
+    display: block;
+}
+
+.bmac-button {
+    display: inline-block;
+    margin-top: 2rem;
+    padding: 0.9rem 2.5rem;
+    background: linear-gradient(45deg, #ffdd00, #ffc400);
+    color: #000000;
+    font-size: 1.1rem;
+    font-weight: bold;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 15px rgba(255, 221, 0, 0.2);
+}
+
+.bmac-button:hover {
+    transform: scale(1.05) translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 221, 0, 0.3);
+}
+
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
