@@ -5,6 +5,11 @@ const UserSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
+  avatar: {
+    type: String,
+    default: 'https://res.cloudinary.com/dmtnonxtt/image/upload/v1752478950/avatar-default_g5gzu2.png'
+  },
+  savedNotes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Note' }]
 });
 
 // Hash password before saving
