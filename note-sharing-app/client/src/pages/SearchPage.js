@@ -5,22 +5,32 @@ import NoteCard from '../components/notes/NoteCard';
 
 const SearchPage = () => {
   const [notes, setNotes] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchParams] = useSearchParams();
   const query = searchParams.get('q');
 
   useEffect(() => {
     if (query) {
+      setLoading(true); // Show loader on new search
       const fetchNotes = async () => {
         try {
           const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/notes?search=${query}`);
           setNotes(data);
         } catch (error) {
           console.error("Failed to fetch search results", error);
+        } finally {
+          setLoading(false); // Hide loader after fetch completes
         }
       };
       fetchNotes();
+    } else {
+        setLoading(false);
     }
   }, [query]);
+
+  if (loading) {
+    return <div>Searching for notes...</div>;
+  }
 
   return (
     <div>
