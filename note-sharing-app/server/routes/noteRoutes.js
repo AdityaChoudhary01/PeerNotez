@@ -8,8 +8,6 @@ const { protect } = require('../middleware/authMiddleware');
 const upload = multer({ storage });
 
 // GET route to fetch all notes or search
-// @route   GET /api/notes/mynotes
-// @desc    Get notes for the logged-in user
 router.get('/mynotes', protect, async (req, res) => {
   // Add a specific check to ensure the user object exists
   if (!req.user || !req.user.id) {
@@ -61,20 +59,30 @@ router.get('/mynotes', protect, async (req, res) => {
 
 // POST route to upload notes
 router.post('/upload', protect, upload.single('file'), async (req, res) => {
-    // ... (logic remains the same)
-});
-
-// PUT route to update a note
-router.put('/:id', protect, async (req, res) => {
   try {
-    const note = await Note.findById(req.params.id);
-    if (!note) return res.status(404).json({ message: 'Note not found' });
-    if (note.user.toString() !== req.user.id) return res.status(401).json({ message: 'Not authorized' });
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded.' });
+    }
 
-    const updatedNote = await Note.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    res.json(updatedNote);
+    const { path: filePath, originalname, mimetype, filename, size } = req.file;
+    const { title, university, course, subject, year } = req.body;
+
+    const newNote = new Note({
+      title, university, course, subject, year,
+      fileName: originalname,
+      filePath: filePath,
+      fileType: mimetype,
+      fileSize: size,
+      cloudinaryId: filename,
+      user: req.user._id,
+    });
+
+    const savedNote = await newNote.save();
+    res.status(201).json(savedNote);
+
   } catch (error) {
-    res.status(500).json({ message: 'Server Error' });
+    console.error("DATABASE SAVE FAILED:", error);
+    res.status(500).json({ message: 'Error saving note to database.', error: error.message });
   }
 });
 module.exports = router;
