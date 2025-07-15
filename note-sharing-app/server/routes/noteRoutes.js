@@ -8,24 +8,26 @@ const { protect } = require('../middleware/authMiddleware');
 const upload = multer({ storage });
 
 // GET route to fetch all notes or search
-router.get('/', async (req, res) => {
+// @route   GET /api/notes/mynotes
+// @desc    Get notes for the logged-in user
+router.get('/mynotes', protect, async (req, res) => {
+  // Add a specific check to ensure the user object exists
+  if (!req.user || !req.user.id) {
+    console.error('CRITICAL ERROR: User object not found on request in /mynotes.');
+    return res.status(500).json({ 
+      message: 'Authentication error: User could not be identified on the server.' 
+    });
+  }
+
   try {
-    const { search } = req.query;
-    let query = {};
-    if (search) {
-      query = {
-        $or: [
-          { title: { $regex: search, $options: 'i' } },
-          { university: { $regex: search, $options: 'i' } },
-          { course: { $regex: search, $options: 'i' } },
-          { subject: { $regex: search, $options: 'i' } },
-        ],
-      };
-    }
-    const notes = await Note.find(query).populate('user', 'name avatar').sort({ uploadDate: -1 });
+    const notes = await Note.find({ user: req.user.id }).sort({ uploadDate: -1 });
     res.json(notes);
-  } catch (err) {
-    res.status(500).json({ message: 'Server Error' });
+  } catch (error) {
+    console.error('DATABASE ERROR in /mynotes route:', error);
+    res.status(500).json({
+      message: 'A database error occurred while fetching notes.',
+      error: error.message,
+    });
   }
 });
 
