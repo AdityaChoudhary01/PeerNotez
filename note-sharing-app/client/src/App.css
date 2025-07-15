@@ -603,96 +603,166 @@ h1, h2 {
   text-decoration: underline;
 }
 
+/* Upload Form */
 /* ======================================= */
-/* === FINAL UNIVERSAL FORM STYLES === */
+/* === ENHANCED & EYE-CATCHY UPLOAD FORM === */
 /* ======================================= */
 
-.form-container {
-  max-width: 700px;
-  margin: 2rem auto;
-  padding: 2.5rem;
-  background-color: #1a2744;
-  border-radius: 12px;
-  border: 1px solid #2a3858;
-  animation: fadeUp 0.5s ease-out;
+/* A subtle gradient for the body to make the form pop */
+body {
+  background: #121220 linear-gradient(180deg, rgba(83, 114, 240, 0.1) 0%, rgba(18, 18, 32, 0) 30%);
 }
 
-.form-container h2 {
+.upload-form {
+  max-width: 700px;
+  margin: 3rem auto;
+  
+  /* --- Frosted Glass Effect --- */
+  background: rgba(26, 39, 68, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 2.5rem 3rem;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  
+  /* --- Entrance Animation --- */
+  animation: fadeUp 0.6s ease-out forwards;
+}
+
+.upload-form h2 {
   text-align: center;
   border: none;
   padding: 0;
   margin-top: 0;
-  margin-bottom: 2rem;
-  font-size: 1.8rem;
+  margin-bottom: 2.5rem;
+  font-size: 2rem;
+  font-weight: bold;
+  color: #ffffff;
 }
 
-.form-container .form-group {
+.form-group {
   margin-bottom: 1.5rem;
 }
 
-.form-container label {
+.form-group label {
   display: block;
-  margin-bottom: 0.5rem;
-  font-weight: bold;
+  margin-bottom: 0.75rem;
+  font-weight: 500;
   color: #c0c0c0;
-  font-size: 0.9rem;
+  font-size: 1rem;
 }
 
-.form-container input[type="text"],
-.form-container input[type="email"],
-.form-container input[type="password"],
-.form-container input[type="number"],
-.form-container input[type="file"],
-.form-container textarea {
-  width: 100%; /* This makes the input fill the container */
-  padding: 0.8rem 1rem;
+.upload-form input[type="text"],
+.upload-form input[type="number"],
+.upload-form input[type="file"] {
+  width: 100%;
+  padding: 0.9rem 1.1rem;
   font-size: 1rem;
-  border-radius: 5px;
+  border-radius: 8px;
   border: 1px solid #3a3a5c;
-  background-color: #0f172a;
+  background-color: rgba(15, 23, 42, 0.8);
   color: #ffffff;
   box-sizing: border-box;
   transition: all 0.3s ease;
 }
 
-.form-container input:focus,
-.form-container textarea:focus {
+/* --- Glowing Focus State for Inputs --- */
+.upload-form input[type="text"]:focus,
+.upload-form input[type="number"]:focus {
   border-color: #5372f0;
-  box-shadow: 0 0 0 3px rgba(83, 114, 240, 0.3);
+  box-shadow: 0 0 0 4px rgba(83, 114, 240, 0.3);
   outline: none;
 }
 
-.form-container textarea {
-  resize: vertical;
-  min-height: 120px;
+.upload-form input[type="file"] {
+  padding: 0.6rem 1rem;
+  cursor: pointer;
 }
 
-.form-container button {
+/* --- Gradient Button with Hover Effect --- */
+.upload-form button {
   width: 100%;
-  padding: 0.9rem 1rem;
-  margin-top: 1rem;
+  padding: 1rem;
+  margin-top: 1.5rem;
   font-size: 1.1rem;
   font-weight: bold;
   color: #ffffff;
-  background-color: #5372f0;
+  background: linear-gradient(45deg, #6a11cb 0%, #2575fc 100%);
   border: none;
-  border-radius: 5px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
 }
 
-.form-container button:hover {
-  background-color: #405de6;
-  transform: translateY(-2px);
+.upload-form button:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 6px 20px rgba(37, 117, 252, 0.3);
 }
 
-.form-container button:disabled {
-  background-color: #2c3e50;
+.upload-form button:disabled {
+  background: #2c3e50;
   cursor: not-allowed;
   transform: none;
+  box-shadow: none;
 }
 
-/* --- Animation keyframes (if you don't already have it) --- */
+/* --- Animation Keyframes (if not already present) --- */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+/* Other .upload-form styles remain the same... */
+
+
+/* Card Action Buttons */
+.card-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  border-top: 1px solid #2a3858;
+  padding-top: 1rem;
+}
+
+.action-button {
+  flex-grow: 1;
+  text-align: center;
+  padding: 0.7rem;
+  border-radius: 5px;
+  text-decoration: none;
+  font-weight: bold;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+.action-button:hover {
+  transform: translateY(-2px); /* Added lift effect */
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.view-btn {
+  background-color: #2c3e50;
+  color: white;
+}
+.view-btn:hover {
+  background-color: #3e5670;
+}
+
+.download-btn {
+  background-color: #5372f0;
+  color: white;
+}
+.download-btn:hover {
+  background-color: #405de6;
+}
+
+/* --- ANIMATIONS --- */
 @keyframes fadeUp {
   from {
     opacity: 0;
