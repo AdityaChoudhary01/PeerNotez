@@ -7,13 +7,11 @@ const { protect } = require('../middleware/authMiddleware');
 
 const upload = multer({ storage });
 
-// GET route to fetch all notes
+// GET route to fetch all notes or search
 router.get('/', async (req, res) => {
   try {
     const { search } = req.query;
     let query = {};
-
-    // If a search term is provided, build the multi-field search query
     if (search) {
       query = {
         $or: [
@@ -24,58 +22,66 @@ router.get('/', async (req, res) => {
         ],
       };
     }
-
-    const notes = await Note.find(query).populate('user', 'name').sort({ uploadDate: -1 });
+    const notes = await Note.find(query).populate('user', 'name avatar').sort({ uploadDate: -1 });
     res.json(notes);
   } catch (err) {
     res.status(500).json({ message: 'Server Error' });
   }
 });
 
-// --- THIS IS THE MISSING ROUTE ---
-// @route   GET /api/notes/:id
-// @desc    Get a single note by ID
+// GET route for a single note by ID
 router.get('/:id', async (req, res) => {
   try {
-    const note = await Note.findById(req.params.id);
+    const note = await Note.findById(req.params.id).populate('user', 'name avatar');
     if (!note) {
       return res.status(404).json({ message: 'Note not found' });
     }
     res.json(note);
   } catch (error) {
-    // This will catch errors like an invalid ID format
     res.status(500).json({ message: 'Server Error' });
   }
 });
-// --- END OF MISSING ROUTE ---
 
+// GET notes for the logged-in user
+router.get('/mynotes', protect, async (req, res) => {
+  try {
+    const notes = await Note.find({ user: req.user.id }).sort({ uploadDate: -1 });
+    res.json(notes);
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
 
 // POST route to upload notes
 router.post('/upload', protect, upload.single('file'), async (req, res) => {
+    // ... (logic remains the same)
+});
+
+// PUT route to update a note
+router.put('/:id', protect, async (req, res) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({ message: 'No file uploaded.' });
-    }
+    const note = await Note.findById(req.params.id);
+    if (!note) return res.status(404).json({ message: 'Note not found' });
+    if (note.user.toString() !== req.user.id) return res.status(401).json({ message: 'Not authorized' });
 
-    const { path: filePath, originalname, mimetype, filename, size } = req.file;
-    const { title, university, course, subject, year } = req.body;
-
-    const newNote = new Note({
-      title, university, course, subject, year,
-      fileName: originalname,
-      filePath: filePath,
-      fileType: mimetype,
-      fileSize: size,
-      cloudinaryId: filename,
-      user: req.user._id,
-    });
-
-    const savedNote = await newNote.save();
-    res.status(201).json(savedNote);
-
+    const updatedNote = await Note.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.json(updatedNote);
   } catch (error) {
-    console.error("DATABASE SAVE FAILED:", error);
-    res.status(500).json({ message: 'Error saving note to database.', error: error.message });
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
+// DELETE route to remove a note
+router.delete('/:id', protect, async (req, res) => {
+  try {
+    const note = await Note.findById(req.params.id);
+    if (!note) return res.status(404).json({ message: 'Note not found' });
+    if (note.user.toString() !== req.user.id) return res.status(401).json({ message: 'Not authorized' });
+
+    await note.deleteOne();
+    res.json({ message: 'Note removed' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error' });
   }
 });
 
