@@ -7,13 +7,43 @@ const { protect } = require('../middleware/authMiddleware');
 
 const upload = multer({ storage });
 
-// GET route to fetch all notes or search
+// IMPORTANT: This route was missing and is needed for GET /api/notes
+// GET route to fetch all notes (with optional search)
+router.get('/', async (req, res) => { // This is the route you were missing!
+  try {
+    const { search } = req.query;
+    let query = {};
+
+    if (search) {
+      query = {
+        $or: [
+          { title: { $regex: search, $options: 'i' } },
+          { university: { $regex: search, $options: 'i' } },
+          { course: { $regex: search, $options: 'i' } },
+          { subject: { $regex: search, $options: 'i' } },
+        ],
+      };
+    }
+
+    // Populate user details, exclude password
+    const notes = await Note.find(query).populate('user', 'name email').sort({ uploadDate: -1 });
+    res.json(notes);
+  } catch (err) {
+    console.error("Error fetching notes:", err); // Log the actual error
+    res.status(500).json({ message: 'Server Error fetching notes.' });
+  }
+});
+
+
+// GET notes for the logged-in user
+// Note: This route should be defined BEFORE dynamic ID routes to avoid conflict
+// If it was /:id and then /mynotes, /mynotes would be interpreted as an ID
 router.get('/mynotes', protect, async (req, res) => {
   // Add a specific check to ensure the user object exists
   if (!req.user || !req.user.id) {
     console.error('CRITICAL ERROR: User object not found on request in /mynotes.');
-    return res.status(500).json({ 
-      message: 'Authentication error: User could not be identified on the server.' 
+    return res.status(500).json({
+      message: 'Authentication error: User could not be identified on the server.'
     });
   }
 
@@ -23,7 +53,7 @@ router.get('/mynotes', protect, async (req, res) => {
   } catch (error) {
     console.error('DATABASE ERROR in /mynotes route:', error);
     res.status(500).json({
-      message: 'A database error occurred while fetching notes.',
+      message: 'A database error occurred while fetching your notes.',
       error: error.message,
     });
   }
@@ -46,16 +76,6 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-
-// GET notes for the logged-in user
-router.get('/mynotes', protect, async (req, res) => {
-  try {
-    const notes = await Note.find({ user: req.user.id }).sort({ uploadDate: -1 });
-    res.json(notes);
-  } catch (error) {
-    res.status(500).json({ message: 'Server Error' });
-  }
-});
 
 // POST route to upload notes
 router.post('/upload', protect, upload.single('file'), async (req, res) => {
@@ -85,4 +105,6 @@ router.post('/upload', protect, upload.single('file'), async (req, res) => {
     res.status(500).json({ message: 'Error saving note to database.', error: error.message });
   }
 });
+
+
 module.exports = router;
