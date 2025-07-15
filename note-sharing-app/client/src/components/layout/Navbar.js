@@ -50,15 +50,18 @@ const Navbar = () => {
             <Link to="/" className="nav-link" onClick={() => setMenuOpen(false)}>Home</Link>
             <Link to="/about" className="nav-link" onClick={() => setMenuOpen(false)}>About</Link>
             <Link to="/contact" className="nav-link" onClick={() => setMenuOpen(false)}>Contact</Link>
-            {/* --- THIS LINE IS UPDATED --- */}
             <Link to="/donate" className="nav-link" onClick={() => setMenuOpen(false)}>Donate ❤️</Link>
           </div>
           
           <div className="navbar-auth">
             {user ? (
               <>
-                <Link to="/upload" className="nav-link" onClick={() => setMenuOpen(false)}>Upload</Link>
+                {/* --- THIS BLOCK IS UPDATED --- */}
+                <Link to="/upload" className="nav-button signup-btn" onClick={() => setMenuOpen(false)}>Upload</Link>
                 <button onClick={handleLogout} className="nav-button logout-btn">Logout</button>
+                <Link to="/profile" className="nav-link-avatar" onClick={() => setMenuOpen(false)}>
+                  <img src={user.avatar} alt="Profile" className="navbar-avatar" />
+                </Link>
               </>
             ) : (
               <>
