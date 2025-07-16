@@ -910,55 +910,134 @@ h1, h2 {
   transform: scale(1.1);
 }
 /* --- PROFILE NAME EDITING --- */
-.name-display, .name-edit-form {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
+/* --- PROFILE NAME EDITING --- */
+
+/* Base styles (for larger screens first - Mobile-first approach would reverse this, but this works fine for updating existing code) */
+.name-display,
+.name-edit-form {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    /* Ensure the container doesn't overflow its parent on smaller screens */
+    /* If this container itself is overflowing, consider adding max-width: 100% and overflow: hidden to its parent */
 }
 
 .edit-name-btn {
-  background: none;
-  border: 1px solid #3e5670;
-  color: #a0a0c0;
-  padding: 0.3rem 0.8rem;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: all 0.2s ease;
+    background: none;
+    border: 1px solid #3e5670;
+    color: #a0a0c0;
+    padding: 0.3rem 0.8rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    /* Ensure button doesn't shrink too much on very small screens if it's the only item */
+    flex-shrink: 0;
 }
 .edit-name-btn:hover {
-  background-color: #3e5670;
-  color: white;
+    background-color: #3e5670;
+    color: white;
 }
 
 .name-edit-input {
-  padding: 0.6rem 1rem;
-  font-size: 1.5rem; /* Match the h1 size */
-  font-weight: bold;
-  border-radius: 5px;
-  border: 1px solid #5372f0;
-  background-color: #0f172a;
-  color: #ffffff;
-  outline: none;
+    padding: 0.6rem 1rem;
+    font-size: 1.5rem; /* Match the h1 size */
+    font-weight: bold;
+    border-radius: 5px;
+    border: 1px solid #5372f0;
+    background-color: #0f172a;
+    color: #ffffff;
+    outline: none;
+    /* Allow the input to grow and shrink, taking up available space */
+    flex-grow: 1;
+    /* Prevent the input from getting excessively wide on very large screens */
+    max-width: 100%; /* Important for preventing overflow if text is too long */
+    box-sizing: border-box; /* Include padding and border in the element's total width and height */
 }
 
 .name-edit-form .save-btn {
-  background-color: #5372f0;
-  color: white;
-  border: none;
-  padding: 0.6rem 1rem;
-  border-radius: 5px;
-  cursor: pointer;
-  font-weight: bold;
+    background-color: #5372f0;
+    color: white;
+    border: none;
+    padding: 0.6rem 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    /* Prevent button from shrinking too much */
+    flex-shrink: 0;
 }
 
 .name-edit-form .cancel-btn {
-  background-color: #2c3e50;
-  color: white;
-  border: none;
-  padding: 0.6rem 1rem;
-  border-radius: 5px;
-  cursor: pointer;
+    background-color: #2c3e50;
+    color: white;
+    border: none;
+    padding: 0.6rem 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    /* Prevent button from shrinking too much */
+    flex-shrink: 0;
 }
+
+/* --- RESPONSIVE ADJUSTMENTS --- */
+
+/* Breakpoint for Tablets and smaller (e.g., max-width 768px is a common breakpoint) */
+@media (max-width: 768px) {
+    .name-edit-input {
+        font-size: 1.3rem; /* Slightly reduce font size for tablets */
+        padding: 0.5rem 0.8rem;
+    }
+
+    .edit-name-btn,
+    .name-edit-form .save-btn,
+    .name-edit-form .cancel-btn {
+        padding: 0.4rem 0.7rem; /* Slightly reduce button padding */
+        font-size: 0.9rem; /* Slightly reduce button font size */
+    }
+
+    .name-display,
+    .name-edit-form {
+        /* Allow items to wrap to the next line if there isn't enough space */
+        flex-wrap: wrap;
+        /* Center items when they wrap */
+        justify-content: center;
+        /* Reduce the gap between items when they wrap */
+        gap: 0.8rem;
+    }
+}
+
+/* Breakpoint for Mobile Phones (e.g., max-width 480px is a common breakpoint) */
+@media (max-width: 480px) {
+    .name-edit-input {
+        font-size: 1rem; /* Further reduce font size for small phones */
+        padding: 0.4rem 0.6rem;
+        /* On very small screens, the input should definitely take up as much width as possible */
+        width: 100%; /* Force input to take full width */
+        margin-bottom: 0.5rem; /* Add some space below the input before buttons */
+    }
+
+    .edit-name-btn {
+        /* When the name and button are on separate lines, make the button full width */
+        width: 100%;
+        text-align: center; /* Center text inside the button */
+        padding: 0.6rem 0.8rem; /* Make it more easily tappable */
+    }
+
+    .name-edit-form {
+        flex-direction: column; /* Stack the input and buttons vertically */
+        align-items: stretch; /* Make items stretch to fill the width */
+        gap: 0.5rem; /* Smaller gap when stacked */
+    }
+
+    .name-edit-form .save-btn,
+    .name-edit-form .cancel-btn {
+        width: 100%; /* Make save/cancel buttons full width when stacked */
+        padding: 0.6rem 1rem; /* Consistent padding for stacked buttons */
+        /* You might want a small margin between them if they stack immediately */
+        /* margin-bottom: 0.5rem; */
+    }
+}
+
+/* Important: Ensure your HTML has the viewport meta tag in the <head> */
+/* <meta name="viewport" content="width=device-width, initial-scale=1.0"> */
 /* --- UPLOAD FORM STYLES --- */
 /* --- ENHANCED UPLOAD FORM STYLES --- */
 
