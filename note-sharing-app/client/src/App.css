@@ -1487,21 +1487,11 @@ h1, h2 {
   transform: translateY(-50%);
   pointer-events: none; /* Allows clicks to pass through to the select element */
 }
-/* --- ENHANCED ADMIN DASHBOARD --- */
-.admin-list {
-  animation: fadeUp 0.5s ease-out;
-}
-
-.admin-list-item {
-  background-color: #1a2744;
-  padding: 1rem 1.5rem;
-  border-radius: 8px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  border: 1px solid #2a3858;
-  margin-bottom: 1rem;
+/* --- Added Hover Effect for the whole list item --- */
+.admin-list-item:hover {
+    transform: translateY(-3px);
+    border-color: #5372f0;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
 }
 
 .admin-list-item img {
@@ -1509,20 +1499,28 @@ h1, h2 {
   height: 45px;
   border-radius: 50%;
   object-fit: cover;
+  flex-shrink: 0;
 }
 
 .admin-note-thumbnail {
   width: 80px;
   height: 60px;
-  border-radius: 4px; /* Rectangular thumbnail */
+  border-radius: 4px;
   object-fit: cover;
+  flex-shrink: 0;
 }
 
 .admin-list-item .user-info {
   flex-grow: 1;
+  min-width: 0;
 }
 .user-info strong {
   color: #fff;
+  display: block;
+  /* --- THESE LINES FIX THE TEXT OVERFLOW --- */
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 .user-info span {
   font-size: 0.9rem;
@@ -1535,9 +1533,57 @@ h1, h2 {
   flex-shrink: 0;
 }
 
-.admin-user-actions .action-button {
+.admin-user-actions .action-button, .delete-btn-admin {
   padding: 0.5rem 1rem;
   font-size: 0.9rem;
+  white-space: nowrap;
+  /* --- Added Transition --- */
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+/* --- Added Hover Effect for buttons --- */
+.admin-user-actions .action-button:hover, .delete-btn-admin:hover {
+    transform: scale(1.05);
+    filter: brightness(1.15);
+}
+
+.admin-user-actions .role-btn {
+  background-color: #f39c12;
+  color: white;
+}
+
+.admin-user-actions .delete-btn, .delete-btn-admin {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.admin-user-actions button:disabled {
+  background-color: #3e5670;
+  cursor: not-allowed;
+  transform: none;
+  filter: none;
+}
+
+/* --- Media Query for Mobile Devices --- */
+@media screen and (max-width: 768px) {
+  .admin-list-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .admin-user-actions {
+    width: 100%;
+    margin-top: 1rem;
+  }
+  
+  .admin-user-actions .action-button {
+      flex-grow: 1;
+  }
+}
+
   white-space: nowrap;
 }
 
