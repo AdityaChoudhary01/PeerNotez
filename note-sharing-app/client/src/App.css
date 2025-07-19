@@ -1487,3 +1487,76 @@ h1, h2 {
   transform: translateY(-50%);
   pointer-events: none; /* Allows clicks to pass through to the select element */
 }
+/* --- ENHANCED ADMIN DASHBOARD --- */
+.admin-list {
+  animation: fadeUp 0.5s ease-out;
+}
+
+.admin-list-item {
+  background-color: #1a2744;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  border: 1px solid #2a3858;
+  margin-bottom: 1rem;
+}
+
+.admin-list-item img {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.admin-note-thumbnail {
+  width: 80px;
+  height: 60px;
+  border-radius: 4px; /* Rectangular thumbnail */
+  object-fit: cover;
+}
+
+.admin-list-item .user-info {
+  flex-grow: 1;
+}
+.user-info strong {
+  color: #fff;
+}
+.user-info span {
+  font-size: 0.9rem;
+  color: #a0a0c0;
+}
+
+.admin-user-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.admin-user-actions .action-button {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.admin-user-actions .role-btn {
+  background-color: #f39c12;
+  color: white;
+}
+
+.admin-user-actions .delete-btn, .delete-btn-admin {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.admin-user-actions button:disabled {
+  background-color: #3e5670;
+  cursor: not-allowed;
+}
