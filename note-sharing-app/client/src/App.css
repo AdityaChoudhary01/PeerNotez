@@ -1439,3 +1439,50 @@ h1, h2 {
   padding: 0.9rem 1rem;
   font-size: 1.1rem;
 }
+/* --- ENHANCED SORTING CONTAINER --- */
+.sort-container {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  position: relative; /* Required for the custom arrow */
+}
+
+.sort-container label {
+  font-weight: bold;
+  color: #a0a0c0;
+}
+
+.sort-container select {
+  /* --- Remove default browser appearance --- */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+
+  /* --- Custom Styles --- */
+  padding: 0.6rem 2.5rem 0.6rem 1rem; /* Add extra padding on the right for the arrow */
+  border-radius: 8px;
+  border: 1px solid #3a3a5c;
+  background-color: #1a2744;
+  color: #ffffff;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.sort-container select:hover {
+  border-color: #5372f0;
+}
+
+/* --- Custom Dropdown Arrow --- */
+.sort-container::after {
+  content: '▼';
+  font-size: 0.8rem;
+  color: #a0a0c0;
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none; /* Allows clicks to pass through to the select element */
+}
