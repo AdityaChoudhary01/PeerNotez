@@ -787,7 +787,7 @@ h3 {
 
 /* --- ADJUSTED NOTE VIEWER CONTAINER (for single note view) --- */
 .note-viewer-container {
-    max-width: 1200px; /* Increase this value to your desired maximum width */
+    max-width: 900px;
     margin: 2rem auto;
     padding: 2.5rem;
     background-color: var(--secondary-color);
@@ -815,13 +815,24 @@ h3 {
 .note-viewer-container iframe {
     border: 1px solid #3a3a5c;
     border-radius: 5px;
-    width: 100%; /* Keep this at 100% so it fills the wider container */
+    width: 100%;
     min-height: 80vh;
     height: auto;
     display: block;
     box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
     background-color: #f0f0f0;
 }
+
+.note-viewer-container h2 {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    text-align: left;
+    border-bottom-color: var(--border-color);
+    padding-bottom: 0.5rem;
+    margin-bottom: 1.5rem;
+    font-size: 2.2rem;
+    color: var(--heading-color);
+} 
     
     
 /* --- FOOTER --- */
