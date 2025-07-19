@@ -1604,3 +1604,39 @@ h1, h2 {
       flex-grow: 1;
   }
 }
+/* --- ADVANCED FILTER BAR --- */
+.filter-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    padding: 1.5rem;
+    background-color: #1a2744;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    border: 1px solid #2a3858;
+}
+
+.filter-bar input {
+    width: 100%;
+    padding: 0.7rem 1rem;
+    border-radius: 5px;
+    border: 1px solid #3a3a5c;
+    background-color: #0f172a;
+    color: #ffffff;
+    font-size: 1rem;
+}
+
+.filter-bar button {
+    background-color: #5372f0;
+    color: white;
+    border: none;
+    padding: 0.7rem 1rem;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.filter-bar button:hover {
+    background-color: #405de6;
+}
