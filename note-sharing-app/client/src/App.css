@@ -2,236 +2,457 @@
 /* === FINAL, ENHANCED STYLESHEET === */
 /* =================================== */
 
-
 /* --- GENERAL & SETUP --- */
-* {
-  box-sizing: border-box;
+:root {
+    --primary-color: #5372f0;
+    --secondary-color: #1a2744;
+    --background-color: #121220;
+    --card-background: #1a2744;
+    --border-color: #2a3858;
+    --text-color: #e0e0e0;
+    --heading-color: #ffffff;
+    --subtle-text-color: #a0a0c0;
+    --input-background: #0f172a;
+    --error-color: #e94560;
+    --success-color: #1abc9c;
+    --warning-color: #f39c12; /* Added for role-btn */
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
 }
 
 html {
-  scroll-behavior: smooth;
+    scroll-behavior: smooth;
+    font-size: 16px; /* Base font size */
+    /* Crucial for proper responsiveness across devices */
+    /* Ensure the viewport meta tag is in your HTML <head>:
+       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    */
 }
 
 body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', sans-serif;
-  background-color: #121220;
-  color: #e0e0e0;
-  overflow-x: hidden; /* Prevents horizontal scroll */
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    overflow-x: hidden; /* Prevents horizontal scroll */
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 .app-wrapper {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  animation: fadeIn 0.5s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    animation: fadeIn 0.5s ease-in-out;
 }
 
 /* This is the corrected container that centers your content */
 .container {
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
-  flex: 1;
+    width: 100%; /* Take full width available */
+    max-width: 1200px; /* Limit content width for large screens as per screenshots */
+    margin: 0 auto; /* Center the container */
+    padding: 2rem; /* Consistent padding with your screenshots for desktop */
+    flex: 1; /* Allows container to grow and push footer down */
+    display: flex; /* Use flexbox for internal layout if needed */
+    flex-direction: column; /* Stack content vertically */
 }
 
-h1, h2 {
-  color: #ffffff;
-  border-bottom: 2px solid #5372f0;
-  padding-bottom: 0.5rem;
-  margin-bottom: 1.5rem;
+h1, h2, h3 {
+    color: var(--heading-color);
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 0.5rem;
+    margin-bottom: 1.5rem;
 }
 
+h1 {
+    font-size: 2.5rem;
+}
+
+h2 {
+    font-size: 2rem;
+}
+
+h3 {
+    font-size: 1.75rem;
+    border: none; /* Removed border for h3 by default */
+    padding: 0;
+    margin-bottom: 1rem;
+}
 
 /* --- NAVBAR --- */
 .navbar {
-  background-color: #16213e;
-  padding: 0 2rem;
-  height: 70px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-  position: sticky;
-  top: 0;
-  z-index: 1000;
+    background-color: var(--secondary-color);
+    padding: 0 2rem; /* Consistent with your initial request */
+    height: 70px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    flex-shrink: 0; /* Prevents navbar from shrinking */
 }
 
 .navbar-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  max-width: 1200px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 1200px; /* Matches main container for alignment */
+    /* Default: try to keep in one line */
+    flex-wrap: nowrap;
 }
 
 .navbar-brand {
-  font-size: 1.6rem;
-  font-weight: bold;
-  color: #ffffff;
-  text-decoration: none;
-  transition: transform 0.2s ease;
+    font-size: 1.6rem;
+    font-weight: bold;
+    color: var(--heading-color);
+    text-decoration: none;
+    transition: transform 0.2s ease;
+    flex-shrink: 0; /* Prevent shrinking */
 }
+
 .navbar-brand:hover {
-  transform: scale(1.05);
+    transform: scale(1.05);
 }
 
 .nav-menu {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem; /* Space between main sections (search, links, auth) */
+    flex-wrap: nowrap; /* Keep this row of elements in one line initially */
+    flex-grow: 1; /* Allow menu to take available space */
+    justify-content: flex-end; /* Push content to the right */
+    min-width: 0; /* Allows content within to shrink */
 }
 
 .navbar-links {
-  display: flex;
-  gap: 1.5rem;
+    display: flex;
+    gap: 1.5rem;
+    flex-shrink: 1; /* Allow these links to shrink */
+    min-width: 0; /* Important for flex items with text-overflow */
 }
 
 .nav-link {
-  color: #e0e0e0;
-  text-decoration: none;
-  font-size: 1rem;
-  transition: color 0.2s ease-in-out;
-  white-space: nowrap;
+    color: var(--text-color);
+    text-decoration: none;
+    font-size: 1rem;
+    transition: color 0.2s ease-in-out;
+    white-space: nowrap; /* Prevent links from breaking */
+    overflow: hidden; /* Hide overflow if text is too long */
+    text-overflow: ellipsis; /* Add ellipsis for overflowed text */
+    flex-shrink: 1; /* Allow individual links to shrink */
+    min-width: 30px; /* Prevent links from becoming tiny */
 }
 
 .nav-link:hover {
-  color: #5372f0;
+    color: var(--primary-color);
 }
 
 .search-form-nav {
-  display: flex;
-  align-items: center;
-  width: 300px;
+    display: flex;
+    align-items: center;
+    width: 300px; /* Default desktop width */
+    flex-shrink: 1; /* Allow it to shrink if necessary */
+    min-width: 180px; /* Minimum width to prevent crushing */
 }
+/* --- NAVBAR --- */
+/* ... (other navbar styles) ... */
 
 .search-input {
-  width: 100%;
-  padding: 0.6rem 1rem;
-  border-radius: 20px 0 0 20px;
-  border: 1px solid #3a3a5c;
-  background-color: #0f172a;
-  color: #ffffff;
-  font-size: 1rem;
-  outline: none;
-  transition: border-color 0.2s;
+    width: 100%;
+    padding: 0.7rem 1.1rem;
+    border-radius: 20px 0 0 20px; /* Rounded left, sharp right */
+    border: 1px solid #3a3a5c;
+    background-color: var(--input-background);
+    color: var(--heading-color);
+    font-size: 1rem;
+    outline: none;
+    transition: all 0.3s ease-in-out;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
 }
+
+.search-input::placeholder {
+    color: #888;
+    opacity: 0.8;
+}
+
 .search-input:focus {
-  border-color: #5372f0;
+    border-color: var(--primary-color);
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.3), 0 0 0 3px rgba(83, 114, 240, 0.3);
+    background-color: #0f172a;
 }
 
 .search-button {
-  padding: 0.6rem 1.2rem;
-  border-radius: 0 20px 20px 0;
-  border: 1px solid #5372f0;
-  background-color: #5372f0;
-  color: white;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: background-color 0.2s;
+    padding: 0.7rem 1.4rem;
+    border-radius: 0 20px 20px 0; /* Sharp left, rounded right */
+    border: 1px solid var(--primary-color);
+    background-color: var(--primary-color);
+    color: white;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: bold;
+    transition: all 0.2s ease-in-out;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
+
 .search-button:hover {
-  background-color: #3554b3;
+    background-color: #3554b3;
+    border-color: #3554b3;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.search-button:active {
+    transform: translateY(0);
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
+    background-color: #2c4a9a;
+}
+
+/* --- RESPONSIVE NAVBAR (Ensure enhanced styles scale correctly) --- */
+@media screen and (max-width: 1024px) {
+    .search-form-nav {
+        width: 220px;
+    }
+    .search-input {
+        padding: 0.6rem 1rem;
+    }
+    .search-button {
+        padding: 0.6rem 1.2rem;
+    }
+}
+
+@media screen and (max-width: 860px) {
+    /* Mobile menu when active */
+    .nav-menu.active .search-input {
+        border-radius: 5px; /* Square corners in mobile menu when stacked */
+        box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+        padding: 0.7rem 1.2rem;
+    }
+    .nav-menu.active .search-input:focus {
+        box-shadow: inset 0 1px 3px rgba(0,0,0,0.3), 0 0 0 2px rgba(83, 114, 240, 0.2);
+    }
+    .nav-menu.active .search-button {
+        border-radius: 5px; /* Square corners in mobile menu when stacked */
+        margin-top: 0.8rem;
+        box-shadow: none;
+    }
+    .nav-menu.active .search-button:hover {
+        transform: none;
+        box-shadow: none;
+    }
+    .nav-menu.active .search-button:active {
+        transform: none;
+        box-shadow: none;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .search-input {
+        font-size: 0.9rem;
+        padding: 0.5rem 0.9rem;
+    }
+    .search-button {
+        font-size: 0.9rem;
+        padding: 0.5rem 1.1rem;
+    }
 }
 
 .navbar-auth {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-shrink: 0; /* Don't let auth elements shrink */
 }
 
 .nav-button {
-  padding: 0.5rem 1rem;
-  border: 1px solid #5372f0;
-  background-color: transparent;
-  color: #5372f0;
-  border-radius: 5px;
-  cursor: pointer;
-  text-decoration: none;
-  transition: all 0.2s ease-in-out;
-  white-space: nowrap;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--primary-color);
+    background-color: transparent;
+    color: var(--primary-color);
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease-in-out;
+    white-space: nowrap; /* Prevent buttons from breaking text */
+    flex-shrink: 0; /* Ensure button itself doesn't shrink content */
 }
 
 .nav-button:hover {
-  background-color: #5372f0;
-  color: white;
-  transform: translateY(-2px);
+    background-color: var(--primary-color);
+    color: white;
+    transform: translateY(-2px);
 }
 
 .nav-button.signup-btn {
-  background-color: #5372f0;
-  color: white;
+    background-color: var(--primary-color);
+    color: white;
 }
 
 .logout-btn {
-  background-color: #e94560;
-  border-color: #e94560;
-  color: white;
+    background-color: var(--error-color);
+    border-color: var(--error-color);
+    color: white;
 }
+
 .logout-btn:hover {
-  background-color: #c73048;
+    background-color: #c73048;
 }
 
 .hamburger {
-  display: none;
-  font-size: 2rem;
-  cursor: pointer;
-  color: white;
-  background: none;
-  border: none;
-  z-index: 1100;
+    display: none; /* Hidden by default */
+    font-size: 2rem;
+    cursor: pointer;
+    color: white;
+    background: none;
+    border: none;
+    z-index: 1100;
+    flex-shrink: 0; /* Important: hamburger should not shrink */
+    margin-left: 1rem; /* Space between last item and hamburger */
 }
 
+/* --- RESPONSIVE NAVBAR (Adjusted Breakpoints for smooth transition) --- */
 
-/* --- RESPONSIVE NAVBAR --- */
-@media screen and (max-width: 960px) {
-  .nav-menu {
-    display: none; 
-  }
+/* Mid-size desktops/large tablets (e.g., small laptops, some high-res tablets) */
+@media screen and (max-width: 1200px) {
+    .navbar {
+        padding: 0 1.5rem; /* Reduce padding slightly as screen narrows */
+    }
+}
 
-  .hamburger {
-    display: block;
-  }
+/* Tablets (landscape) and smaller desktops */
+@media screen and (max-width: 1024px) {
+    .search-form-nav {
+        width: 220px; /* Shrink search bar */
+    }
+    .nav-menu {
+        gap: 0.8rem; /* Further reduce gap between menu sections */
+    }
+    .navbar-links {
+        gap: 0.8rem; /* Further reduce gap between links */
+    }
+    .nav-link {
+        font-size: 0.95rem; /* Slightly smaller font for links */
+    }
+    .navbar-auth {
+        gap: 0.8rem; /* Reduce auth gap */
+    }
+    .nav-button {
+        padding: 0.4rem 0.8rem; /* Smaller button padding */
+        font-size: 0.9rem; /* Smaller button font */
+    }
+    .navbar-avatar {
+        width: 35px; /* Smaller avatar */
+        height: 35px;
+    }
+}
 
-  .nav-menu.active {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 2rem;
-    width: 80%;
-    height: 100%;
-    position: fixed;
-    top: 0;
-    left: 0;
-    background-color: #1a2744;
-    padding: 2rem;
-    transition: all 0.3s ease-in-out;
-    z-index: 1050;
-    box-shadow: 4px 0px 15px rgba(0,0,0,0.2);
-  }
+/* Main breakpoint for mobile menu (e.g., iPad Mini portrait, larger phones) */
+@media screen and (max-width: 860px) { /* When the total content (search, links, auth) starts to get cramped */
+    .nav-menu {
+        display: none; /* Hide the entire desktop nav-menu */
+    }
+    .hamburger {
+        display: block; /* Show hamburger icon */
+        margin-left: auto; /* Push hamburger to the right */
+    }
+    .navbar-container {
+        justify-content: space-between; /* Ensure brand and hamburger are spread */
+    }
 
-  .nav-menu.active .navbar-links,
-  .nav-menu.active .navbar-auth {
-    flex-direction: column;
-    width: 100%;
-    gap: 2rem;
-    text-align: center;
-  }
+    /* Styles for the active mobile/hamburger menu */
+    .nav-menu.active {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start; /* Align content to the top */
+        gap: 1.5rem;
+        width: 80%; /* Takes up 80% width of the screen */
+        max-width: 320px; /* Limit max width for consistency on larger mobile/small tablet */
+        height: 100%;
+        position: fixed;
+        top: 0;
+        left: 0;
+        background-color: var(--secondary-color);
+        padding: 2rem;
+        transition: all 0.3s ease-in-out;
+        z-index: 1050;
+        box-shadow: 4px 0px 15px rgba(0,0,0,0.2);
+        overflow-y: auto; /* Allow scrolling if menu content is too long */
+    }
+    .nav-menu.active .navbar-links,
+    .nav-menu.active .navbar-auth {
+        flex-direction: column;
+        width: 100%; /* Full width within the mobile menu */
+        gap: 1rem;
+        text-align: center;
+    }
+    .nav-menu.active .search-form-nav {
+        order: -1; /* Puts search bar at the top of the mobile menu */
+        width: 100%;
+        margin-bottom: 1.5rem;
+    }
+    .nav-menu.active .nav-link,
+    .nav-menu.active .nav-button,
+    .nav-menu.active .search-input,
+    .nav-menu.active .search-button {
+        font-size: 1rem; /* Consistent font size for mobile menu items */
+        padding: 0.7rem 1.2rem; /* Comfortable touch target padding */
+    }
+    .nav-menu.active .search-input {
+        border-radius: 20px; /* Full pill shape in mobile menu */
+    }
+    .nav-menu.active .search-button {
+        border-radius: 20px; /* Full pill shape in mobile menu */
+        margin-top: 0.5rem; /* Space if search input and button stack */
+    }
+    /* If the search input and button should stack in mobile, adjust flex-direction for .search-form-nav */
+    .nav-menu.active .search-form-nav {
+        flex-direction: column;
+        align-items: stretch; /* Stretch children to fill width */
+    }
+}
 
-  .nav-menu.active .search-form-nav {
-    order: -1;
-    width: 100%;
-  }
+/* Smaller phones (e.g., iPhone SE, Nexus 5, Galaxy S8/S20) */
+@media screen and (max-width: 480px) { /* Used 480px as a common breakpoint for smaller phones */
+    .navbar {
+        padding: 0 0.8rem; /* Even less padding */
+        height: 55px; /* Make navbar a bit shorter */
+    }
+    .navbar-brand {
+        font-size: 1.3rem;
+    }
+    .hamburger {
+        font-size: 1.6rem;
+    }
+    /* Mobile menu when active on very small screens */
+    .nav-menu.active {
+        width: 95%; /* Take almost full width */
+        padding: 1rem;
+        max-width: 280px; /* Ensure it's not too wide on small screens */
+    }
+    .nav-menu.active .nav-link,
+    .nav-menu.active .nav-button,
+    .nav-menu.active .search-input,
+    .nav-menu.active .search-button {
+        font-size: 0.9rem; /* Slightly smaller text */
+        padding: 0.5rem 1rem; /* Smaller padding */
+    }
 }
 
 
 /* --- NOTES GRID & CARDS --- */
 .notes-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  /* This change prevents the card from stretching to fill the whole row */
+  grid-template-columns: repeat(auto-fit, 340px);
   gap: 2rem;
   margin-top: 2rem;
+  /* This new line centers the card(s) in the container */
+  justify-content: center;
 }
 
 .project-card {
@@ -310,387 +531,387 @@ h1, h2 {
   border: 1px solid transparent;
 }
 
-/* --- FORMS & CONTENT PAGES --- */
-.content-page, .form-container {
-  max-width: 800px;
-  margin: 2rem auto;
-  padding: 2.5rem;
-  background-color: #1a2744;
-  border-radius: 12px;
-  border: 1px solid #2a3858;
-  animation: fadeIn 0.5s ease-in-out;
+.view-btn {
+    background-color: #2c3e50;
+    color: white;
+}
+.view-btn:hover {
+    background-color: #3e5670;
+}
+.download-btn {
+    background-color: var(--primary-color);
+    color: white;
+}
+.download-btn:hover {
+    background-color: #405de6;
+}
+.save-btn { /* Re-added save button styles here for consistency on cards */
+    background-color: #3e5670;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+.save-btn:hover {
+    background-color: #4f6d8a;
+}
+.save-btn.saved {
+    background-color: var(--success-color);
+}
+.save-btn.saved:hover {
+    background-color: #16a085;
 }
 
-.form-container h2, .content-page h2 {
-  text-align: center;
-  border: none;
-  padding: 0;
-  margin-top: 0;
-  margin-bottom: 2rem;
-  font-size: 1.8rem;
+
+/* Specific responsiveness for notes grid and cards (Tablets & Phones) */
+@media (max-width: 768px) {
+    .notes-grid {
+        gap: 1.5rem;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Adjust min-width for tablets */
+    }
+    .card-content {
+        padding: 1rem;
+    }
+    .card-title {
+        font-size: 1.3rem;
+    }
+    .card-details {
+        font-size: 0.9rem;
+    }
+    .action-button {
+        font-size: 0.9rem;
+        padding: 0.5rem;
+        flex-basis: calc(50% - 0.375rem); /* 2 buttons per row on tablets */
+    }
+}
+
+@media (max-width: 480px) {
+    .notes-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    .card-thumbnail {
+        height: 180px;
+    }
+    .card-content {
+        padding: 0.8rem;
+    }
+    .card-title {
+        font-size: 1.2rem;
+        margin-bottom: 0.8rem;
+    }
+    .card-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+        padding-top: 0.8rem;
+    }
+    .action-button {
+        width: 100%;
+        max-width: none;
+        padding: 0.6rem;
+        font-size: 0.95rem;
+    }
+}
+
+/* --- FORMS & CONTENT PAGES (Auth, Upload, Contact, Review Forms, About, etc.) --- */
+.content-page,
+.form-container,
+.auth-card,
+.upload-form,
+.contact-form,
+.review-form {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 2.5rem;
+    background-color: var(--card-background);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    animation: fadeIn 0.5s ease-in-out;
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    .content-page,
+    .form-container,
+    .auth-card,
+    .upload-form,
+    .contact-form,
+    .review-form {
+        padding: 1.5rem;
+        margin: 1.5rem auto;
+    }
+    h2 {
+        font-size: 1.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .content-page,
+    .form-container,
+    .auth-card,
+    .upload-form,
+    .contact-form,
+    .review-form {
+        padding: 1rem;
+        margin: 1rem auto;
+    }
+    h2 {
+        font-size: 1.6rem;
+        margin-bottom: 1.5rem;
+    }
 }
 
 .form-group {
-  margin-bottom: 1.5rem;
+    margin-bottom: 1.5rem;
 }
 
 .form-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: bold;
-  color: #c0c0c0;
-  font-size: 0.9rem;
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+    color: var(--subtle-text-color);
+    font-size: 0.9rem;
 }
 
 .form-container input,
-.form-container textarea {
-  width: 100%;
-  padding: 0.8rem 1rem;
-  font-size: 1rem;
-  border-radius: 5px;
-  border: 1px solid #3a3a5c;
-  background-color: #0f172a;
-  color: #ffffff;
-  box-sizing: border-box;
+.form-container textarea,
+.auth-input,
+.contact-form input,
+.contact-form textarea,
+.review-form textarea,
+.filter-bar input {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    font-size: 1rem;
+    border-radius: 5px;
+    border: 1px solid #3a3a5c;
+    background-color: var(--input-background);
+    color: var(--heading-color);
+    box-sizing: border-box;
+    transition: all 0.3s ease;
 }
 
-.form-container textarea {
-  resize: vertical;
-  min-height: 120px;
+.form-container textarea,
+.contact-form textarea,
+.review-form textarea {
+    resize: vertical;
+    min-height: 120px;
 }
 
-.form-container button {
-  width: 100%;
-  padding: 0.9rem 1rem;
-  margin-top: 1rem;
-  font-size: 1.1rem;
-  font-weight: bold;
-  color: #ffffff;
-  background-color: #5372f0;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
+.form-container input:focus,
+.form-container textarea:focus,
+.auth-input:focus,
+.contact-form input:focus,
+.contact-form textarea:focus,
+.review-form textarea:focus,
+.filter-bar input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(83, 114, 240, 0.3);
+    outline: none;
 }
 
-/* --- FOOTER --- */
-.footer {
-  background-color: #0f172a;
-  color: #a0a0c0;
-  padding: 3rem 2rem;
-  margin-top: 3rem;
+.form-container button,
+.auth-btn,
+.contact-form button,
+.review-form button {
+    width: 100%;
+    padding: 0.9rem 1rem;
+    margin-top: 1rem;
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--heading-color);
+    background-color: var(--primary-color);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* --- ANIMATIONS --- */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+.auth-btn {
+    padding: 1rem 0;
+    font-size: 1.15rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
 }
 
-@keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-/* --- NOTES GRID & CARDS --- */
-/* --- NOTES GRID & CARDS --- */
-.notes-grid {
-  display: grid;
-  /* This change prevents the card from stretching to fill the whole row */
-  grid-template-columns: repeat(auto-fit, 340px);
-  gap: 2rem;
-  margin-top: 2rem;
-  /* This new line centers the card(s) in the container */
-  justify-content: center;
+.form-container button:hover,
+.auth-btn:hover,
+.contact-form button:hover,
+.review-form button:hover {
+    background-color: #3554b3;
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 
-.project-card {
-  background-color: #1a2744;
-  border: 1px solid #2a3858;
-  border-radius: 12px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  min-width: 0;
+.auth-hint {
+    text-align: center;
+    color: var(--subtle-text-color);
+    font-size: 1rem;
 }
 
-.project-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+.auth-hint a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: bold;
 }
 
-.card-thumbnail {
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
-  display: block;
-  background-color: #0f172a; /* Placeholder color */
-}
-
-.card-content {
-  padding: 1rem;
-  flex-grow: 1;
-}
-
-.card-title {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #ffffff;
-  margin: 0 0 1rem 0;
-  border: none;
-  padding: 0;
-}
-
-.card-details {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  font-size: 0.95rem;
-  color: #a0a0c0;
-}
-
-.card-details li {
-  margin-bottom: 0.5rem;
-}
-
-.card-details li strong {
-  color: #d0d0d0;
+.auth-hint a:hover {
+    text-decoration: underline;
 }
 
 /* --- OTHER SECTIONS --- */
 .welcome-section {
-  text-align: center;
-  margin-top: 4rem;
-  padding: 2rem;
-  background-color: rgba(22, 33, 62, 0.5);
-  border-radius: 8px;
+    text-align: center;
+    margin-top: 4rem;
+    padding: 2rem;
+    background-color: rgba(22, 33, 62, 0.5);
+    border-radius: 8px;
+    max-width: 900px;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
 }
 
+@media (max-width: 768px) {
+    .welcome-section {
+        margin-top: 2.5rem;
+        padding: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .welcome-section {
+        margin-top: 1.5rem;
+        padding: 1rem;
+    }
+}
+
+/* --- ADJUSTED NOTE VIEWER CONTAINER (for single note view) --- */
 .note-viewer-container {
-  padding: 1rem;
-  background-color: #16213e;
-  border-radius: 8px;
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 2.5rem;
+    background-color: var(--secondary-color);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    animation: fadeIn 0.6s ease-out;
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    .note-viewer-container {
+        padding: 1.5rem;
+        margin: 1.5rem auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .note-viewer-container {
+        padding: 1rem;
+        margin: 1rem auto;
+    }
 }
 
 .note-viewer-container iframe {
-  border: 1px solid #3a3a5c;
-  border-radius: 5px;
-  width: 100%;
+    border: 1px solid #3a3a5c;
+    border-radius: 5px;
+    width: 100%;
+    min-height: 80vh;
+    height: auto;
+    display: block;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
+    background-color: #f0f0f0;
 }
+
 .note-viewer-container h2 {
-  overflow-wrap: break-word;
-  word-wrap: break-word; /* For older browser compatibility */
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    text-align: left;
+    border-bottom-color: var(--border-color);
+    padding-bottom: 0.5rem;
+    margin-bottom: 1.5rem;
+    font-size: 2.2rem;
+    color: var(--heading-color);
 }
+
 
 /* --- FOOTER --- */
 .footer {
-  background-color: #0f172a;
-  color: #a0a0c0;
-  padding: 3rem 2rem;
-  margin-top: 3rem;
+    background-color: var(--input-background);
+    color: var(--subtle-text-color);
+    padding: 3rem 2rem;
+    margin-top: 3rem;
+    flex-shrink: 0;
+    width: 100%;
 }
 
 .footer-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+}
+
+@media (max-width: 768px) {
+    .footer {
+        padding: 2.5rem 1.5rem;
+    }
+    .footer-container {
+        gap: 1.5rem;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+}
+
+@media (max-width: 600px) {
+    .footer {
+        padding: 2rem 1rem;
+    }
+    .footer-container {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+    .footer-section h4 {
+        margin-bottom: 0.5rem;
+    }
+    .footer-section ul {
+        margin-bottom: 1rem;
+    }
 }
 
 .footer-section h4 {
-  color: #ffffff;
-  margin-bottom: 1rem;
+    color: var(--heading-color);
+    margin-bottom: 1rem;
 }
 
 .footer-section ul {
-  list-style: none;
-  padding: 0;
+    list-style: none;
+    padding: 0;
 }
 
 .footer-section ul a {
-  color: #a0a0c0;
-  text-decoration: none;
-  transition: color 0.2s;
+    color: var(--subtle-text-color);
+    text-decoration: none;
+    transition: color 0.2s;
 }
 
 .footer-section ul a:hover {
-  color: #5372f0;
+    color: var(--primary-color);
 }
 
 .footer-bottom {
-  text-align: center;
-  margin-top: 2rem;
-  padding-top: 2rem;
-  border-top: 1px solid #1f2e5a;
-}
-/* --- CORRECTED UPLOAD FORM STYLES --- */
-/* --- AUTH CARD STYLES --- */
-/* --- ENHANCED FORM & BUTTON STYLES --- */
-
-/* Auth Card for Login/Signup */
-.auth-card {
-  max-width: 400px;
-  margin: 3rem auto;
-  background: #1a2744;
-  border-radius: 16px;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.2);
-  padding: 2.5rem;
-  border: 1px solid #2a3858;
-  animation: fadeUp 0.5s ease-out; /* Added animation */
+    text-align: center;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid #1f2e5a;
 }
 
-.auth-form h2 {
-  font-size: 2rem;
-  font-weight: bold;
-  color: #fff;
-  margin-bottom: 2rem;
-  text-align: center;
-  border: none;
-  padding: 0;
-}
-
-.auth-input {
-  width: 100%;
-  padding: 0.9rem 1.1rem;
-  margin-bottom: 1.2rem;
-  font-size: 1.1rem;
-  border-radius: 8px;
-  border: 1px solid #3a3a5c;
-  background-color: #0f172a;
-  color: #fff;
-  box-sizing: border-box;
-  transition: all 0.3s ease; /* Enhanced transition */
-}
-.auth-input:focus {
-  border-color: #5372f0;
-  box-shadow: 0 0 0 3px rgba(83, 114, 240, 0.3); /* Added focus glow */
-  outline: none;
-}
-
-.auth-btn {
-  width: 100%;
-  padding: 1rem 0;
-  font-size: 1.15rem;
-  font-weight: bold;
-  color: #fff;
-  background-color: #5372f0;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  margin-bottom: 1rem;
-  transition: all 0.2s ease; /* Enhanced transition */
-}
-.auth-btn:hover {
-  background-color: #3554b3;
-  transform: translateY(-3px); /* Added lift effect */
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-}
-
-.auth-hint {
-  text-align: center;
-  color: #a0a0c0;
-  font-size: 1rem;
-}
-.auth-hint a {
-  color: #5372f0;
-  text-decoration: none;
-  font-weight: bold;
-}
-.auth-hint a:hover {
-  text-decoration: underline;
-}
-
-/* Upload Form */
-.upload-form {
-  max-width: 700px;
-  margin: 2rem auto;
-  padding: 2.5rem;
-  background-color: #1a2744;
-  border-radius: 12px;
-  border: 1px solid #2a3858;
-  animation: fadeUp 0.5s ease-out; /* Added animation */
-}
-
-/* Other .upload-form styles remain the same... */
-
-
-/* Card Action Buttons */
-.card-actions {
-  display: flex;
-  gap: 0.75rem;
-  margin-top: 1.5rem;
-  border-top: 1px solid #2a3858;
-  padding-top: 1rem;
-}
-
-.action-button {
-  flex-grow: 1;
-  text-align: center;
-  padding: 0.7rem;
-  border-radius: 5px;
-  text-decoration: none;
-  font-weight: bold;
-  transition: all 0.2s ease;
-  border: 1px solid transparent;
-  cursor: pointer;
-}
-.action-button:hover {
-  transform: translateY(-2px); /* Added lift effect */
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-}
-
-.view-btn {
-  background-color: #2c3e50;
-  color: white;
-}
-.view-btn:hover {
-  background-color: #3e5670;
-}
-
-.download-btn {
-  background-color: #5372f0;
-  color: white;
-}
-.download-btn:hover {
-  background-color: #405de6;
-}
-
-/* --- ANIMATIONS --- */
-@keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 /* --- CONTACT PAGE & FORM --- */
-.contact-page {
-    max-width: 800px;
-    margin: 0 auto;
-}
-
 .contact-page > p {
     text-align: center;
     font-size: 1.1rem;
-    color: #a0a0c0;
+    color: var(--subtle-text-color);
     margin-bottom: 2rem;
-}
-
-.contact-form {
-    padding: 2.5rem;
-    background-color: #1a2744;
-    border-radius: 12px;
-    border: 1px solid #2a3858;
 }
 
 .contact-form .form-group {
@@ -701,36 +922,11 @@ h1, h2 {
     display: block;
     margin-bottom: 0.5rem;
     font-weight: bold;
-    color: #c0c0c0;
-}
-
-.contact-form input,
-.contact-form textarea {
-    width: 100%;
-    padding: 0.8rem 1rem;
-    font-size: 1rem;
-    border-radius: 5px;
-    border: 1px solid #3a3a5c;
-    background-color: #0f172a;
-    color: #ffffff;
-    box-sizing: border-box;
+    color: var(--subtle-text-color);
 }
 
 .contact-form textarea {
     resize: vertical;
-}
-
-.contact-form button {
-    width: 100%;
-    padding: 0.9rem 1rem;
-    font-size: 1.1rem;
-    font-weight: bold;
-    color: #ffffff;
-    background-color: #5372f0;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
 }
 
 .form-status {
@@ -739,13 +935,8 @@ h1, h2 {
     font-size: 1.1rem;
     font-weight: bold;
 }
-/* --- GENERIC CONTENT PAGE STYLES --- */
-.content-page {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 1rem;
-}
 
+/* --- GENERIC CONTENT PAGE STYLES (About Page, Donate Page Intro) --- */
 .content-page section {
     margin-bottom: 2.5rem;
 }
@@ -755,10 +946,11 @@ h1, h2 {
     border-bottom-color: #3a3a5c;
 }
 
-.content-page p, .content-page li {
+.content-page p,
+.content-page li {
     font-size: 1.1rem;
     line-height: 1.6;
-    color: #a0a0c0;
+    color: var(--subtle-text-color);
 }
 
 .content-page ul {
@@ -769,175 +961,217 @@ h1, h2 {
 .content-page ul li {
     padding-left: 1rem;
     margin-bottom: 1rem;
-}/* --- ENHANCED PROFILE PAGE HEADER --- */
-
-.profile-header {
-  display: flex;
-  flex-direction: column; /* Stack vertically on small screens */
-  align-items: center;
-  gap: 1.5rem;
-  text-align: center;
-  background-color: #1a2744;
-  padding: 2rem;
-  border-radius: 12px;
-  animation: fadeUp 0.5s ease-out;
 }
 
-/* On wider screens, display side-by-side */
+/* --- ENHANCED PROFILE PAGE HEADER (Admin Dashboard, Profile Edit) --- */
+.profile-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    text-align: center;
+    background-color: var(--card-background);
+    padding: 2rem;
+    border-radius: 12px;
+    animation: fadeUp 0.5s ease-in-out;
+    max-width: 900px;
+    width: 100%;
+    margin: 2rem auto;
+}
+
 @media screen and (min-width: 768px) {
-  .profile-header {
-    flex-direction: row;
-    text-align: left;
-    gap: 2rem;
-  }
+    .profile-header {
+        flex-direction: row;
+        text-align: left;
+        gap: 2rem;
+    }
+}
+
+@media screen and (max-width: 600px) {
+    .profile-header {
+        padding: 1.5rem;
+        gap: 1rem;
+        margin: 1.5rem auto;
+    }
+    .profile-info h1 {
+        font-size: 1.8rem;
+    }
+    .profile-info p {
+        font-size: 1rem;
+    }
 }
 
 .avatar-container {
-  position: relative; /* Required for the overlay */
-  cursor: pointer;
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-  flex-shrink: 0; /* Prevents the avatar from shrinking */
+    position: relative;
+    cursor: pointer;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    flex-shrink: 0;
 }
 
 .profile-avatar {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  object-fit: cover;
-  display: block;
-  border: 3px solid #5372f0;
-  transition: filter 0.3s ease; /* Animate the darken effect */
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+    border: 3px solid var(--primary-color);
+    transition: filter 0.3s ease;
 }
 
-/* The overlay label */
 .avatar-upload-label {
-  /* Cover the entire avatar */
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  
-  /* Center the text and icon */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  
-  /* Appearance */
-  background-color: rgba(0, 0, 0, 0.6);
-  color: white;
-  font-size: 1rem;
-  font-weight: bold;
-  cursor: pointer;
-  border-radius: 50%; /* Make the overlay circular */
-
-  /* Animation */
-  opacity: 0; /* Hidden by default */
-  transition: opacity 0.3s ease;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.6);
+    color: white;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 50%;
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
-/* Show the overlay on hover */
 .avatar-container:hover .avatar-upload-label {
-  opacity: 1;
+    opacity: 1;
 }
 
-/* Darken the image on hover to make text pop */
 .avatar-container:hover .profile-avatar {
-  filter: brightness(0.5);
+    filter: brightness(0.5);
 }
 
 .profile-info h1 {
-  margin: 0;
-  border: none;
-  font-size: 2.2rem;
-}
-.profile-info p {
-  margin: 0.5rem 0 0 0;
-  color: #a0a0c0;
-  font-size: 1.1rem;
-}
-/* --- PROFILE TABS --- */
-.profile-tabs {
-  display: flex;
-  gap: 0.5rem;
-  border-bottom: 1px solid #3a3a5c;
-  margin-bottom: 2rem;
-}
-.profile-tabs button {
-  padding: 0.8rem 1.5rem;
-  border: none;
-  background-color: transparent;
-  color: #a0a0c0;
-  cursor: pointer;
-  font-size: 1.1rem;
-  border-bottom: 3px solid transparent;
-}
-.profile-tabs button.active {
-  color: #ffffff;
-  border-bottom-color: #5372f0;
+    margin: 0;
+    border: none;
+    font-size: 2.2rem;
+    padding-bottom: 0;
+    margin-bottom: 0;
 }
 
-/* --- SAVE BUTTON --- */
-/* --- SAVE BUTTON --- */
+.profile-info p {
+    margin: 0.5rem 0 0 0;
+    color: var(--subtle-text-color);
+    font-size: 1.1rem;
+}
+
+/* --- PROFILE TABS (Admin Dashboard) --- */
+.profile-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 2rem;
+    justify-content: flex-start;
+    padding-bottom: 5px;
+    width: 100%;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.profile-tabs button {
+    padding: 0.8rem 1.5rem;
+    border: none;
+    background-color: transparent;
+    color: var(--subtle-text-color);
+    cursor: pointer;
+    font-size: 1.1rem;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.profile-tabs button.active {
+    color: var(--heading-color);
+    border-bottom-color: var(--primary-color);
+}
+
+@media (max-width: 600px) {
+    .profile-tabs {
+        gap: 0.25rem;
+        margin-bottom: 1.5rem;
+        justify-content: center;
+    }
+    .profile-tabs button {
+        font-size: 1rem;
+        padding: 0.6rem 1rem;
+    }
+}
+
+/* --- SAVE BUTTON (General) --- */
 .save-btn {
-  background-color: #3e5670;
-  color: white;
-  cursor: pointer; /* This makes the cursor a hand */
-  transition: background-color 0.2s ease;
+    background-color: #3e5670;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
 }
 
 .save-btn:hover {
-  background-color: #4f6d8a;
+    background-color: #4f6d8a;
 }
 
 .save-btn.saved {
-  background-color: #1abc9c; /* Green color when saved */
+    background-color: var(--success-color);
 }
 
 .save-btn.saved:hover {
-  background-color: #16a085;
+    background-color: #16a085;
 }
+
 /* --- NAVBAR AVATAR --- */
 .navbar-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid #5372f0;
-  cursor: pointer;
-  transition: transform 0.2s ease;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--primary-color);
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
 }
 
 .navbar-avatar:hover {
-  transform: scale(1.1);
+    transform: scale(1.1);
 }
-/* --- PROFILE NAME EDITING --- */
-/* --- PROFILE NAME EDITING --- */
 
-/* Base styles (for larger screens first - Mobile-first approach would reverse this, but this works fine for updating existing code) */
+/* --- PROFILE NAME EDITING --- */
 .name-display,
 .name-edit-form {
     display: flex;
     align-items: center;
     gap: 1rem;
-    /* Ensure the container doesn't overflow its parent on smaller screens */
-    /* If this container itself is overflowing, consider adding max-width: 100% and overflow: hidden to its parent */
+    flex-wrap: wrap;
+    justify-content: flex-start;
+}
+
+@media (max-width: 600px) {
+    .name-display,
+    .name-edit-form {
+        justify-content: center;
+        text-align: center;
+    }
 }
 
 .edit-name-btn {
     background: none;
     border: 1px solid #3e5670;
-    color: #a0a0c0;
+    color: var(--subtle-text-color);
     padding: 0.3rem 0.8rem;
     border-radius: 5px;
     cursor: pointer;
     transition: all 0.2s ease;
-    /* Ensure button doesn't shrink too much on very small screens if it's the only item */
     flex-shrink: 0;
 }
+
 .edit-name-btn:hover {
     background-color: #3e5670;
     color: white;
@@ -945,220 +1179,102 @@ h1, h2 {
 
 .name-edit-input {
     padding: 0.6rem 1rem;
-    font-size: 1.5rem; /* Match the h1 size */
+    font-size: 1.5rem;
     font-weight: bold;
     border-radius: 5px;
-    border: 1px solid #5372f0;
-    background-color: #0f172a;
-    color: #ffffff;
+    border: 1px solid var(--primary-color);
+    background-color: var(--input-background);
+    color: var(--heading-color);
     outline: none;
-    /* Allow the input to grow and shrink, taking up available space */
     flex-grow: 1;
-    /* Prevent the input from getting excessively wide on very large screens */
-    max-width: 100%; /* Important for preventing overflow if text is too long */
-    box-sizing: border-box; /* Include padding and border in the element's total width and height */
+    min-width: 150px;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
-.name-edit-form .save-btn {
-    background-color: #5372f0;
-    color: white;
+.name-edit-form .save-btn,
+.name-edit-form .cancel-btn {
     border: none;
     padding: 0.6rem 1rem;
     border-radius: 5px;
     cursor: pointer;
     font-weight: bold;
-    /* Prevent button from shrinking too much */
     flex-shrink: 0;
+}
+
+.name-edit-form .save-btn {
+    background-color: var(--primary-color);
+    color: white;
 }
 
 .name-edit-form .cancel-btn {
     background-color: #2c3e50;
     color: white;
-    border: none;
-    padding: 0.6rem 1rem;
-    border-radius: 5px;
-    cursor: pointer;
-    /* Prevent button from shrinking too much */
-    flex-shrink: 0;
 }
 
-/* --- RESPONSIVE ADJUSTMENTS --- */
-
-/* Breakpoint for Tablets and smaller (e.g., max-width 768px is a common breakpoint) */
 @media (max-width: 768px) {
     .name-edit-input {
-        font-size: 1.3rem; /* Slightly reduce font size for tablets */
+        font-size: 1.3rem;
         padding: 0.5rem 0.8rem;
     }
 
     .edit-name-btn,
     .name-edit-form .save-btn,
     .name-edit-form .cancel-btn {
-        padding: 0.4rem 0.7rem; /* Slightly reduce button padding */
-        font-size: 0.9rem; /* Slightly reduce button font size */
+        padding: 0.4rem 0.7rem;
+        font-size: 0.9rem;
     }
 
     .name-display,
     .name-edit-form {
-        /* Allow items to wrap to the next line if there isn't enough space */
-        flex-wrap: wrap;
-        /* Center items when they wrap */
-        justify-content: center;
-        /* Reduce the gap between items when they wrap */
         gap: 0.8rem;
     }
 }
 
-/* Breakpoint for Mobile Phones (e.g., max-width 480px is a common breakpoint) */
 @media (max-width: 480px) {
     .name-edit-input {
-        font-size: 1rem; /* Further reduce font size for small phones */
+        font-size: 1rem;
         padding: 0.4rem 0.6rem;
-        /* On very small screens, the input should definitely take up as much width as possible */
-        width: 100%; /* Force input to take full width */
-        margin-bottom: 0.5rem; /* Add some space below the input before buttons */
+        width: 100%;
+        margin-bottom: 0.5rem;
+        min-width: unset;
     }
 
     .edit-name-btn {
-        /* When the name and button are on separate lines, make the button full width */
         width: 100%;
-        text-align: center; /* Center text inside the button */
-        padding: 0.6rem 0.8rem; /* Make it more easily tappable */
+        text-align: center;
+        padding: 0.6rem 0.8rem;
     }
 
     .name-edit-form {
-        flex-direction: column; /* Stack the input and buttons vertically */
-        align-items: stretch; /* Make items stretch to fill the width */
-        gap: 0.5rem; /* Smaller gap when stacked */
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
     }
 
     .name-edit-form .save-btn,
     .name-edit-form .cancel-btn {
-        width: 100%; /* Make save/cancel buttons full width when stacked */
-        padding: 0.6rem 1rem; /* Consistent padding for stacked buttons */
-        /* You might want a small margin between them if they stack immediately */
-        /* margin-bottom: 0.5rem; */
+        width: 100%;
+        padding: 0.6rem 1rem;
     }
 }
 
-/* Important: Ensure your HTML has the viewport meta tag in the <head> */
-/* <meta name="viewport" content="width=device-width, initial-scale=1.0"> */
-/* --- UPLOAD FORM STYLES --- */
-/* --- ENHANCED UPLOAD FORM STYLES --- */
-
-/* The main card container for the form */
-.upload-form {
-  max-width: 700px;
-  margin: 3rem auto;
-  padding: 2.5rem 3rem;
-  background: rgba(26, 39, 68, 0.7); /* Frosted glass effect */
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  animation: fadeUp 0.6s ease-out forwards; /* Entrance animation */
-}
-
-/* The main heading inside the form */
-.upload-form h2 {
-  text-align: center;
-  border: none;
-  padding: 0;
-  margin-top: 0;
-  margin-bottom: 2.5rem;
-  font-size: 2rem;
-  font-weight: bold;
-}
-
-/* A wrapper for each label + input pair */
-.form-group {
-  margin-bottom: 1.5rem;
-}
-
-/* Style for the labels */
-.form-group label {
-  display: block;
-  margin-bottom: 0.75rem;
-  font-weight: 500;
-  color: #c0c0c0;
-  font-size: 1rem;
-}
-
-/* Style for all input fields within the form */
-.upload-form input[type="text"],
-.upload-form input[type="number"],
-.upload-form input[type="file"] {
-  width: 100%;
-  padding: 0.9rem 1.1rem;
-  font-size: 1rem;
-  border-radius: 8px;
-  border: 1px solid #3a3a5c;
-  background-color: rgba(15, 23, 42, 0.8);
-  color: #ffffff;
-  box-sizing: border-box;
-  transition: all 0.3s ease; /* Smooth transition for focus */
-}
-
-/* Glowing effect when an input is active */
-.upload-form input:focus {
-  border-color: #5372f0;
-  box-shadow: 0 0 0 4px rgba(83, 114, 240, 0.3);
-  outline: none;
-}
-
-.upload-form input[type="file"] {
-  padding: 0.6rem 1rem;
-  cursor: pointer;
-}
-
-/* The submit button with gradient and hover effect */
-.upload-form button {
-  width: 100%;
-  padding: 1rem;
-  margin-top: 1.5rem;
-  font-size: 1.1rem;
-  font-weight: bold;
-  color: #ffffff;
-  background: linear-gradient(45deg, #6a11cb 0%, #2575fc 100%);
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.upload-form button:hover {
-  transform: translateY(-3px) scale(1.02);
-  box-shadow: 0 6px 20px rgba(37, 117, 252, 0.3);
-}
-
-.upload-form button:disabled {
-  background: #2c3e50;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-/* Animation keyframes (if you don't already have it) */
-@keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 /* ======================================= */
 /* === FINAL ENHANCED DONATE PAGE STYLES === */
 /* ======================================= */
-
 .donate-page .donate-intro {
     text-align: center;
     max-width: 700px;
     margin: 0 auto 3rem auto;
     animation: fadeUp 0.5s ease-out;
+    width: 100%;
+}
+
+@media (max-width: 600px) {
+    .donate-page .donate-intro {
+        margin-bottom: 2rem;
+        padding: 0 1rem;
+    }
 }
 
 .support-grid {
@@ -1166,27 +1282,40 @@ h1, h2 {
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 1.5rem;
     margin-bottom: 4rem;
+    padding: 0;
+}
+
+@media (max-width: 480px) {
+    .support-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
 }
 
 .support-item {
-    /* --- Frosted Glass Effect --- */
     background: rgba(26, 39, 68, 0.6);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    
     padding: 1.5rem;
     border-radius: 12px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     transition: all 0.3s ease;
     animation: fadeUp 0.5s ease-out forwards;
-    opacity: 0; /* Start hidden for staggered animation */
+    opacity: 0;
+    word-break: break-word;
 }
 
-/* --- Staggered Animation Effect --- */
-.support-item:nth-child(1) { animation-delay: 0.2s; }
-.support-item:nth-child(2) { animation-delay: 0.3s; }
-.support-item:nth-child(3) { animation-delay: 0.4s; }
+.support-item:nth-child(1) {
+    animation-delay: 0.2s;
+}
 
+.support-item:nth-child(2) {
+    animation-delay: 0.3s;
+}
+
+.support-item:nth-child(3) {
+    animation-delay: 0.4s;
+}
 
 .support-item:hover {
     transform: translateY(-5px);
@@ -1195,27 +1324,27 @@ h1, h2 {
 
 .support-item h3 {
     margin-top: 0;
-    color: #5372f0;
+    color: var(--primary-color);
     display: flex;
     align-items: center;
     gap: 0.75rem;
+    font-size: 1.5rem;
 }
 
 .donation-methods {
     display: flex;
     justify-content: center;
-    align-items: stretch; /* Make cards same height */
+    align-items: stretch;
     gap: 2rem;
     margin-top: 2rem;
     flex-wrap: wrap;
+    padding: 0;
 }
 
 .donation-card {
-    /* --- Frosted Glass Effect --- */
     background: rgba(26, 39, 68, 0.6);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-
     padding: 2.5rem;
     border-radius: 16px;
     text-align: center;
@@ -1225,11 +1354,23 @@ h1, h2 {
     justify-content: center;
     align-items: center;
     flex: 1;
-    min-width: 320px;
+    min-width: 280px;
     max-width: 420px;
     transition: all 0.3s ease;
-    animation: fadeUp 0.5s ease-out 0.5s forwards; /* Delay this animation */
+    animation: fadeUp 0.5s ease-out 0.5s forwards;
     opacity: 0;
+}
+
+@media (max-width: 600px) {
+    .donation-methods {
+        gap: 1.5rem;
+    }
+    .donation-card {
+        padding: 1.5rem;
+        min-width: unset;
+        width: 100%;
+        max-width: 350px;
+    }
 }
 
 .donation-card:hover {
@@ -1240,7 +1381,8 @@ h1, h2 {
 
 .donation-card h3 {
     margin-top: 0;
-    color: #ffffff;
+    color: var(--heading-color);
+    font-size: 1.8rem;
 }
 
 .qr-code-wrapper {
@@ -1249,11 +1391,13 @@ h1, h2 {
     border-radius: 8px;
     margin: 1rem auto;
     width: fit-content;
+    max-width: 100%;
 }
 
 .qr-code-img {
     max-width: 180px;
     width: 100%;
+    height: auto;
     display: block;
 }
 
@@ -1269,6 +1413,10 @@ h1, h2 {
     border-radius: 8px;
     transition: all 0.2s ease;
     box-shadow: 0 4px 15px rgba(255, 221, 0, 0.2);
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .bmac-button:hover {
@@ -1276,344 +1424,271 @@ h1, h2 {
     box-shadow: 0 6px 20px rgba(255, 221, 0, 0.3);
 }
 
-
-@keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 /* --- STAR RATING --- */
 .star-rating {
-  color: #a0a0c0;
-  font-size: 1.5rem;
-}
-.star-rating:not(.read-only) .star {
-  cursor: pointer;
-}
-.star.filled {
-  color: #f39c12;
+    color: var(--subtle-text-color);
+    font-size: 1.5rem;
+    display: flex;
+    flex-wrap: nowrap;
 }
 
+.star-rating:not(.read-only) .star {
+    cursor: pointer;
+}
+
+.star.filled {
+    color: #f39c12;
+}
 
 /* --- CARD RATING --- */
 .card-rating {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
 }
 
 .card-rating .star-rating {
-  font-size: 1.1rem; /* Make stars slightly smaller on the card */
+    font-size: 1.1rem;
 }
 
 .card-rating span {
-  font-size: 0.9rem;
-  color: #a0a0c0;
+    font-size: 0.9rem;
+    color: var(--subtle-text-color);
 }
+
 /* --- ENHANCED REVIEWS SECTION --- */
 .reviews-section {
-  margin-top: 3rem;
-  border-top: 1px solid #2a3858;
-  padding-top: 2rem;
+    margin-top: 3rem;
+    border-top: 1px solid var(--border-color);
+    padding-top: 2rem;
+    width: 100%;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
 }
+
 .reviews-section h2 {
-  text-align: left;
-  border: none;
-  margin-bottom: 2rem;
+    text-align: left;
+    border: none;
+    margin-bottom: 2rem;
 }
 
 .reviews-list {
-  margin-bottom: 2.5rem;
+    margin-bottom: 2.5rem;
 }
+
 .no-reviews {
-  color: #a0a0c0;
-  font-style: italic;
-  padding: 2rem;
-  background-color: #1a2744;
-  border-radius: 8px;
-  text-align: center;
+    color: var(--subtle-text-color);
+    font-style: italic;
+    padding: 2rem;
+    background-color: var(--card-background);
+    border-radius: 8px;
+    text-align: center;
 }
 
 .review-card {
-  background-color: #1a2744;
-  padding: 1.5rem;
-  border-radius: 8px;
-  margin-bottom: 1.5rem;
-  border: 1px solid #2a3858;
-  animation: fadeUp 0.5s ease-out;
+    background-color: var(--card-background);
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--border-color);
+    animation: fadeUp 0.5s ease-out;
+    word-break: break-word;
+}
+
+@media (max-width: 600px) {
+    .reviews-section {
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+    }
+    .review-card {
+        padding: 1rem;
+    }
 }
 
 .review-author {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
 }
 
 .review-avatar {
-  width: 45px;
-  height: 45px;
-  border-radius: 50%;
-  object-fit: cover;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
 }
 
 .review-author-info {
-  display: flex;
-  flex-direction: column;
+    display: flex;
+    flex-direction: column;
 }
+
 .review-author-info strong {
-  color: #ffffff;
-  font-size: 1rem;
+    color: var(--heading-color);
+    font-size: 1rem;
 }
+
 .review-author-info span {
-  font-size: 0.8rem;
-  color: #a0a0c0;
+    font-size: 0.8rem;
+    color: var(--subtle-text-color);
 }
 
 .review-content .star-rating {
-  margin-bottom: 0.5rem;
-}
-.review-content p {
-  margin: 0;
-  color: #e0e0e0;
-  line-height: 1.6;
+    margin-bottom: 0.5rem;
 }
 
-/* --- ENHANCED REVIEW FORM STYLES --- */
-.review-form {
-  background-color: #1a2744;
-  padding: 2rem 2.5rem;
-  border-radius: 12px;
-  border: 1px solid #2a3858;
+.review-content p {
+    margin: 0;
+    color: var(--text-color);
+    line-height: 1.6;
 }
 
 .review-form h3 {
-  margin-top: 0;
-  border: none;
-  font-size: 1.5rem;
-  text-align: center;
+    margin-top: 0;
+    border: none;
+    font-size: 1.5rem;
+    text-align: center;
 }
 
 .review-form .form-group {
-  margin-bottom: 1.5rem;
+    margin-bottom: 1.5rem;
 }
 
 .review-form label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: bold;
-  color: #c0c0c0;
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+    color: var(--subtle-text-color);
 }
 
-/* This styles the comment textarea */
 .review-form textarea {
-  width: 100%;
-  padding: 0.8rem 1rem;
-  font-size: 1rem;
-  border-radius: 5px;
-  border: 1px solid #3a3a5c;
-  background-color: #0f172a;
-  color: #ffffff;
-  box-sizing: border-box;
-  resize: vertical;
-  min-height: 120px;
-  transition: all 0.3s ease;
+    width: 100%;
+    padding: 0.8rem 1rem;
+    font-size: 1rem;
+    border-radius: 5px;
+    border: 1px solid #3a3a5c;
+    background-color: var(--input-background);
+    color: var(--heading-color);
+    box-sizing: border-box;
+    resize: vertical;
+    min-height: 120px;
+    transition: all 0.3s ease;
 }
 
-/* Adds a glow effect when typing */
 .review-form textarea:focus {
-  border-color: #5372f0;
-  box-shadow: 0 0 0 3px rgba(83, 114, 240, 0.3);
-  outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(83, 114, 240, 0.3);
+    outline: none;
 }
 
-/* This styles the submit button */
 .review-form button {
-  width: 100%;
-  padding: 0.9rem 1rem;
-  font-size: 1.1rem;
+    width: 100%;
+    padding: 0.9rem 1rem;
+    font-size: 1.1rem;
+    margin-top: 1.5rem;
 }
-/* --- ENHANCED SORTING CONTAINER --- */
+
+/* --- ENHANCED SORTING CONTAINER (Homepage) --- */
 .sort-container {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
-  position: relative; /* Required for the custom arrow */
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    position: relative;
+    flex-wrap: wrap;
+    padding-right: 0;
 }
 
 .sort-container label {
-  font-weight: bold;
-  color: #a0a0c0;
+    font-weight: bold;
+    color: var(--subtle-text-color);
+    flex-shrink: 0;
 }
 
 .sort-container select {
-  /* --- Remove default browser appearance --- */
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-
-  /* --- Custom Styles --- */
-  padding: 0.6rem 2.5rem 0.6rem 1rem; /* Add extra padding on the right for the arrow */
-  border-radius: 8px;
-  border: 1px solid #3a3a5c;
-  background-color: #1a2744;
-  color: #ffffff;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: border-color 0.2s ease;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    padding: 0.6rem 2.5rem 0.6rem 1rem;
+    border-radius: 8px;
+    border: 1px solid #3a3a5c;
+    background-color: var(--card-background);
+    color: var(--heading-color);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+    min-width: 150px;
+    flex-grow: 0;
+    flex-shrink: 1;
+    max-width: 200px;
 }
 
 .sort-container select:hover {
-  border-color: #5372f0;
+    border-color: var(--primary-color);
 }
 
 /* --- Custom Dropdown Arrow --- */
 .sort-container::after {
-  content: '▼';
-  font-size: 0.8rem;
-  color: #a0a0c0;
-  position: absolute;
-  right: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  pointer-events: none; /* Allows clicks to pass through to the select element */
+    content: '▼';
+    font-size: 0.8rem;
+    color: var(--subtle-text-color);
+    position: absolute;
+    right: 1.8rem;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
 }
 
-/* --- ENHANCED ADMIN DASHBOARD (with Animations) --- */
-
-.admin-list {
-  animation: fadeUp 0.5s ease-out;
+@media (max-width: 600px) {
+    .sort-container {
+        justify-content: center;
+        padding: 0;
+        margin-bottom: 1.5rem;
+    }
+    .sort-container select {
+        width: 100%;
+        max-width: 250px;
+        margin-top: 0.5rem;
+    }
+    .sort-container::after {
+        right: calc(50% - 110px);
+    }
 }
 
-.admin-list-item {
-  background-color: #1a2744;
-  padding: 1rem 1.5rem;
-  border-radius: 8px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  border: 1px solid #2a3858;
-  margin-bottom: 1rem;
-  /* --- Added Transition --- */
-  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-}
 
-/* --- Added Hover Effect for the whole list item --- */
-.admin-list-item:hover {
-    transform: translateY(-3px);
-    border-color: #5372f0;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-}
-
-.admin-list-item img {
-  width: 45px;
-  height: 45px;
-  border-radius: 50%;
-  object-fit: cover;
-  flex-shrink: 0;
-}
-
-.admin-note-thumbnail {
-  width: 80px;
-  height: 60px;
-  border-radius: 4px;
-  object-fit: cover;
-  flex-shrink: 0;
-}
-
-.admin-list-item .user-info {
-  flex-grow: 1;
-  min-width: 0;
-}
-.user-info strong {
-  color: #fff;
-  display: block;
-  /* --- THESE LINES FIX THE TEXT OVERFLOW --- */
-  white-space: normal;
-  overflow-wrap: break-word;
-  word-break: break-word;
-}
-.user-info span {
-  font-size: 0.9rem;
-  color: #a0a0c0;
-}
-
-.admin-user-actions {
-  display: flex;
-  gap: 0.75rem;
-  flex-shrink: 0;
-}
-
-.admin-user-actions .action-button, .delete-btn-admin {
-  padding: 0.5rem 1rem;
-  font-size: 0.9rem;
-  white-space: nowrap;
-  /* --- Added Transition --- */
-  transition: transform 0.2s ease, filter 0.2s ease;
-}
-
-/* --- Added Hover Effect for buttons --- */
-.admin-user-actions .action-button:hover, .delete-btn-admin:hover {
-    transform: scale(1.05);
-    filter: brightness(1.15);
-}
-
-.admin-user-actions .role-btn {
-  background-color: #f39c12;
-  color: white;
-}
-
-.admin-user-actions .delete-btn, .delete-btn-admin {
-  background-color: #e74c3c;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.admin-user-actions button:disabled {
-  background-color: #3e5670;
-  cursor: not-allowed;
-  transform: none;
-  filter: none;
-}
-
-/* --- Media Query for Mobile Devices --- */
-@media screen and (max-width: 768px) {
-  .admin-list-item {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .admin-user-actions {
-    width: 100%;
-    margin-top: 1rem;
-  }
-  
-  .admin-user-actions .action-button {
-      flex-grow: 1;
-  }
-}
 /* --- ADVANCED FILTER BAR --- */
 .filter-bar {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
     gap: 1rem;
     padding: 1.5rem;
-    background-color: #1a2744;
+    background-color: var(--card-background);
     border-radius: 12px;
     margin-bottom: 2rem;
-    border: 1px solid #2a3858;
+    border: 1px solid var(--border-color);
+    width: 100%;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+@media (max-width: 768px) {
+    .filter-bar {
+        padding: 1rem;
+        gap: 0.8rem;
+    }
+}
+
+@media (max-width: 600px) {
+    .filter-bar {
+        grid-template-columns: 1fr;
+        padding: 0.8rem;
+    }
 }
 
 .filter-bar input {
@@ -1621,13 +1696,13 @@ h1, h2 {
     padding: 0.7rem 1rem;
     border-radius: 5px;
     border: 1px solid #3a3a5c;
-    background-color: #0f172a;
-    color: #ffffff;
+    background-color: var(--input-background);
+    color: var(--heading-color);
     font-size: 1rem;
 }
 
 .filter-bar button {
-    background-color: #5372f0;
+    background-color: var(--primary-color);
     color: white;
     border: none;
     padding: 0.7rem 1rem;
@@ -1639,4 +1714,315 @@ h1, h2 {
 
 .filter-bar button:hover {
     background-color: #405de6;
+}
+
+/* --- ENHANCED ADMIN DASHBOARD (with Animations) --- */
+
+.admin-list {
+    animation: fadeUp 0.5s ease-out;
+}
+
+.admin-list-item {
+    background-color: var(--card-background);
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    border: 1px solid var(--border-color);
+    margin-bottom: 1rem;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.admin-list-item:hover {
+    transform: translateY(-3px);
+    border-color: var(--primary-color);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+
+.admin-list-item img {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.admin-note-thumbnail {
+    width: 80px;
+    height: 60px;
+    border-radius: 4px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.admin-list-item .user-info {
+    flex-grow: 1;
+    min-width: 0;
+}
+.user-info strong {
+    color: var(--heading-color);
+    display: block;
+    white-space: normal;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+.user-info span {
+    font-size: 0.9rem;
+    color: var(--subtle-text-color);
+}
+
+.admin-user-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-shrink: 0;
+}
+
+.admin-user-actions .action-button, .delete-btn-admin {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    transition: transform 0.2s ease, filter 0.2s ease;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+}
+
+.admin-user-actions .action-button:hover, .delete-btn-admin:hover {
+    transform: scale(1.05);
+    filter: brightness(1.15);
+}
+
+.admin-user-actions .role-btn {
+    background-color: var(--warning-color);
+    color: white;
+}
+
+.admin-user-actions .delete-btn, .delete-btn-admin {
+    background-color: var(--error-color);
+    color: white;
+}
+
+.admin-user-actions button:disabled {
+    background-color: #3e5670;
+    cursor: not-allowed;
+    transform: none;
+    filter: none;
+}
+
+@media screen and (max-width: 768px) {
+    .admin-list-item {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 0.8rem 1rem;
+    }
+
+    .admin-list-item img, .admin-note-thumbnail {
+        margin-bottom: 0.5rem;
+    }
+
+    .admin-user-actions {
+        width: 100%;
+        margin-top: 1rem;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .admin-user-actions .action-button, .delete-btn-admin {
+        flex-grow: 1;
+        flex-basis: calc(50% - 0.25rem);
+        font-size: 0.85rem;
+        padding: 0.4rem 0.8rem;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .admin-list-item {
+        padding: 0.7rem 0.8rem;
+    }
+    .admin-list-item img, .admin-note-thumbnail {
+        width: 35px;
+        height: 35px;
+    }
+    .user-info strong {
+        font-size: 0.95rem;
+    }
+    .user-info span {
+        font-size: 0.8rem;
+    }
+    .admin-user-actions .action-button, .delete-btn-admin {
+        flex-basis: 100%;
+        padding: 0.6rem;
+    }
+}
+
+
+/* --- ANIMATIONS --- */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+/* Add/Adjust these sections in your app.css file */
+
+/* --- FORMS & CONTENT PAGES (Unified Base Styles) --- */
+/* Ensure these general form styles are robust */
+.content-page,
+.form-container,
+.auth-card,
+.upload-form, /* Ensure .upload-form is included here */
+.contact-form,
+.review-form {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 2.5rem;
+    background-color: var(--card-background);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    animation: fadeIn 0.5s ease-in-out;
+    width: 100%;
+}
+
+/* Common input styles (ensure these are general enough but not too specific to override custom ones) */
+.form-container input,
+.form-container textarea,
+.auth-input,
+.contact-form input,
+.contact-form textarea,
+.review-form textarea,
+.filter-bar input,
+/* Add specific type selectors here if needed for consistency without overriding custom inputs */
+input[type="text"],
+input[type="number"] { /* Add this rule for number input consistency */
+    width: 100%;
+    padding: 0.8rem 1rem;
+    font-size: 1rem;
+    border-radius: 5px;
+    border: 1px solid #3a3a5c;
+    background-color: var(--input-background);
+    color: var(--heading-color);
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+}
+
+
+/* --- Upload Page Specific Styles --- */
+/* Place this section AFTER general form styles to ensure specificity */
+
+.upload-form h2 {
+    /* Override general h2 border/alignment for this specific form */
+    border-bottom: none; /* As seen in image 2 (no line) */
+    text-align: center; /* As seen in image 2 */
+    padding-bottom: 0;
+    margin-bottom: 2.5rem; /* More space below heading */
+    font-size: 2rem; /* Consistent with other form titles */
+}
+
+/* Style for the custom file input button */
+/* Hide the default file input text and button */
+.upload-form input[type="file"] {
+    display: none; /* Hide the native file input */
+}
+
+/* Create a custom button for the file input */
+.upload-form .file-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 1.5rem; /* Match form-group margin */
+    flex-wrap: wrap; /* Allow elements to wrap on smaller screens */
+}
+
+.upload-form .custom-file-upload {
+    display: inline-block;
+    padding: 0.8rem 1.2rem; /* Consistent with other inputs/buttons */
+    border: 1px solid var(--primary-color);
+    background-color: transparent;
+    color: var(--primary-color);
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    white-space: nowrap; /* Prevent text wrapping */
+    flex-shrink: 0; /* Prevent it from shrinking too much */
+}
+
+.upload-form .custom-file-upload:hover {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.upload-form .file-name-display {
+    color: var(--subtle-text-color);
+    font-size: 1rem;
+    flex-grow: 1; /* Allow text to take remaining space */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0; /* Important for text-overflow to work in flex containers */
+}
+
+/* Ensure the main upload button is styled correctly */
+.upload-form button[type="submit"] {
+    width: 100%; /* Full width as per image 2 */
+    padding: 1rem; /* More prominent padding */
+    font-size: 1.2rem; /* Larger font size */
+    /* --- GRADIENT EFFECT ADDED HERE --- */
+    background: linear-gradient(90deg, var(--primary-color) 0%, #6a53f0 100%); /* Gradient using primary color variable */
+    color: white;
+    border: none; /* Ensure no border interferes with gradient */
+    border-radius: 8px; /* Slightly more rounded corners */
+    margin-top: 2rem; /* More space above the button */
+    cursor: pointer; /* Indicate it's clickable */
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Add a subtle shadow to make it pop */
+}
+
+.upload-form button[type="submit"]:hover {
+    /* Slightly darken or shift gradient on hover */
+    background: linear-gradient(90deg, #e973b8 0%, #5a40e6 100%); /* Darker gradient on hover */
+    transform: translateY(-3px); /* Lift effect */
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3); /* Enhanced shadow on hover */
+}
+
+.upload-form button[type="submit"]:disabled {
+    background: #3e5670; /* Solid dull color when disabled */
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Responsive adjustments for Upload Page */
+@media (max-width: 480px) {
+    .upload-form h2 {
+        font-size: 1.8rem;
+        margin-bottom: 1.5rem;
+    }
+    .upload-form .custom-file-upload {
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
+    }
+    .upload-form .file-name-display {
+        font-size: 0.9rem;
+    }
+    .upload-form button[type="submit"] {
+        padding: 0.8rem;
+        font-size: 1.1rem;
+        margin-top: 1.5rem;
+    }
 }
