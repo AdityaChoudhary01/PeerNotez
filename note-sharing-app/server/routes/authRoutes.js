@@ -10,22 +10,38 @@ const generateToken = (id) => {
 // @route   POST /api/auth/register
 router.post('/register', async (req, res) => {
   const { name, email, password } = req.body;
-  const userExists = await User.findOne({ email });
-  if (userExists) {
-    return res.status(400).json({ message: 'User already exists' });
-  }
-  const user = await User.create({ name, email, password });
-  if (user) {
-    res.status(201).json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      avatar: user.avatar,
-      savedNotes: user.savedNotes,
-      token: generateToken(user._id),
+
+  try {
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      return res.status(400).json({ message: 'User already exists' });
+    }
+
+    // --- NEW LOGIC TO GENERATE DYNAMIC AVATAR ---
+    const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff&size=128`;
+
+    const user = await User.create({
+      name,
+      email,
+      password,
+      avatar: avatarUrl, // Save the dynamically generated URL
     });
-  } else {
-    res.status(400).json({ message: 'Invalid user data' });
+    // --- END OF NEW LOGIC ---
+
+    if (user) {
+      res.status(201).json({
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar,
+        savedNotes: user.savedNotes,
+        token: generateToken(user._id),
+      });
+    } else {
+      res.status(400).json({ message: 'Invalid user data' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error' });
   }
 });
 
