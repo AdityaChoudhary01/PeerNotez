@@ -1487,6 +1487,7 @@ h1, h2 {
   transform: translateY(-50%);
   pointer-events: none; /* Allows clicks to pass through to the select element */
 }
+
 /* --- Added Hover Effect for the whole list item --- */
 .admin-list-item:hover {
     transform: translateY(-3px);
@@ -1582,27 +1583,4 @@ h1, h2 {
   .admin-user-actions .action-button {
       flex-grow: 1;
   }
-}
-
-  white-space: nowrap;
-}
-
-.admin-user-actions .role-btn {
-  background-color: #f39c12;
-  color: white;
-}
-
-.admin-user-actions .delete-btn, .delete-btn-admin {
-  background-color: #e74c3c;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 5px;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.admin-user-actions button:disabled {
-  background-color: #3e5670;
-  cursor: not-allowed;
 }
