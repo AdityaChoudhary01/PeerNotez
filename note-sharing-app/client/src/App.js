@@ -14,6 +14,8 @@ import ContactPage from './pages/ContactPage';
 import DonatePage from './pages/DonatePage';
 import PrivateRoute from './utils/PrivateRoute';
 import ProfilePage from './pages/ProfilePage'; // --- ADD THIS IMPORT ---
+import AdminRoute from './utils/AdminRoute'; // Import AdminRoute
+import AdminDashboardPage from './pages/AdminDashboardPage'; // Import AdminDashboardPage
 import './App.css';
 
 function App() {
@@ -35,6 +37,7 @@ function App() {
               {/* --- ADD THIS ROUTE --- */}
               <Route path="/profile" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
               <Route path="/upload" element={<PrivateRoute><UploadPage /></PrivateRoute>} />
+              <Route path="/admin" element={<AdminRoute><AdminDashboardPage /></AdminRoute>} />
             </Routes>
           </main>
           <Footer />
