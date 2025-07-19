@@ -8,7 +8,12 @@ const UserSchema = new mongoose.Schema({
   avatar: {
     type: String,
   },
-  savedNotes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Note' }]
+  savedNotes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Note' }],
+   role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user'
+  }
 });
 
 // Hash password before saving
