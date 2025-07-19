@@ -1,36 +1,56 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import useAuth from '../hooks/useAuth';
+import useAuth from '../../hooks/useAuth';
 
-const UploadPage = () => {
-    const [formData, setFormData] = useState({ title: '', university: '', course: '', subject: '', year: '' });
+const UploadForm = () => {
+    const [formData, setFormData] = useState({
+        title: '',
+        university: '',
+        course: '',
+        subject: '',
+        year: ''
+    });
     const [file, setFile] = useState(null);
+    const [error, setError] = useState('');
     const [uploading, setUploading] = useState(false);
     const { token } = useAuth();
     const navigate = useNavigate();
 
-    const handleChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
-    const handleFileChange = e => setFile(e.target.files[0]);
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleFileChange = (e) => {
+        setFile(e.target.files[0]);
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!file) return alert('Please select a file.');
-        
+        if (!file) {
+            setError('Please select a file to upload.');
+            return;
+        }
+        setError('');
         setUploading(true);
+
         const data = new FormData();
+        // Append all form fields to the FormData object
         Object.keys(formData).forEach(key => data.append(key, formData[key]));
         data.append('file', file);
 
         try {
-            await axios.post('https://peernotez.onrender.com/api/notes/upload', data, {
-                headers: { 'Authorization': `Bearer ${token}` }
+            // Send the request with the auth token in the header
+            await axios.post('http://localhost:5001/api/notes/upload', data, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'multipart/form-data',
+                }
             });
-            alert('Note uploaded successfully!');
-            navigate('/');
-        } catch (error) {
-            console.error('Upload failed', error);
-            alert('Upload failed. Please try again.');
+            navigate('/'); // Redirect after successful upload
+        } catch (err) {
+            setError('Upload failed. Please check the file type and try again.');
+            console.error('Upload failed', err);
         } finally {
             setUploading(false);
         }
@@ -39,35 +59,36 @@ const UploadPage = () => {
     return (
         <form onSubmit={handleSubmit} className="upload-form">
             <h2>Upload Your Notes</h2>
+            {error && <p className="error-message">{error}</p>}
             <div className="form-group">
-                <label htmlFor="title">Note Title</label>
-                <input id="title" name="title" type="text" onChange={handleChange} placeholder="e.g., Quantum Mechanics Chapter 3" required />
+                <label>Note Title</label>
+                <input name="title" onChange={handleChange} placeholder="e.g., Quantum Mechanics Chapter 3" required />
             </div>
             <div className="form-group">
-                <label htmlFor="university">University</label>
-                <input id="university" name="university" type="text" onChange={handleChange} placeholder="e.g., Harvard University" required />
+                <label>University</label>
+                <input name="university" onChange={handleChange} placeholder="e.g., Harvard University" required />
             </div>
             <div className="form-group">
-                <label htmlFor="course">Course</label>
-                <input id="course" name="course" type="text" onChange={handleChange} placeholder="e.g., Bachelor of Science" required />
+                <label>Course</label>
+                <input name="course" onChange={handleChange} placeholder="e.g., Bachelor of Science" required />
             </div>
             <div className="form-group">
-                <label htmlFor="subject">Subject</label>
-                <input id="subject" name="subject" type="text" onChange={handleChange} placeholder="e.g., Physics" required />
+                <label>Subject</label>
+                <input name="subject" onChange={handleChange} placeholder="e.g., Physics" required />
             </div>
             <div className="form-group">
-                <label htmlFor="year">Year</label>
-                <input id="year" name="year" type="number" onChange={handleChange} placeholder="e.g., 2" required />
+                <label>Year</label>
+                <input type="number" name="year" onChange={handleChange} placeholder="e.g., 2" required />
             </div>
             <div className="form-group">
-                <label htmlFor="file">File (PDF, DOC, Image, etc.)</label>
-                <input id="file" name="file" type="file" onChange={handleFileChange} required />
+                <label>File (PDF, DOC, PPT)</label>
+                <input type="file" onChange={handleFileChange} required />
             </div>
             <button type="submit" disabled={uploading}>
-                {uploading ? 'Uploading...' : 'Upload'}
+                {uploading ? 'Uploading...' : 'Upload Note'}
             </button>
         </form>
     );
 };
 
-export default UploadPage;
+export default UploadForm;
