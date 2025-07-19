@@ -8,11 +8,17 @@ const { protect } = require('../middleware/authMiddleware');
 const upload = multer({ storage });
 
 // @route   GET /api/notes
-// @desc    Get all notes, with optional search and sort
+// @desc    Get all notes, with optional search and advanced filtering
+// @route   GET /api/notes
+// @desc    Get all notes, handling both global search and advanced filters
 router.get('/', async (req, res) => {
   try {
-    const { search, sort } = req.query;
+    const { search, university, course, subject, year, sort } = req.query;
     let query = {};
+
+    // --- THIS IS THE CORRECTED LOGIC ---
+    
+    // Handle the single global search term (from the navbar)
     if (search) {
       query = {
         $or: [
@@ -22,14 +28,20 @@ router.get('/', async (req, res) => {
           { subject: { $regex: search, $options: 'i' } },
         ],
       };
+    } 
+    // Handle the advanced filters (from the homepage filter bar)
+    else {
+      if (university) query.university = { $regex: university, $options: 'i' };
+      if (course) query.course = { $regex: course, $options: 'i' };
+      if (subject) query.subject = { $regex: subject, $options: 'i' };
+      if (year) query.year = year;
     }
 
-    let sortOptions = { uploadDate: -1 }; // Default sort
-    if (sort === 'highestRated') {
-      sortOptions = { rating: -1 };
-    } else if (sort === 'mostDownloaded') {
-      sortOptions = { downloadCount: -1 };
-    }
+    
+    // Sorting logic remains the same
+    let sortOptions = { uploadDate: -1 };
+    if (sort === 'highestRated') sortOptions = { rating: -1 };
+    if (sort === 'mostDownloaded') sortOptions = { downloadCount: -1 };
 
     const notes = await Note.find(query).populate('user', 'name avatar').sort(sortOptions);
     res.json(notes);
