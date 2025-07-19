@@ -1488,6 +1488,26 @@ h1, h2 {
   pointer-events: none; /* Allows clicks to pass through to the select element */
 }
 
+/* --- ENHANCED ADMIN DASHBOARD (with Animations) --- */
+
+.admin-list {
+  animation: fadeUp 0.5s ease-out;
+}
+
+.admin-list-item {
+  background-color: #1a2744;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  border: 1px solid #2a3858;
+  margin-bottom: 1rem;
+  /* --- Added Transition --- */
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
 /* --- Added Hover Effect for the whole list item --- */
 .admin-list-item:hover {
     transform: translateY(-3px);
