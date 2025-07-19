@@ -7,13 +7,18 @@ const HomePage = () => {
     const [notes, setNotes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filters, setFilters] = useState({});
+    const [sortBy, setSortBy] = useState('uploadDate');
 
     useEffect(() => {
         const fetchNotes = async () => {
             setLoading(true);
             try {
-                // The 'filters' object is passed as URL parameters
-                const { data } = await axios.get('/notes', { params: filters });
+                // Combine filters and sort options into a single params object
+                const params = {
+                    ...filters,
+                    sort: sortBy,
+                };
+                const { data } = await axios.get('/notes', { params });
                 setNotes(data);
             } catch (error) {
                 console.error("Failed to fetch notes", error);
@@ -22,10 +27,9 @@ const HomePage = () => {
             }
         };
         fetchNotes();
-    }, [filters]);
+    }, [filters, sortBy]); // Re-fetch when either filters or sort changes
 
     const handleFilterSubmit = (newFilters) => {
-        // Remove empty filters to keep the URL clean
         const activeFilters = Object.fromEntries(
             Object.entries(newFilters).filter(([_, value]) => value !== '')
         );
@@ -41,8 +45,8 @@ const HomePage = () => {
                     <strong>Features:</strong>
                 </p>
                 <ul style={{textAlign: 'left', maxWidth: '600px', margin: '1rem auto', color: '#a0a0c0', fontSize: '1.1rem', listStyle: 'none', padding: 0}}>
-                    <li>🔍 Search notes by title, university, course, or subject.</li>
-                    <li>📤 Upload your own notes and help the community.</li>
+                    <li>🔍 Filter or search for specific notes.</li>
+                    <li>📤 Upload your own notes to help the community.</li>
                     <li>⭐ Rate and review notes to highlight the best content.</li>
                     <li>📚 Save your favorite notes to your personal profile.</li>
                 </ul>
@@ -50,6 +54,22 @@ const HomePage = () => {
 
             <h1>Find Notes</h1>
             <FilterBar onFilterSubmit={handleFilterSubmit} />
+            
+            <div className="notes-header">
+                <h2>All Notes</h2>
+                <div className="sort-container">
+                    <label htmlFor="sort-select">Sort by:</label>
+                    <select 
+                        id="sort-select" 
+                        value={sortBy} 
+                        onChange={(e) => setSortBy(e.target.value)}
+                    >
+                        <option value="uploadDate">Most Recent</option>
+                        <option value="highestRated">Highest Rated</option>
+                        <option value="mostDownloaded">Most Downloaded</option>
+                    </select>
+                </div>
+            </div>
             
             {loading ? (
                 <div>Loading notes...</div>
