@@ -1,165 +1,70 @@
-const express = require('express');
-const router = express.Router();
-const multer = require('multer');
-const { storage } = require('../config/cloudinary');
-const Note = require('../models/Note');
-const { protect } = require('../middleware/authMiddleware');
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import NoteCard from '../components/notes/NoteCard';
 
-const upload = multer({ storage });
+const HomePage = () => {
+    const [notes, setNotes] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [sortBy, setSortBy] = useState('uploadDate'); // State for sorting option
 
-// @route   GET /api/notes
-// @desc    Get all notes, with optional search and sort
-router.get('/', async (req, res) => {
-  try {
-    const { search, sort } = req.query;
-    let query = {};
-    if (search) {
-      query = {
-        $or: [
-          { title: { $regex: search, $options: 'i' } },
-          { university: { $regex: search, $options: 'i' } },
-          { course: { $regex: search, $options: 'i' } },
-          { subject: { $regex: search, $options: 'i' } },
-        ],
-      };
-    }
-
-    let sortOptions = { uploadDate: -1 }; // Default sort
-    if (sort === 'highestRated') {
-      sortOptions = { rating: -1 };
-    } else if (sort === 'mostDownloaded') {
-      sortOptions = { downloadCount: -1 };
-    }
-
-    const notes = await Note.find(query).populate('user', 'name avatar').sort(sortOptions);
-    res.json(notes);
-  } catch (err) {
-    res.status(500).json({ message: 'Server Error' });
-  }
-});
-
-// @route   GET /api/notes/mynotes
-// @desc    Get notes for the logged-in user
-router.get('/mynotes', protect, async (req, res) => {
-  try {
-    const notes = await Note.find({ user: req.user.id }).sort({ uploadDate: -1 });
-    res.json(notes);
-  } catch (error) {
-    res.status(500).json({ message: 'Server Error' });
-  }
-});
-
-// @route   GET /api/notes/:id
-// @desc    Get a single note by ID
-router.get('/:id', async (req, res) => {
-  try {
-    const note = await Note.findById(req.params.id)
-      .populate('user', 'name avatar') // Gets the main uploader's info
-      .populate({ // Gets the info for each user who left a review
-        path: 'reviews.user',
-        select: 'name avatar'
-      });
-      
-    if (!note) {
-      return res.status(404).json({ message: 'Note not found' });
-    }
-    res.json(note);
-  } catch (error) {
-    res.status(500).json({ message: 'Server Error' });
-  }
-});
-
-// @route   POST /api/notes/upload
-// @desc    Upload a new note
-router.post('/upload', protect, upload.single('file'), async (req, res) => {
-    try {
-        if (!req.file) {
-          return res.status(400).json({ message: 'No file uploaded.' });
-        }
-        const { path: filePath, originalname, mimetype, filename, size } = req.file;
-        const { title, university, course, subject, year } = req.body;
-        const newNote = new Note({
-          title, university, course, subject, year,
-          fileName: originalname, filePath: filePath, fileType: mimetype, fileSize: size,
-          cloudinaryId: filename, user: req.user._id,
-        });
-        const savedNote = await newNote.save();
-        res.status(201).json(savedNote);
-      } catch (error) {
-        res.status(500).json({ message: 'Error saving note to database.', error: error.message });
-      }
-});
-
-// @route   POST /api/notes/:id/reviews
-// @desc    Create a new review for a note
-router.post('/:id/reviews', protect, async (req, res) => {
-    const { rating, comment } = req.body;
-    try {
-        const note = await Note.findById(req.params.id);
-        if (note) {
-            const alreadyReviewed = note.reviews.find(r => r.user.toString() === req.user.id.toString());
-            if (alreadyReviewed) {
-                return res.status(400).json({ message: 'You have already reviewed this note' });
+    useEffect(() => {
+        const fetchNotes = async () => {
+            setLoading(true);
+            try {
+                // The API call now includes the sort parameter
+                const { data } = await axios.get(`https://peernotez.onrender.com/api/notes?sort=${sortBy}`);
+                setNotes(data);
+            } catch (error) {
+                console.error("Failed to fetch notes", error);
+            } finally {
+                setLoading(false);
             }
-            const review = { user: req.user.id, rating: Number(rating), comment, createdAt: new Date() };
-            note.reviews.push(review);
-            note.numReviews = note.reviews.length;
-            note.rating = note.reviews.reduce((acc, item) => item.rating + acc, 0) / note.reviews.length;
-            await note.save();
-            res.status(201).json({ message: 'Review added' });
-        } else {
-            res.status(404).json({ message: 'Note not found' });
-        }
-    } catch (error) {
-        res.status(500).json({ message: 'Server Error' });
-    }
-});
+        };
+        fetchNotes();
+    }, [sortBy]); // This now re-runs whenever 'sortBy' changes
 
-// @route   PUT /api/notes/:id/download
-// @desc    Increment the download count for a note
-router.put('/:id/download', async (req, res) => {
-    try {
-      const note = await Note.findById(req.params.id);
-      if (note) {
-        note.downloadCount = (note.downloadCount || 0) + 1;
-        await note.save();
-        res.json({ message: 'Download count updated' });
-      } else {
-        res.status(404).json({ message: 'Note not found' });
-      }
-    } catch (error) {
-      res.status(500).json({ message: 'Server Error' });
-    }
-});
+    return (
+        <div>
+            <section className="welcome-section" style={{marginBottom: '2.5rem', animation: 'fadeUp 0.5s ease-out'}}>
+                <h2>Welcome to PeerNotez!</h2>
+                <p>
+                    Share and discover notes from students across universities and courses.
+                </p>
+                <ul style={{textAlign: 'left', listStyle: 'none', padding: 0, maxWidth: '600px', margin: '1rem auto', color: '#a0a0c0', fontSize: '1.1rem'}}>
+                    <li>🔍 Search for specific notes using the search bar above.</li>
+                    <li>📤 Upload your own notes to help the community.</li>
+                    <li>⭐ Rate and review notes to highlight the best content.</li>
+                </ul>
+            </section>
+            
+            <div className="notes-header">
+                <h1>All Notes</h1>
+                {/* --- SORTING DROPDOWN --- */}
+                <div className="sort-container">
+                    <label htmlFor="sort-select">Sort by:</label>
+                    <select 
+                        id="sort-select" 
+                        value={sortBy} 
+                        onChange={(e) => setSortBy(e.target.value)}
+                    >
+                        <option value="uploadDate">Most Recent</option>
+                        <option value="highestRated">Highest Rated</option>
+                        <option value="mostDownloaded">Most Downloaded</option>
+                    </select>
+                </div>
+            </div>
 
-// @route   PUT /api/notes/:id
-// @desc    Update a note
-router.put('/:id', protect, async (req, res) => {
-  try {
-    const note = await Note.findById(req.params.id);
-    if (!note) return res.status(404).json({ message: 'Note not found' });
-    if (note.user.toString() !== req.user.id) return res.status(401).json({ message: 'Not authorized' });
+            {loading ? (
+                <div>Loading notes...</div>
+            ) : notes.length > 0 ? (
+                <div className="notes-grid">
+                    {notes.map(note => <NoteCard key={note._id} note={note} />)}
+                </div>
+            ) : (
+                <p>No notes found. Be the first to upload!</p>
+            )}
+        </div>
+    );
+};
 
-    const updatedNote = await Note.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    res.json(updatedNote);
-  } catch (error) {
-    res.status(500).json({ message: 'Server Error' });
-  }
-});
-
-// @route   DELETE /api/notes/:id
-// @desc    Delete a note
-router.delete('/:id', protect, async (req, res) => {
-  try {
-    const note = await Note.findById(req.params.id);
-    if (!note) return res.status(404).json({ message: 'Note not found' });
-    if (note.user.toString() !== req.user.id) return res.status(401).json({ message: 'Not authorized' });
-
-    await note.deleteOne();
-    res.json({ message: 'Note removed successfully' });
-  } catch (error) {
-    res.status(500).json({ message: 'Server Error' });
-  }
-});
-
-module.exports = router;
+export default HomePage;
