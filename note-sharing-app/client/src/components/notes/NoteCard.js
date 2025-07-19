@@ -27,6 +27,26 @@ const NoteCard = ({ note, showActions = false, onEdit, onDelete }) => {
     }
   };
 
+  // --- NEW DOWNLOAD HANDLER ---
+  const handleDownload = async () => {
+    try {
+      // First, hit the API to increment the download count
+      await axios.put(`/notes/${note._id}/download`);
+
+      // Then, programmatically trigger the download
+      const link = document.createElement('a');
+      link.href = note.filePath;
+      link.setAttribute('download', note.fileName);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error("Failed to update download count, downloading directly.", error);
+      // If the count update fails, still try to download the file for the user
+      window.open(note.filePath, '_blank');
+    }
+  };
+
   return (
     <div className="project-card">
       <Link to={`/view/${note._id}`}>
@@ -56,20 +76,17 @@ const NoteCard = ({ note, showActions = false, onEdit, onDelete }) => {
         )}
 
         <div className="card-actions">
-          {/* --- THIS IS THE SAVE BUTTON LOGIC --- */}
           {user && (
             <button onClick={handleSaveToggle} className={`action-button save-btn ${isSaved ? 'saved' : ''}`}>
               {isSaved ? '✓ Saved' : 'Save'}
             </button>
           )}
           <Link to={`/view/${note._id}`} className="action-button view-btn">View</Link>
-          <a 
-            href={note.filePath} 
-            download={note.fileName} 
-            className="action-button download-btn"
-          >
+          
+          {/* --- UPDATED DOWNLOAD BUTTON --- */}
+          <button onClick={handleDownload} className="action-button download-btn">
             Download
-          </a>
+          </button>
         </div>
       </div>
     </div>
