@@ -59,12 +59,22 @@ const ViewNotePage = () => {
         return <div>Loading...</div>;
     }
 
-    return (
-        <div className="note-viewer-container">
-            <h2>{note.title}</h2>
-            <p>{note.subject} - {note.university}</p>
-            <div className="file-viewer-frame">
-                {renderFileViewer()}
+       return (
+        <div className="content-page">
+            <div className="note-viewer-container">
+                <h2>{note.title}</h2>
+                <div className="note-meta-details">
+                    <StarRating rating={note.rating} readOnly={true} />
+                    <span>{note.numReviews} Reviews</span>
+                </div>
+                <p>{note.subject} - {note.university}</p>
+                <div className="file-viewer-frame">
+                    {renderFileViewer()}
+                </div>
+            </div>
+
+            <div className="note-feedback-section">
+                <Reviews noteId={noteId} reviews={note.reviews || []} />
             </div>
         </div>
     );
