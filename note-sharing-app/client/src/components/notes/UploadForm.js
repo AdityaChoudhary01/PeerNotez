@@ -41,7 +41,7 @@ const UploadForm = () => {
 
         try {
             // Send the request with the auth token in the header
-            await axios.post('https://peernotez.onrender.com/api/notes/upload', data, {
+            await axios.post('http://localhost:5001/api/notes/upload', data, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'multipart/form-data',
