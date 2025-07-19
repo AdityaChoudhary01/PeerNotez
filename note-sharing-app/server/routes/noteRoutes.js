@@ -8,10 +8,10 @@ const { protect } = require('../middleware/authMiddleware');
 const upload = multer({ storage });
 
 // @route   GET /api/notes
-// @desc    Get all notes or search for notes
+// @desc    Get all notes, with optional search and sort
 router.get('/', async (req, res) => {
   try {
-    const { search } = req.query;
+    const { search, sort } = req.query;
     let query = {};
     if (search) {
       query = {
@@ -23,7 +23,15 @@ router.get('/', async (req, res) => {
         ],
       };
     }
-    const notes = await Note.find(query).populate('user', 'name avatar').sort({ uploadDate: -1 });
+
+    let sortOptions = { uploadDate: -1 }; // Default sort
+    if (sort === 'highestRated') {
+      sortOptions = { rating: -1 };
+    } else if (sort === 'mostDownloaded') {
+      sortOptions = { downloadCount: -1 };
+    }
+
+    const notes = await Note.find(query).populate('user', 'name avatar').sort(sortOptions);
     res.json(notes);
   } catch (err) {
     res.status(500).json({ message: 'Server Error' });
@@ -72,7 +80,7 @@ router.post('/upload', protect, upload.single('file'), async (req, res) => {
         const { title, university, course, subject, year } = req.body;
         const newNote = new Note({
           title, university, course, subject, year,
-          fileName: originalname, filePath, fileType: mimetype, fileSize: size,
+          fileName: originalname, filePath: filePath, fileType: mimetype, fileSize: size,
           cloudinaryId: filename, user: req.user._id,
         });
         const savedNote = await newNote.save();
@@ -93,7 +101,7 @@ router.post('/:id/reviews', protect, async (req, res) => {
             if (alreadyReviewed) {
                 return res.status(400).json({ message: 'You have already reviewed this note' });
             }
-            const review = { user: req.user.id, rating: Number(rating), comment };
+            const review = { user: req.user.id, rating: Number(rating), comment, createdAt: new Date() };
             note.reviews.push(review);
             note.numReviews = note.reviews.length;
             note.rating = note.reviews.reduce((acc, item) => item.rating + acc, 0) / note.reviews.length;
@@ -104,6 +112,23 @@ router.post('/:id/reviews', protect, async (req, res) => {
         }
     } catch (error) {
         res.status(500).json({ message: 'Server Error' });
+    }
+});
+
+// @route   PUT /api/notes/:id/download
+// @desc    Increment the download count for a note
+router.put('/:id/download', async (req, res) => {
+    try {
+      const note = await Note.findById(req.params.id);
+      if (note) {
+        note.downloadCount = (note.downloadCount || 0) + 1;
+        await note.save();
+        res.json({ message: 'Download count updated' });
+      } else {
+        res.status(404).json({ message: 'Note not found' });
+      }
+    } catch (error) {
+      res.status(500).json({ message: 'Server Error' });
     }
 });
 
