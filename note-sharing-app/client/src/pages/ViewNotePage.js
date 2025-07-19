@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
+import Reviews from '../components/notes/Reviews';
+import StarRating from '../components/common/StarRating';
 
 const ViewNotePage = () => {
     const [note, setNote] = useState(null);
