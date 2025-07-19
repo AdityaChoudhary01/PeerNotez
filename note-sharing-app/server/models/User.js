@@ -7,7 +7,6 @@ const UserSchema = new mongoose.Schema({
   password: { type: String, required: true },
   avatar: {
     type: String,
-    default: 'https://res.cloudinary.com/dmtnonxtt/image/upload/v1752478950/avatar-default_g5gzu2.png'
   },
   savedNotes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Note' }]
 });
