@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import NoteCard from '../components/notes/NoteCard';
 import FilterBar from '../components/common/FilterBar';
+import { Helmet } from 'react-helmet';
+
 
 const HomePage = () => {
     const [notes, setNotes] = useState([]);
@@ -38,6 +40,12 @@ const HomePage = () => {
 
     return (
         <div>
+        <Helmet>
+  <title>PeerNotez – Note Sharing App</title>
+  <meta name="description" content="PeerNotez is a collaborative platform for students to share and discover handwritten notes, organize study material, and learn together." />
+  <meta name="keywords" content="PeerNotez, note sharing, student notes, online notes, study tools, handwritten notes, college resources" />
+</Helmet>
+
             <section className="welcome-section" style={{marginBottom: '2.5rem'}}>
             <h1 className="visually-hidden">Welcome to PeerNotez – A Note Sharing App for Students</h1>
                 <h2>Welcome to PeerNotez!</h2>
