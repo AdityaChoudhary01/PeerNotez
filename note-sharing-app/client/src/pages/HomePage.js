@@ -39,6 +39,7 @@ const HomePage = () => {
     return (
         <div>
             <section className="welcome-section" style={{marginBottom: '2.5rem'}}>
+            <h1 className="visually-hidden">Welcome to PeerNotez – A Note Sharing App for Students</h1>
                 <h2>Welcome to PeerNotez!</h2>
                 <p>
                     Share and discover notes from students across universities and courses.<br/>
