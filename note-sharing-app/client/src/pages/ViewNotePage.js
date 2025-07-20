@@ -63,6 +63,10 @@ const ViewNotePage = () => {
 
        return (
         <div className="content-page">
+           <h1 className="visually-hidden">
+  Upload Your Study Notes – Help Fellow Students Learn and Succeed
+</h1>
+
             <div className="note-viewer-container">
                 <h2>{note.title}</h2>
                 <div className="note-meta-details">
