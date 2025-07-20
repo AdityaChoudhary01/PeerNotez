@@ -21,6 +21,8 @@ const LoginPage = () => {
     
     return (
         <div className="auth-card">
+        <h1 className="visually-hidden">Login to PeerNotez – Access Your Notes, Favorites, and Personalized Content</h1>
+
             <form onSubmit={handleSubmit} className="auth-form">
                 <h2 style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
                     <span role="img" aria-label="login">🔑</span> Login
