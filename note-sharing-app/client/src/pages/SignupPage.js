@@ -22,6 +22,8 @@ const SignupPage = () => {
     
     return (
         <div className="auth-card">
+        <h1 className="visually-hidden">Sign Up for PeerNotez – Join Thousands of Students Sharing Notes Worldwide</h1>
+
             <form onSubmit={handleSubmit} className="auth-form">
                 <h2 style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
                     <span role="img" aria-label="signup">📝</span> Sign Up
