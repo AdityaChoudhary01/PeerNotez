@@ -95,6 +95,8 @@ const ProfilePage = () => {
 
     return (
         <div className="content-page">
+        <h1 className="visually-hidden">Your PeerNotez Profile – View Your Uploaded Notes and Saved Resources</h1>
+
             <div className="profile-header">
                 <div className="avatar-container">
                     <img src={user?.avatar} alt={user?.name} className="profile-avatar" />
