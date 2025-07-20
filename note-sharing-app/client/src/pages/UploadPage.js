@@ -45,6 +45,10 @@ const UploadPage = () => {
 
     return (
         <form onSubmit={handleSubmit} className="upload-form">
+        <h1 className="visually-hidden">
+  Upload Your Study Notes – Help Fellow Students Learn and Succeed
+</h1>
+
             <h2>Upload Your Notes</h2> {/* This h2 will now match image 2 */}
             <div className="form-group">
                 <label htmlFor="title">Note Title</label>
