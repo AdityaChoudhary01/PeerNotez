@@ -83,6 +83,7 @@ h1, h2, h3 {
 h1 {
     font-size: 2.5rem;
 }
+
 h2 {
     font-size: 2rem;
 }
@@ -385,10 +386,10 @@ h3 {
 
 @media screen and (max-width: 860px) {
     .nav-menu {
-        display: none;
+        display: none; /* Hidden by default on small screens */
     }
     .hamburger {
-        display: block;
+        display: block; /* Shown on small screens */
         margin-left: auto;
     }
     .navbar-container {
@@ -398,49 +399,185 @@ h3 {
     .nav-menu.active {
         display: flex;
         flex-direction: column;
-        justify-content: flex-start;
-        gap: 1.5rem;
+        justify-content: flex-start; /* Align content to the top */
+        gap: 0.8rem; /* Reduced gap for better spacing */
         width: 80%;
         max-width: 320px;
-        height: 100%;
+        height: 100vh; /* Full viewport height */
         position: fixed;
         top: 0;
         left: 0;
         background-color: var(--secondary-color);
-        padding: 2rem;
+        padding: 1.5rem 1rem; /* Adjust padding for mobile */
         transition: all 0.3s ease-in-out;
         z-index: 1050;
-        box-shadow: 4px 0px 15px rgba(0,0,0,0.2);
-        overflow-y: auto;
+        box-shadow: 4px 0px 15px rgba(0,0,0,0.4); /* Stronger shadow */
+        overflow-y: auto; /* Enable scrolling for longer menus */
+        border-right: 2px solid var(--primary-color); /* Subtle border */
+        transform: translateX(0); /* Ensure it's fully visible */
     }
-    .nav-menu.active .navbar-links,
-    .nav-menu.active .navbar-auth {
-        flex-direction: column;
+
+    /* Add a subtle overlay for the rest of the page when menu is active */
+    .nav-menu-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
         width: 100%;
-        gap: 1rem;
-        text-align: center;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5); /* Darker overlay */
+        z-index: 1040;
+        display: none;
+        animation: fadeIn 0.3s ease-in-out;
     }
+    .nav-menu.active + .nav-menu-overlay {
+        display: block;
+    }
+
+    /* Header for mobile menu with close button */
+    .mobile-menu-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 1rem;
+        margin-bottom: 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .mobile-menu-header .navbar-brand {
+        font-size: 1.8rem; /* Larger brand in mobile menu */
+        color: var(--primary-color); /* Emphasize brand color */
+    }
+
+    .mobile-menu-close-btn {
+        background: none;
+        border: none;
+        font-size: 2.2rem;
+        color: var(--text-color);
+        cursor: pointer;
+        transition: color 0.2s ease, transform 0.2s ease;
+    }
+
+    .mobile-menu-close-btn:hover {
+        color: var(--error-color);
+        transform: rotate(90deg);
+    }
+
+    /* User Profile Section in Mobile Menu */
+    .mobile-user-profile {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        padding-bottom: 1.5rem;
+        margin-bottom: 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .mobile-user-profile .navbar-avatar {
+        width: 70px; /* Larger avatar */
+        height: 70px;
+        border: 3px solid var(--primary-color);
+        box-shadow: 0 0 15px rgba(83, 114, 240, 0.3);
+    }
+
+    .mobile-user-profile span {
+        font-size: 1.1rem;
+        font-weight: bold;
+        color: var(--heading-color);
+    }
+
+    /* Search Form Styling in Active Mobile Menu */
     .nav-menu.active .search-form-nav {
-        order: -1;
+        order: -1; /* Place search at the top */
         width: 100%;
         margin-bottom: 1.5rem;
         flex-direction: column;
         align-items: stretch;
+        position: relative; /* For icon */
     }
-    .nav-menu.active .nav-link,
-    .nav-menu.active .nav-button,
-    .nav-menu.active .search-input,
-    .nav-menu.active .search-button {
-        font-size: 1rem;
-        padding: 0.7rem 1.2rem;
-        height: auto;
-    }
+
     .nav-menu.active .search-input {
-        border-radius: 20px;
+        border-radius: 25px; /* Fully rounded input */
+        padding: 0.8rem 1.2rem;
+        border: 1px solid #3a3a5c;
+        background-color: var(--input-background);
+        box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+        color: var(--text-color);
+        font-size: 1rem;
     }
+
     .nav-menu.active .search-button {
-        border-radius: 20px;
-        margin-top: 0.5rem;
+        border-radius: 25px; /* Fully rounded button */
+        margin-top: 0.8rem;
+        padding: 0.8rem 1.2rem;
+        background: var(--gradient-primary); /* Use gradient for button */
+        font-size: 1.05rem;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+
+    .nav-menu.active .search-button:hover {
+        background: var(--gradient-primary-hover);
+        transform: translateY(-2px);
+    }
+
+    .nav-menu.active .search-button:active {
+        transform: translateY(0);
+        box-shadow: inset 0 1px 5px rgba(0,0,0,0.3);
+    }
+
+    /* Navigation Links Styling in Active Mobile Menu */
+    .nav-menu.active .navbar-links {
+        flex-direction: column;
+        width: 100%;
+        gap: 0.5rem; /* Tighter spacing for links */
+        text-align: left; /* Align links to the left */
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .nav-menu.active .nav-link {
+        font-size: 1.1rem; /* Slightly larger links */
+        padding: 0.7rem 1rem; /* Add padding for better touch area */
+        border-radius: 8px; /* Slightly rounded corners for links */
+        transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+        text-align: left; /* Ensure text alignment */
+        width: 100%; /* Full width for links */
+    }
+
+    .nav-menu.active .nav-link:hover {
+        background-color: var(--card-background); /* Highlight on hover */
+        color: var(--primary-color);
+        transform: translateX(5px); /* Subtle slide effect on hover */
+    }
+
+    .nav-menu.active .nav-link.active { /* For current active link */
+        background-color: rgba(83, 114, 240, 0.1); /* Subtle background for active */
+        color: var(--primary-color);
+        font-weight: bold;
+    }
+
+    /* Authentication Buttons Styling in Active Mobile Menu */
+    .nav-menu.active .navbar-auth {
+        flex-direction: column;
+        width: 100%;
+        gap: 0.8rem;
+        margin-top: 1rem;
+    }
+
+    .nav-menu.active .nav-button,
+    .nav-menu.active .logout-btn {
+        font-size: 1.1rem;
+        padding: 0.8rem 1.2rem;
+        height: auto;
+        border-radius: 25px; /* Fully rounded buttons */
+        width: 100%; /* Full width */
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    .nav-menu.active .nav-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     }
 }
 
@@ -456,102 +593,121 @@ h3 {
         font-size: 1.6rem;
     }
     .nav-menu.active {
-        width: 95%;
-        padding: 1rem;
+        width: 95%; /* Make it slightly wider for very small screens */
+        padding: 1rem 0.8rem;
         max-width: 280px;
+    }
+    .mobile-menu-header .navbar-brand {
+        font-size: 1.5rem;
+    }
+    .mobile-menu-close-btn {
+        font-size: 1.8rem;
+    }
+    .mobile-user-profile .navbar-avatar {
+        width: 60px;
+        height: 60px;
+    }
+    .mobile-user-profile span {
+        font-size: 1rem;
     }
     .nav-menu.active .nav-link,
     .nav-menu.active .nav-button,
     .nav-menu.active .search-input,
     .nav-menu.active .search-button {
-        font-size: 0.9rem;
-        padding: 0.5rem 1rem;
+        font-size: 0.95rem;
+        padding: 0.6rem 1rem;
+    }
+    .nav-menu.active .search-input {
+        padding: 0.6rem 1rem;
+    }
+    .nav-menu.active .search-button {
+        margin-top: 0.6rem;
     }
 }
 
 /* --- NOTES GRID & CARDS --- */
 .notes-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, 340px);
-  gap: 2rem;
-  margin-top: 2rem;
-  justify-content: center;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, 340px);
+    gap: 2rem;
+    margin-top: 2rem;
+    justify-content: center;
 }
 
 .project-card {
-  background-color: var(--card-background);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  animation: fadeUp 0.6s ease-out;
+    background-color: var(--card-background);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    animation: fadeUp 0.6s ease-out;
 }
 
 .project-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
 }
 
 .card-thumbnail {
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
-  display: block;
-  background-color: #0f172a;
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    display: block;
+    background-color: #0f172a;
 }
 
 .card-content {
-  padding: 1.5rem;
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
+    padding: 1.5rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 .card-title {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: var(--heading-color);
-  margin: 0 0 1rem 0;
-  border: none;
-  padding: 0;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--heading-color);
+    margin: 0 0 1rem 0;
+    border: none;
+    padding: 0;
 }
 
 .card-details {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  font-size: 0.95rem;
-  color: var(--subtle-text-color);
-  flex-grow: 1;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--subtle-text-color);
+    flex-grow: 1;
 }
 
 .card-details li {
-  margin-bottom: 0.5rem;
+    margin-bottom: 0.5rem;
 }
 
 .card-details li strong {
-  color: #d0d0d0;
+    color: #d0d0d0;
 }
 
 .card-actions {
-  display: flex;
-  gap: 0.75rem;
-  margin-top: 1.5rem;
-  border-top: 1px solid var(--border-color);
-  padding-top: 1rem;
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+    padding-top: 1rem;
 }
 
 .action-button {
-  flex-grow: 1;
-  text-align: center;
-  padding: 0.6rem;
-  border-radius: 5px;
-  text-decoration: none;
-  font-weight: bold;
-  transition: all 0.2s ease;
-  border: 1px solid transparent;
+    flex-grow: 1;
+    text-align: center;
+    padding: 0.6rem;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
 }
 
 .view-btn {
@@ -836,15 +992,15 @@ input[type="number"] {
 
 /* FIX: Autocomplete/Autofill background color issue - SPECIFICALLY FOR LOGIN FORM */
 /* We need to be able to target the login form uniquely.
-   If your login form HTML is structured like this:
-   <div class="auth-card login-form-wrapper"> ... <input type="email" class="auth-input"> ... </div>
-   Then you can use:
-   .login-form-wrapper .auth-input:-webkit-autofill,
-   etc.
+    If your login form HTML is structured like this:
+    <div class="auth-card login-form-wrapper"> ... <input type="email" class="auth-input"> ... </div>
+    Then you can use:
+    .login-form-wrapper .auth-input:-webkit-autofill,
+    etc.
 
-   For demonstration, I'll add a hypothetical class `login-specific-input`
-   You should add this class to your login form's email and password inputs.
-   e.g., <input type="email" class="auth-input login-specific-input" ...>
+    For demonstration, I'll add a hypothetical class `login-specific-input`
+    You should add this class to your login form's email and password inputs.
+    e.g., <input type="email" class="auth-input login-specific-input" ...>
 */
 .auth-card .auth-input:-webkit-autofill,
 .auth-card .auth-input:-webkit-autofill:hover,
