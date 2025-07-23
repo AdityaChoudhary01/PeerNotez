@@ -1,241 +1,214 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const { cloudinary, storage } = require('../config/cloudinary'); // Import cloudinary for deletion
-const Note = require('../models/Note');
-const { protect } = require('../middleware/authMiddleware'); // Assuming 'protect' middleware exists
+const { storage } = require('../config/cloudinary'); // Only storage is needed for user avatar uploads
+const User = require('../models/User'); // User model is essential here
+const { protect } = require('../middleware/authMiddleware'); // For user authentication
+const { admin } = require('../middleware/adminMiddleware'); // For admin-specific user routes
 
-const upload = multer({ storage });
+const upload = multer({ storage }); // Multer instance for file uploads (specifically for avatar)
 
-// @desc    Get all notes, with search, sort, and pagination
-// @route   GET /api/notes
-router.get('/', async (req, res) => {
+// @route   PUT /api/users/profile/avatar
+// @desc    Update user profile picture
+// @access  Private (User must be logged in)
+router.put('/profile/avatar', protect, upload.single('avatar'), async (req, res) => {
   try {
-    const limit = 12; // Number of notes per page
-    const page = Number(req.query.page) || 1; // Current page number, default to 1
-    const { search, title, university, course, subject, year, sort } = req.query;
-    let query = {}; // MongoDB query object
-
-    // Build the query based on search parameters
-    if (search) {
-      // If a general search term is provided, search across multiple fields
-      query = {
-        $or: [
-          { title: { $regex: search, $options: 'i' } }, // Case-insensitive title search
-          { university: { $regex: search, $options: 'i' } }, // Case-insensitive university search
-          { course: { $regex: search, $options: 'i' } }, // Case-insensitive course search
-          { subject: { $regex: search, $options: 'i' } }, // Case-insensitive subject search
-        ],
-      };
-    } else {
-      // Otherwise, apply specific filters if provided
-      if (title) query.title = { $regex: title, $options: 'i' };
-      if (university) query.university = { $regex: university, $options: 'i' };
-      if (course) query.course = { $regex: course, $options: 'i' };
-      if (subject) query.subject = { $regex: subject, $options: 'i' };
-      if (year) query.year = year; // Exact match for year
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded or file type not supported for avatar.' });
     }
-
-    let sortOptions = { uploadDate: -1 }; // Default sort by newest upload date
-    if (sort === 'highestRated') sortOptions = { rating: -1 }; // Sort by highest rating
-    if (sort === 'mostDownloaded') sortOptions = { downloadCount: -1 }; // Sort by most downloaded
-
-    const count = await Note.countDocuments(query); // Total number of documents matching the query
-    const notes = await Note.find(query)
-      .populate('user', 'name avatar') // Populate user details (name and avatar) of the uploader
-      .sort(sortOptions) // Apply sorting options
-      .limit(limit) // Limit the number of documents returned
-      .skip(limit * (page - 1)); // Skip documents for pagination
-
-    res.json({ notes, page, totalPages: Math.ceil(count / limit) }); // Respond with notes, current page, and total pages
-
-  } catch (err) {
-    console.error(err); // Log the detailed error for debugging purposes
-    res.status(500).json({ message: 'Server Error occurred while fetching notes.' }); // Generic error message for client
-  }
-});
-
-// @route   GET /api/notes/mynotes
-// @desc    Get notes for the logged-in user
-router.get('/mynotes', protect, async (req, res) => {
-  try {
-    const notes = await Note.find({ user: req.user.id }).sort({ uploadDate: -1 }); // Find notes by the authenticated user's ID
-    res.json(notes);
-  } catch (error) {
-    console.error(error); // Log the detailed error
-    res.status(500).json({ message: 'Server Error occurred while fetching your notes.' });
-  }
-});
-
-// @route   GET /api/notes/:id
-// @desc    Get a single note by ID
-router.get('/:id', async (req, res) => {
-  try {
-    const note = await Note.findById(req.params.id)
-      .populate('user', 'name avatar') // Get the main uploader's info
-      .populate({ // Get the info for each user who left a review
-        path: 'reviews.user',
-        select: 'name avatar'
+    const user = await User.findById(req.user.id);
+    if (user) {
+      // If there was an old avatar, you might want to delete it from Cloudinary
+      // For simplicity, we are just updating the URL here.
+      // Implementing old avatar deletion would require storing public_id for avatar too.
+      user.avatar = req.file.path; // Multer (via CloudinaryStorage) gives you the URL in req.file.path
+      const updatedUser = await user.save();
+      res.json({
+        _id: updatedUser._id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        avatar: updatedUser.avatar, // Send back the new avatar URL
+        savedNotes: updatedUser.savedNotes // Include other necessary user fields
       });
-
-    if (!note) {
-      return res.status(404).json({ message: 'Note not found' });
+    } else {
+      res.status(404).json({ message: 'User not found' });
     }
-    res.json(note);
   } catch (error) {
-    console.error(error); // Log the detailed error
-    res.status(500).json({ message: 'Server Error occurred while fetching the note.' });
+    console.error('Error updating avatar:', error); // Log detailed error
+    res.status(500).json({ message: 'Server Error occurred while updating avatar.', error: error.message });
   }
 });
 
-// @route   POST /api/notes/upload
-// @desc    Upload a new note
-router.post('/upload', protect, upload.single('file'), async (req, res) => {
+// @route   PUT /api/users/profile
+// @desc    Update user profile details (e.g., name, email - but be careful with email changes)
+// @access  Private
+router.put('/profile', protect, async (req, res) => {
     try {
-        // Multer's `upload.single('file')` middleware processes the file.
-        // If no file is uploaded or if CloudinaryStorage rejects the file (e.g., wrong format), req.file will be undefined.
-        if (!req.file) {
-          return res.status(400).json({
-            message: 'No file uploaded or file type not supported. Please ensure it\'s a PDF, DOC, PPT, or common image type.'
-          });
-        }
+        const user = await User.findById(req.user.id);
 
-        // Multer populates req.file with Cloudinary details thanks to multer-storage-cloudinary
-        const { path: filePath, originalname, mimetype, filename, size } = req.file;
-        const { title, university, course, subject, year } = req.body;
+        if (user) {
+            // Update name if provided in the request body
+            user.name = req.body.name || user.name;
+            // You might want to allow email change but it often requires re-verification
+            // user.email = req.body.email || user.email;
 
-        const newNote = new Note({
-          title,
-          university,
-          course,
-          subject,
-          year,
-          fileName: originalname, // Original name of the uploaded file
-          filePath: filePath, // Cloudinary secure_url for accessing the file
-          fileType: mimetype, // MIME type of the uploaded file
-          fileSize: size,     // Size of the file in bytes
-          cloudinaryId: filename, // Cloudinary public_id, useful for deleting the file later
-          user: req.user._id, // User ID from the protect middleware, identifying the uploader
-        });
+            const updatedUser = await user.save();
 
-        const savedNote = await newNote.save(); // Save the note details to MongoDB
-        res.status(201).json(savedNote); // Respond with the saved note object
-      } catch (error) {
-        console.error('Upload failed:', error); // Log detailed error for server-side debugging
-        // Provide a more user-friendly error message, avoiding revealing internal server details
-        res.status(500).json({ message: 'Upload failed. Please check the file and try again.' });
-      }
-});
-
-// @route   POST /api/notes/:id/reviews
-// @desc    Create a new review for a note
-router.post('/:id/reviews', protect, async (req, res) => {
-    const { rating, comment } = req.body;
-    try {
-        const note = await Note.findById(req.params.id);
-        if (note) {
-            // Check if the user has already reviewed this note
-            const alreadyReviewed = note.reviews.find(r => r.user.toString() === req.user.id.toString());
-            if (alreadyReviewed) {
-                return res.status(400).json({ message: 'You have already reviewed this note' });
-            }
-
-            // Create new review object. Mongoose will automatically add createdAt/updatedAt due to timestamps: true on reviewSchema.
-            const review = { user: req.user.id, rating: Number(rating), comment };
-            note.reviews.push(review); // Add the new review to the note's reviews array
-
-            // Recalculate rating and numReviews based on all reviews
-            note.numReviews = note.reviews.length;
-            note.rating = note.reviews.reduce((acc, item) => item.rating + acc, 0) / note.reviews.length;
-
-            await note.save(); // Save the updated note
-            res.status(201).json({ message: 'Review added successfully!' });
+            // Send back the necessary user object data
+            res.json({
+                _id: updatedUser._id,
+                name: updatedUser.name,
+                email: updatedUser.email,
+                avatar: updatedUser.avatar,
+                savedNotes: updatedUser.savedNotes,
+            });
         } else {
-            res.status(404).json({ message: 'Note not found' });
+            res.status(404).json({ message: 'User not found' });
         }
     } catch (error) {
-        console.error(error); // Log the detailed error
-        res.status(500).json({ message: 'Server Error occurred while adding review.' });
+        console.error('Error updating profile:', error);
+        res.status(500).json({ message: 'Server Error occurred while updating profile.', error: error.message });
     }
 });
 
-// @route   PUT /api/notes/:id/download
-// @desc    Increment the download count for a note
-router.put('/:id/download', async (req, res) => {
-    try {
-      const note = await Note.findById(req.params.id);
-      if (note) {
-        // Use $inc for an atomic increment operation, which is safer for counters
-        await Note.findByIdAndUpdate(req.params.id, { $inc: { downloadCount: 1 } });
-        res.json({ message: 'Download count updated' });
-      } else {
-        res.status(404).json({ message: 'Note not found' });
-      }
-    } catch (error) {
-      console.error(error); // Log the detailed error
-      res.status(500).json({ message: 'Server Error occurred while updating download count.' });
-    }
-});
 
-// @route   PUT /api/notes/:id
-// @desc    Update a note
-router.put('/:id', protect, async (req, res) => {
+// @route   PUT /api/users/save/:noteId
+// @desc    Save a note to user's savedNotes list
+// @access  Private
+router.put('/save/:noteId', protect, async (req, res) => {
   try {
-    const note = await Note.findById(req.params.id);
-    if (!note) return res.status(404).json({ message: 'Note not found' });
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
 
-    // Check if the logged-in user is the owner of the note
-    if (note.user.toString() !== req.user.id) {
-      return res.status(401).json({ message: 'Not authorized to update this note' });
+    // Ensure the noteId is not already saved
+    if (!user.savedNotes.includes(req.params.noteId)) {
+      user.savedNotes.push(req.params.noteId);
+      await user.save();
+      res.status(200).json({ message: 'Note saved successfully!', savedNotes: user.savedNotes });
+    } else {
+      res.status(200).json({ message: 'Note already saved.', savedNotes: user.savedNotes });
     }
-
-    // Filter req.body to allow only specific fields for update for security and data integrity
-    const { title, university, course, subject, year } = req.body;
-    const updateFields = {};
-    if (title !== undefined) updateFields.title = title;
-    if (university !== undefined) updateFields.university = university;
-    if (course !== undefined) updateFields.course = course;
-    if (subject !== undefined) updateFields.subject = subject;
-    if (year !== undefined) updateFields.year = year;
-
-    // Use findByIdAndUpdate to update the document and return the new version
-    const updatedNote = await Note.findByIdAndUpdate(req.params.id, updateFields, { new: true });
-    res.json(updatedNote);
   } catch (error) {
-    console.error(error); // Log the detailed error
-    res.status(500).json({ message: 'Server Error occurred while updating the note.' });
-  }
-});
-// @route   DELETE /api/notes/:id
-// @desc    Delete a note (by owner or admin)
-router.delete('/:id', protect, async (req, res) => {
-  try {
-    const note = await Note.findById(req.params.id);
-    if (!note) return res.status(404).json({ message: 'Note not found' });
-
-    // Check if the logged-in user is the owner OR if the user is an admin
-    // Assuming req.user contains user information including an 'isAdmin' flag
-    if (note.user.toString() !== req.user.id && !req.user.isAdmin) {
-      return res.status(401).json({ message: 'Not authorized to delete this note' });
-    }
-
-    // Delete the file from Cloudinary first, using the stored cloudinaryId
-    if (note.cloudinaryId) {
-      // Ensure the resource_type matches what was used during upload ('raw' for documents)
-      // You might need to adjust resource_type based on how the file was uploaded (e.g., 'image', 'video', 'raw')
-      // If it's a general document, 'raw' is usually appropriate.
-      await cloudinary.uploader.destroy(note.cloudinaryId, { resource_type: 'raw' });
-      console.log(`Deleted Cloudinary asset: ${note.cloudinaryId}`); // Confirm deletion in logs
-    }
-
-    await note.deleteOne(); // Delete the note document from MongoDB
-    res.json({ message: 'Note removed successfully' });
-  } catch (error) {
-    console.error(error); // Log the detailed error
-    // More specific error handling could be added here, e.g., if Cloudinary deletion fails
-    res.status(500).json({ message: 'Server Error occurred while deleting the note.' });
+    console.error('Error saving note:', error);
+    res.status(500).json({ message: 'Server Error occurred while saving note.' });
   }
 });
 
+// @route   PUT /api/users/unsave/:noteId
+// @desc    Unsave a note from user's savedNotes list
+// @access  Private
+router.put('/unsave/:noteId', protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    // Filter out the noteId
+    const initialLength = user.savedNotes.length;
+    user.savedNotes = user.savedNotes.filter(
+      (noteId) => noteId.toString() !== req.params.noteId.toString() // Ensure strict comparison
+    );
+    if (user.savedNotes.length < initialLength) {
+      await user.save();
+      res.status(200).json({ message: 'Note unsaved successfully!', savedNotes: user.savedNotes });
+    } else {
+        res.status(200).json({ message: 'Note was not found in saved list.', savedNotes: user.savedNotes });
+    }
+  } catch (error) {
+    console.error('Error unsaving note:', error);
+    res.status(500).json({ message: 'Server Error occurred while unsaving note.' });
+  }
+});
+
+// @route   GET /api/users/savednotes
+// @desc    Get all saved notes for a user
+// @access  Private
+router.get('/savednotes', protect, async (req, res) => {
+  try {
+    // Populate savedNotes and then populate the 'user' field within each saved note
+    const user = await User.findById(req.user.id).populate({
+        path: 'savedNotes', // Populate the array of Note IDs
+        populate: {
+            path: 'user', // Within each Note, populate its 'user' field
+            select: 'name avatar' // Select only name and avatar of the note's uploader
+        }
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json(user.savedNotes);
+  } catch (error) {
+    console.error('Error fetching saved notes:', error);
+    res.status(500).json({ message: 'Server Error occurred while fetching saved notes.' });
+  }
+});
+
+// ADMIN ROUTES FOR USERS
+
+// @route   GET /api/users
+// @desc    Get all users
+// @access  Private/Admin
+router.get('/', protect, admin, async (req, res) => {
+  try {
+    const users = await User.find({}); // Fetches all users
+    res.json(users);
+  } catch (error) {
+    console.error('Error fetching all users:', error);
+    res.status(500).json({ message: 'Server Error occurred while fetching users.' });
+  }
+});
+
+// @route   DELETE /api/users/:id
+// @desc    Delete a user
+// @access  Private/Admin
+router.delete('/:id', protect, admin, async (req, res) => {
+  try {
+    // Prevent admin from deleting themselves
+    if (req.params.id.toString() === req.user.id.toString()) {
+      return res.status(400).json({ message: 'Cannot delete yourself as an admin.' });
+    }
+
+    const user = await User.findById(req.params.id);
+    if (user) {
+      // Optional: Add logic here to delete associated notes or other content created by this user
+      // This would involve finding all notes where user: req.params.id and deleting them.
+      // Also, consider deleting their Cloudinary avatar if public_id was stored.
+
+      await user.deleteOne(); // Delete the user document
+      res.json({ message: 'User removed successfully' });
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    res.status(500).json({ message: 'Server Error occurred while deleting user.' });
+  }
+});
+
+// @route   PUT /api/users/:id/role
+// @desc    Change a user's role (toggle between 'user' and 'admin')
+// @access  Private/Admin
+router.put('/:id/role', protect, admin, async (req, res) => {
+  try {
+    // Prevent changing your own role via this endpoint (should be done carefully through specific UI)
+    if (req.params.id.toString() === req.user.id.toString()) {
+      return res.status(400).json({ message: 'Cannot change your own role via this endpoint.' });
+    }
+
+    const user = await User.findById(req.params.id);
+    if (user) {
+      // Toggle role: if admin, make user; if user, make admin
+      user.role = user.role === 'admin' ? 'user' : 'admin';
+      await user.save();
+      res.json({ message: `User role for ${user.name} updated to ${user.role}`, userId: user._id, newRole: user.role });
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error) {
+    console.error('Error changing user role:', error);
+    res.status(500).json({ message: 'Server Error occurred while changing user role.' });
+  }
+});
 
 module.exports = router;
