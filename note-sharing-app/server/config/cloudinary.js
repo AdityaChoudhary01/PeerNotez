@@ -1,48 +1,63 @@
+const path = require('path');
 const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
+// Cloudinary config
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+// Helper: get file extension safely
+function getFileExtension(filename) {
+  return path.extname(filename).replace('.', '').toLowerCase();
+}
+
+// Allowed formats per resource_type
+const ALLOWED = {
+  image: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
+  video: ['mp4', 'mov', 'webm'],
+  raw: ['pdf', 'doc', 'docx', 'txt', 'ppt', 'pptx']
+};
+
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: async (req, file) => {
-    let resourceType;
-    let allowedFormatsForType;
+    let resourceType, allowedFormats;
 
-    // Determine resource_type based on file mimetype
-    if (file.mimetype.startsWith('image/')) {
+    const ext = getFileExtension(file.originalname);
+    const mimetype = file.mimetype;
+
+    // Select resource_type and allowed formats
+    if (mimetype.startsWith('image/')) {
       resourceType = 'image';
-      allowedFormatsForType = ['jpg', 'jpeg', 'png', 'gif', 'webp']; // Common image formats
-    } else if (file.mimetype.startsWith('video/')) {
+      allowedFormats = ALLOWED.image;
+    } else if (mimetype.startsWith('video/')) {
       resourceType = 'video';
-      allowedFormatsForType = ['mp4', 'mov', 'webm']; // Common video formats
+      allowedFormats = ALLOWED.video;
     } else {
-      // For documents and other non-media files, treat as raw
       resourceType = 'raw';
-      allowedFormatsForType = ['pdf', 'doc', 'docx', 'txt', 'ppt', 'pptx']; // Common document formats
+      allowedFormats = ALLOWED.raw;
     }
 
-    // You can add a check here if the file format is not in the allowed list for its type
-    const fileExtension = file.originalname.split('.').pop().toLowerCase();
-    if (!allowedFormatsForType.includes(fileExtension)) {
-        // This won't stop the upload by Multer, but good for logging/debugging
-        console.warn(`Attempting to upload a file (${file.originalname}) with extension ${fileExtension} not explicitly listed in allowed formats for resource_type: ${resourceType}`);
-        // Optionally, you could throw an error here to stop the upload earlier
-        // throw new Error(`File type ${fileExtension} not supported for ${resourceType} uploads.`);
+    // Check extension
+    if (!allowedFormats.includes(ext)) {
+      throw new Error(
+        `File type .${ext} is not allowed for ${resourceType} upload.`
+      );
     }
 
-    console.log(`File: ${file.originalname}, Mimetype: ${file.mimetype}, Determined resource_type: ${resourceType}, Allowed formats for this type: ${allowedFormatsForType.join(', ')}`);
+    console.log(
+      `File: ${file.originalname}, Mimetype: ${mimetype}, Determined resource_type: ${resourceType}, Allowed formats: ${allowedFormats}`
+    );
 
     return {
       folder: 'notes_uploads',
-      allowed_formats: allowedFormatsForType, // Crucially, use the specific list
+      allowed_formats: allowedFormats,
       resource_type: resourceType,
     };
-  },
+  }
 });
 
 module.exports = { storage };
