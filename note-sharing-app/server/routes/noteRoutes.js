@@ -9,87 +9,76 @@ const { protect } = require('../middleware/authMiddleware'); // Assuming 'protec
 
 const upload = multer({ storage }); // Multer instance for file uploads
 
-// @desc    Get all notes, with search, sort, and pagination
-// @route   GET /api/notes
 router.get('/', async (req, res) => {
   try {
-    const limit = 12; // notes per page
+    const limit = 12;
     const page = Number(req.query.page) || 1;
+    const { search, title, university, course, subject, year, sort } = req.query;
 
-    const {
-      search,
-      title,
-      university,
-      course,
-      subject,
-      year,
-      sort,
-    } = req.query;
-
+    // Build conditions array
     const andConditions = [];
 
-    // General search across multiple fields
-    if (search && search.trim() !== '') {
-      const trimmedSearch = search.trim();
+    // Valid search (non-empty and not zero string)
+    if (search && search.trim() !== '' && search.trim() !== '0') {
+      const s = search.trim();
       andConditions.push({
         $or: [
-          { title: { $regex: trimmedSearch, $options: 'i' } },
-          { university: { $regex: trimmedSearch, $options: 'i' } },
-          { course: { $regex: trimmedSearch, $options: 'i' } },
-          { subject: { $regex: trimmedSearch, $options: 'i' } },
+          { title: { $regex: s, $options: 'i' } },
+          { university: { $regex: s, $options: 'i' } },
+          { course: { $regex: s, $options: 'i' } },
+          { subject: { $regex: s, $options: 'i' } },
         ],
       });
     }
 
-    // Specific filters by field, combined with search if any
-    if (title && title.trim() !== '') {
+    // Individual filters
+    if (title && title.trim() !== '' && title.trim() !== '0') {
       andConditions.push({ title: { $regex: title.trim(), $options: 'i' } });
     }
-    if (university && university.trim() !== '') {
+    if (university && university.trim() !== '' && university.trim() !== '0') {
       andConditions.push({ university: { $regex: university.trim(), $options: 'i' } });
     }
-    if (course && course.trim() !== '') {
+    if (course && course.trim() !== '' && course.trim() !== '0') {
       andConditions.push({ course: { $regex: course.trim(), $options: 'i' } });
     }
-    if (subject && subject.trim() !== '') {
+    if (subject && subject.trim() !== '' && subject.trim() !== '0') {
       andConditions.push({ subject: { $regex: subject.trim(), $options: 'i' } });
     }
-    if (year) {
-      // Convert to number if possible; if invalid, ignore year filter
-      const yearNum = Number(year);
-      if (!isNaN(yearNum)) {
-        andConditions.push({ year: yearNum });
+    if (year && year.trim() !== '' && year.trim() !== '0') {
+      const y = Number(year);
+      if (!isNaN(y)) {
+        andConditions.push({ year: y });
       }
     }
 
-    // Final query object: if any conditions, join with $and, else empty (all documents)
-    const query = andConditions.length > 0 ? { $and: andConditions } : {};
+    // Build query object
+    let query = {};
+    if (andConditions.length === 1) {
+      query = andConditions[0];
+    } else if (andConditions.length > 1) {
+      query = { $and: andConditions };
+    }
+    // else query - empty = fetch all
 
-    // Sorting options
+    console.log('MongoDB query:', JSON.stringify(query, null, 2));
+
+    // Sorting logic
     let sortOptions = { uploadDate: -1 };
     if (sort === 'highestRated') sortOptions = { rating: -1 };
     if (sort === 'mostDownloaded') sortOptions = { downloadCount: -1 };
 
-    console.log('MongoDB query:', JSON.stringify(query, null, 2));
-
-    // Fetch total count matching query
+    // Execute query
     const count = await Note.countDocuments(query);
-
-    // Fetch paginated notes
     const notes = await Note.find(query)
       .populate('user', 'name avatar')
       .sort(sortOptions)
       .limit(limit)
       .skip(limit * (page - 1));
 
-    res.json({
-      notes,
-      page,
-      totalPages: Math.ceil(count / limit),
-    });
-  } catch (err) {
-    console.error('Error fetching notes (noteRoutes):', err);
-    res.status(500).json({ message: 'Server Error occurred while fetching notes.' });
+    res.json({ notes, page, totalPages: Math.ceil(count / limit) });
+  } catch (error) {
+    console.error('Error fetching notes:', error);
+    res.status(500).json({ message: 'Server error occurred while fetching notes.' });
   }
 });
 
