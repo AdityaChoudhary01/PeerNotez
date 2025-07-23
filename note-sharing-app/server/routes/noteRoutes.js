@@ -95,8 +95,8 @@ router.post('/upload', protect, upload.single('file'), async (req, res) => {
         // Multer's `upload.single('file')` middleware processes the file.
         // If no file is uploaded or if CloudinaryStorage rejects the file (e.g., wrong format), req.file will be undefined.
         if (!req.file) {
-          return res.status(400).json({ 
-            message: 'No file uploaded or file type not supported. Please ensure it\'s a PDF, DOC, PPT, or common image type.' 
+          return res.status(400).json({
+            message: 'No file uploaded or file type not supported. Please ensure it\'s a PDF, DOC, PPT, or common image type.'
           });
         }
 
@@ -105,10 +105,10 @@ router.post('/upload', protect, upload.single('file'), async (req, res) => {
         const { title, university, course, subject, year } = req.body;
 
         const newNote = new Note({
-          title, 
-          university, 
-          course, 
-          subject, 
+          title,
+          university,
+          course,
+          subject,
           year,
           fileName: originalname, // Original name of the uploaded file
           filePath: filePath, // Cloudinary secure_url for accessing the file
@@ -183,7 +183,7 @@ router.put('/:id', protect, async (req, res) => {
   try {
     const note = await Note.findById(req.params.id);
     if (!note) return res.status(404).json({ message: 'Note not found' });
-    
+
     // Check if the logged-in user is the owner of the note
     if (note.user.toString() !== req.user.id) {
       return res.status(401).json({ message: 'Not authorized to update this note' });
@@ -213,7 +213,7 @@ router.delete('/:id', protect, async (req, res) => {
   try {
     const note = await Note.findById(req.params.id);
     if (!note) return res.status(404).json({ message: 'Note not found' });
-    
+
     // Check if the logged-in user is the owner of the note
     if (note.user.toString() !== req.user.id) {
       return res.status(401).json({ message: 'Not authorized to delete this note' });
