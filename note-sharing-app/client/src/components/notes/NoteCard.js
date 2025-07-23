@@ -29,24 +29,21 @@ const NoteCard = ({ note, showActions = false, onEdit, onDelete }) => {
 
   // --- SIMPLIFIED CLOUDINARY DOWNLOAD HANDLER ---
   const handleDownload = async () => {
-    try {
-      await axios.put(`/notes/${note._id}/download`);
-      let publicId = note.cloudinaryId;
-      if (!publicId.endsWith('.pdf')) {
-        publicId += '.pdf';
-      }
-      const cloudDownloadUrl = `https://res.cloudinary.com/${cloudName}/image/upload/fl_attachment/${publicId}`;
-      window.open(cloudDownloadUrl, '_blank');
-    } catch (error) {
-      console.error("Failed to update download count, downloading directly.", error);
-      let publicId = note.cloudinaryId;
-      if (!publicId.endsWith('.pdf')) {
-        publicId += '.pdf';
-      }
-      const cloudDownloadUrl = `https://res.cloudinary.com/${cloudName}/image/upload/fl_attachment/${publicId}`;
-      window.open(cloudDownloadUrl, '_blank');
-    }
-  };
+  try {
+    await axios.put(`/notes/${note._id}/download`);
+    let publicId = note.cloudinaryId;
+    let resourceType = note.resourceType || 'image'; // Save resource type at upload time if possible
+
+    const cloudDownloadUrl = `https://res.cloudinary.com/${cloudName}/${resourceType}/upload/fl_attachment/${publicId}`;
+    window.open(cloudDownloadUrl, '_blank');
+  } catch (error) {
+    console.error("Failed to update download count, downloading directly.", error);
+    let publicId = note.cloudinaryId;
+    let resourceType = note.resourceType || 'image';
+    const cloudDownloadUrl = `https://res.cloudinary.com/${cloudName}/${resourceType}/upload/fl_attachment/${publicId}`;
+    window.open(cloudDownloadUrl, '_blank');
+  }
+};
 
   return (
     <div className="project-card">
