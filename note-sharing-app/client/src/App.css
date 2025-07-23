@@ -716,6 +716,7 @@ h3 {
 }
 .view-btn:hover {
     background-color: #3e5670;
+    cursor: pointer;
 }
 .download-btn {
     background-color: var(--primary-color);
