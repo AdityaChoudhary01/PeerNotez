@@ -233,27 +233,24 @@ router.delete('/:id', protect, async (req, res) => {
     const note = await Note.findById(req.params.id);
     if (!note) return res.status(404).json({ message: 'Note not found' });
 
-    // IMPORTANT: Ensure req.user.admin is populated by your protect middleware.
-    // This is the core logic that enables admin deletion.
-    if (note.user.toString() !== req.user.id && !req.user.admin) {
+    // Check ownership or admin role
+    if (note.user.toString() !== req.user.id && req.user.role !== 'admin') {
       return res.status(401).json({ message: 'Not authorized to delete this note' });
     }
 
-    // Delete the file from Cloudinary first, using the stored cloudinaryId
+    // Delete Cloudinary asset
     if (note.cloudinaryId) {
-      // It's crucial that resource_type here matches how the file was uploaded to Cloudinary.
-      // For general documents (PDFs, DOCs, PPTs), 'raw' is typically used.
-      // If you're uploading images, it might be 'image'.
       await cloudinary.uploader.destroy(note.cloudinaryId, { resource_type: 'raw' });
-      console.log(`Deleted Cloudinary asset: ${note.cloudinaryId}`); // Confirm deletion in logs
+      console.log(`Deleted Cloudinary asset: ${note.cloudinaryId}`);
     }
 
-    await note.deleteOne(); // Delete the note document from MongoDB
+    await note.deleteOne();
     res.json({ message: 'Note removed successfully' });
   } catch (error) {
-    console.error('Error deleting note (noteRoutes):', error); // Log the detailed error
+    console.error('Error deleting note (noteRoutes):', error);
     res.status(500).json({ message: 'Server Error occurred while deleting the note.' });
   }
 });
+
 
 module.exports = router;
