@@ -724,6 +724,7 @@ h3 {
 }
 .download-btn:hover {
     background-color: #405de6;
+    cursor:pointer;
 }
 .save-btn {
     background-color: #3e5670;
