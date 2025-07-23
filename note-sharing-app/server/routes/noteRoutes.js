@@ -206,22 +206,24 @@ router.put('/:id', protect, async (req, res) => {
     res.status(500).json({ message: 'Server Error occurred while updating the note.' });
   }
 });
-
 // @route   DELETE /api/notes/:id
-// @desc    Delete a note
+// @desc    Delete a note (by owner or admin)
 router.delete('/:id', protect, async (req, res) => {
   try {
     const note = await Note.findById(req.params.id);
     if (!note) return res.status(404).json({ message: 'Note not found' });
 
-    // Check if the logged-in user is the owner of the note
-    if (note.user.toString() !== req.user.id) {
+    // Check if the logged-in user is the owner OR if the user is an admin
+    // Assuming req.user contains user information including an 'isAdmin' flag
+    if (note.user.toString() !== req.user.id && !req.user.isAdmin) {
       return res.status(401).json({ message: 'Not authorized to delete this note' });
     }
 
     // Delete the file from Cloudinary first, using the stored cloudinaryId
     if (note.cloudinaryId) {
       // Ensure the resource_type matches what was used during upload ('raw' for documents)
+      // You might need to adjust resource_type based on how the file was uploaded (e.g., 'image', 'video', 'raw')
+      // If it's a general document, 'raw' is usually appropriate.
       await cloudinary.uploader.destroy(note.cloudinaryId, { resource_type: 'raw' });
       console.log(`Deleted Cloudinary asset: ${note.cloudinaryId}`); // Confirm deletion in logs
     }
@@ -230,8 +232,10 @@ router.delete('/:id', protect, async (req, res) => {
     res.json({ message: 'Note removed successfully' });
   } catch (error) {
     console.error(error); // Log the detailed error
+    // More specific error handling could be added here, e.g., if Cloudinary deletion fails
     res.status(500).json({ message: 'Server Error occurred while deleting the note.' });
   }
 });
+
 
 module.exports = router;
