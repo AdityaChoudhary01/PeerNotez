@@ -22,7 +22,8 @@ const AdminDashboardPage = () => {
                     setUsers(data);
                 } else {
                     const { data } = await axios.get('/notes', config);
-                    setNotes(data);
+                    // Ensure notes is always an array
+                    setNotes(Array.isArray(data) ? data : Array.isArray(data.notes) ? data.notes : []);
                 }
             } catch (error) {
                 console.error("Failed to fetch admin data", error);
