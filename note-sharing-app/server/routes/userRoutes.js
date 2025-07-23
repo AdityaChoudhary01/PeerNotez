@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const { storage } = require('../config/cloudinary'); // Only storage is needed for user avatar uploads
+const { storage } = require('../config/cloudinary'); // Only storage needed for user avatar uploads
 const User = require('../models/User'); // User model is essential here
 const { protect } = require('../middleware/authMiddleware'); // For user authentication
 const { admin } = require('../middleware/adminMiddleware'); // For admin-specific user routes
@@ -34,7 +34,7 @@ router.put('/profile/avatar', protect, upload.single('avatar'), async (req, res)
       res.status(404).json({ message: 'User not found' });
     }
   } catch (error) {
-    console.error('Error updating avatar:', error); // Log detailed error
+    console.error('Error updating avatar (userRoutes):', error); // Log detailed error
     res.status(500).json({ message: 'Server Error occurred while updating avatar.', error: error.message });
   }
 });
@@ -66,7 +66,7 @@ router.put('/profile', protect, async (req, res) => {
             res.status(404).json({ message: 'User not found' });
         }
     } catch (error) {
-        console.error('Error updating profile:', error);
+        console.error('Error updating profile (userRoutes):', error);
         res.status(500).json({ message: 'Server Error occurred while updating profile.', error: error.message });
     }
 });
@@ -89,7 +89,7 @@ router.put('/save/:noteId', protect, async (req, res) => {
       res.status(200).json({ message: 'Note already saved.', savedNotes: user.savedNotes });
     }
   } catch (error) {
-    console.error('Error saving note:', error);
+    console.error('Error saving note (userRoutes):', error);
     res.status(500).json({ message: 'Server Error occurred while saving note.' });
   }
 });
@@ -114,7 +114,7 @@ router.put('/unsave/:noteId', protect, async (req, res) => {
         res.status(200).json({ message: 'Note was not found in saved list.', savedNotes: user.savedNotes });
     }
   } catch (error) {
-    console.error('Error unsaving note:', error);
+    console.error('Error unsaving note (userRoutes):', error);
     res.status(500).json({ message: 'Server Error occurred while unsaving note.' });
   }
 });
@@ -139,7 +139,7 @@ router.get('/savednotes', protect, async (req, res) => {
 
     res.json(user.savedNotes);
   } catch (error) {
-    console.error('Error fetching saved notes:', error);
+    console.error('Error fetching saved notes (userRoutes):', error);
     res.status(500).json({ message: 'Server Error occurred while fetching saved notes.' });
   }
 });
@@ -147,20 +147,20 @@ router.get('/savednotes', protect, async (req, res) => {
 // ADMIN ROUTES FOR USERS
 
 // @route   GET /api/users
-// @desc    Get all users
+// @desc    Get all users (Admin only)
 // @access  Private/Admin
 router.get('/', protect, admin, async (req, res) => {
   try {
     const users = await User.find({}); // Fetches all users
     res.json(users);
   } catch (error) {
-    console.error('Error fetching all users:', error);
+    console.error('Error fetching all users (userRoutes):', error);
     res.status(500).json({ message: 'Server Error occurred while fetching users.' });
   }
 });
 
 // @route   DELETE /api/users/:id
-// @desc    Delete a user
+// @desc    Delete a user (Admin only)
 // @access  Private/Admin
 router.delete('/:id', protect, admin, async (req, res) => {
   try {
@@ -181,7 +181,7 @@ router.delete('/:id', protect, admin, async (req, res) => {
       res.status(404).json({ message: 'User not found' });
     }
   } catch (error) {
-    console.error('Error deleting user:', error);
+    console.error('Error deleting user (userRoutes):', error);
     res.status(500).json({ message: 'Server Error occurred while deleting user.' });
   }
 });
@@ -206,7 +206,7 @@ router.put('/:id/role', protect, admin, async (req, res) => {
       res.status(404).json({ message: 'User not found' });
     }
   } catch (error) {
-    console.error('Error changing user role:', error);
+    console.error('Error changing user role (userRoutes):', error);
     res.status(500).json({ message: 'Server Error occurred while changing user role.' });
   }
 });
