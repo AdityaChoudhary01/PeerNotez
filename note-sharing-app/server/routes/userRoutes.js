@@ -1,53 +1,60 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const { storage } = require('../config/cloudinary');
-const User = require('../models/User');
-const { protect } = require('../middleware/authMiddleware');
-const { admin } = require('../middleware/adminMiddleware');
+const { storage } = require('../config/cloudinary'); // Only storage is needed for user avatar uploads
+const User = require('../models/User'); // User model is essential here
+const { protect } = require('../middleware/authMiddleware'); // For user authentication
+const { admin } = require('../middleware/adminMiddleware'); // For admin-specific user routes
 
-const upload = multer({ storage });
+const upload = multer({ storage }); // Multer instance for file uploads (specifically for avatar)
 
 // @route   PUT /api/users/profile/avatar
 // @desc    Update user profile picture
+// @access  Private (User must be logged in)
 router.put('/profile/avatar', protect, upload.single('avatar'), async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ message: 'No file uploaded.' });
+      return res.status(400).json({ message: 'No file uploaded or file type not supported for avatar.' });
     }
     const user = await User.findById(req.user.id);
     if (user) {
-      user.avatar = req.file.path;
+      // If there was an old avatar, you might want to delete it from Cloudinary
+      // For simplicity, we are just updating the URL here.
+      // Implementing old avatar deletion would require storing public_id for avatar too.
+      user.avatar = req.file.path; // Multer (via CloudinaryStorage) gives you the URL in req.file.path
       const updatedUser = await user.save();
       res.json({
         _id: updatedUser._id,
         name: updatedUser.name,
         email: updatedUser.email,
-        avatar: updatedUser.avatar,
-        savedNotes: updatedUser.savedNotes
+        avatar: updatedUser.avatar, // Send back the new avatar URL
+        savedNotes: updatedUser.savedNotes // Include other necessary user fields
       });
     } else {
       res.status(404).json({ message: 'User not found' });
     }
   } catch (error) {
-    res.status(500).json({ message: 'Server Error', error: error.message });
+    console.error('Error updating avatar:', error); // Log detailed error
+    res.status(500).json({ message: 'Server Error occurred while updating avatar.', error: error.message });
   }
 });
 
-// --- THIS IS THE NEW ROUTE ---
 // @route   PUT /api/users/profile
-// @desc    Update user profile details (e.g., name)
+// @desc    Update user profile details (e.g., name, email - but be careful with email changes)
 // @access  Private
 router.put('/profile', protect, async (req, res) => {
     try {
         const user = await User.findById(req.user.id);
 
         if (user) {
-            user.name = req.body.name || user.name; // Update name if provided
+            // Update name if provided in the request body
+            user.name = req.body.name || user.name;
+            // You might want to allow email change but it often requires re-verification
+            // user.email = req.body.email || user.email;
 
             const updatedUser = await user.save();
-            
-            // Send back the full user object
+
+            // Send back the necessary user object data
             res.json({
                 _id: updatedUser._id,
                 name: updatedUser.name,
@@ -59,128 +66,148 @@ router.put('/profile', protect, async (req, res) => {
             res.status(404).json({ message: 'User not found' });
         }
     } catch (error) {
-        res.status(500).json({ message: 'Server Error', error: error.message });
+        console.error('Error updating profile:', error);
+        res.status(500).json({ message: 'Server Error occurred while updating profile.', error: error.message });
     }
 });
 
 
 // @route   PUT /api/users/save/:noteId
-// @desc    Save a note
+// @desc    Save a note to user's savedNotes list
+// @access  Private
 router.put('/save/:noteId', protect, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    // Ensure the noteId is not already saved
     if (!user.savedNotes.includes(req.params.noteId)) {
       user.savedNotes.push(req.params.noteId);
       await user.save();
+      res.status(200).json({ message: 'Note saved successfully!', savedNotes: user.savedNotes });
+    } else {
+      res.status(200).json({ message: 'Note already saved.', savedNotes: user.savedNotes });
     }
-    res.json(user.savedNotes);
   } catch (error) {
-    res.status(500).json({ message: 'Server Error' });
+    console.error('Error saving note:', error);
+    res.status(500).json({ message: 'Server Error occurred while saving note.' });
   }
 });
 
 // @route   PUT /api/users/unsave/:noteId
-// @desc    Unsave a note
+// @desc    Unsave a note from user's savedNotes list
+// @access  Private
 router.put('/unsave/:noteId', protect, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    // Filter out the noteId
+    const initialLength = user.savedNotes.length;
     user.savedNotes = user.savedNotes.filter(
-      (noteId) => noteId.toString() !== req.params.noteId
+      (noteId) => noteId.toString() !== req.params.noteId.toString() // Ensure strict comparison
     );
-    await user.save();
-    res.json(user.savedNotes);
+    if (user.savedNotes.length < initialLength) {
+      await user.save();
+      res.status(200).json({ message: 'Note unsaved successfully!', savedNotes: user.savedNotes });
+    } else {
+        res.status(200).json({ message: 'Note was not found in saved list.', savedNotes: user.savedNotes });
+    }
   } catch (error) {
-    res.status(500).json({ message: 'Server Error' });
+    console.error('Error unsaving note:', error);
+    res.status(500).json({ message: 'Server Error occurred while unsaving note.' });
   }
 });
 
 // @route   GET /api/users/savednotes
 // @desc    Get all saved notes for a user
+// @access  Private
 router.get('/savednotes', protect, async (req, res) => {
   try {
+    // Populate savedNotes and then populate the 'user' field within each saved note
     const user = await User.findById(req.user.id).populate({
-        path: 'savedNotes',
-        populate: { path: 'user', select: 'name avatar' }
+        path: 'savedNotes', // Populate the array of Note IDs
+        populate: {
+            path: 'user', // Within each Note, populate its 'user' field
+            select: 'name avatar' // Select only name and avatar of the note's uploader
+        }
     });
-    res.json(user.savedNotes);
-  } catch (error) {
-    res.status(500).json({ message: 'Server Error' });
-  }
-});
 
-// @route   GET /api/users
-// @desc    Get all users (Admin only)
-// @access  Private/Admin
-router.get('/', protect, admin, async (req, res) => {
-  try {
-    const users = await User.find({});
-    res.json(users);
-  } catch (error) {
-    res.status(500).json({ message: 'Server Error' });
-  }
-});
-
-// @route   DELETE /api/notes/:id
-// @desc    Delete a note (user can delete their own, admin can delete any)
-// @access  Private
-router.delete('/:id', protect, async (req, res) => {
-  try {
-    const note = await Note.findById(req.params.id);
-    if (!note) return res.status(404).json({ message: 'Note not found' });
-    
-    // --- UPDATED LOGIC ---
-    // Allow deletion if user is the owner OR if the user is an admin
-    if (note.user.toString() !== req.user.id && req.user.role !== 'admin') {
-      return res.status(401).json({ message: 'Not authorized' });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
     }
 
-    await note.deleteOne();
-    res.json({ message: 'Note removed successfully' });
+    res.json(user.savedNotes);
   } catch (error) {
-    res.status(500).json({ message: 'Server Error' });
+    console.error('Error fetching saved notes:', error);
+    res.status(500).json({ message: 'Server Error occurred while fetching saved notes.' });
   }
 });
+
+// ADMIN ROUTES FOR USERS
+
+// @route   GET /api/users
+// @desc    Get all users
+// @access  Private/Admin
 router.get('/', protect, admin, async (req, res) => {
   try {
     const users = await User.find({}); // Fetches all users
     res.json(users);
   } catch (error) {
-    res.status(500).json({ message: 'Server Error' });
+    console.error('Error fetching all users:', error);
+    res.status(500).json({ message: 'Server Error occurred while fetching users.' });
   }
 });
 
 // @route   DELETE /api/users/:id
-// @desc    Delete a user (Admin only)
+// @desc    Delete a user
 // @access  Private/Admin
 router.delete('/:id', protect, admin, async (req, res) => {
   try {
+    // Prevent admin from deleting themselves
+    if (req.params.id.toString() === req.user.id.toString()) {
+      return res.status(400).json({ message: 'Cannot delete yourself as an admin.' });
+    }
+
     const user = await User.findById(req.params.id);
     if (user) {
-      // You might want to add logic here to delete associated notes as well
-      await user.deleteOne();
-      res.json({ message: 'User removed' });
+      // Optional: Add logic here to delete associated notes or other content created by this user
+      // This would involve finding all notes where user: req.params.id and deleting them.
+      // Also, consider deleting their Cloudinary avatar if public_id was stored.
+
+      await user.deleteOne(); // Delete the user document
+      res.json({ message: 'User removed successfully' });
     } else {
       res.status(404).json({ message: 'User not found' });
     }
   } catch (error) {
-    res.status(500).json({ message: 'Server Error' });
+    console.error('Error deleting user:', error);
+    res.status(500).json({ message: 'Server Error occurred while deleting user.' });
   }
 });
+
 // @route   PUT /api/users/:id/role
-// @desc    Change a user's role (Admin only)
+// @desc    Change a user's role (toggle between 'user' and 'admin')
 // @access  Private/Admin
 router.put('/:id/role', protect, admin, async (req, res) => {
   try {
+    // Prevent changing your own role via this endpoint (should be done carefully through specific UI)
+    if (req.params.id.toString() === req.user.id.toString()) {
+      return res.status(400).json({ message: 'Cannot change your own role via this endpoint.' });
+    }
+
     const user = await User.findById(req.params.id);
     if (user) {
+      // Toggle role: if admin, make user; if user, make admin
       user.role = user.role === 'admin' ? 'user' : 'admin';
       await user.save();
-      res.json({ message: `User role updated to ${user.role}` });
+      res.json({ message: `User role for ${user.name} updated to ${user.role}`, userId: user._id, newRole: user.role });
     } else {
       res.status(404).json({ message: 'User not found' });
     }
   } catch (error) {
-    res.status(500).json({ message: 'Server Error' });
+    console.error('Error changing user role:', error);
+    res.status(500).json({ message: 'Server Error occurred while changing user role.' });
   }
 });
 
