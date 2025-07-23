@@ -8,7 +8,7 @@ const NoteCard = ({ note, showActions = false, onEdit, onDelete }) => {
   const { user, token, saveNote, unsaveNote } = useAuth();
   const isSaved = user?.savedNotes?.includes(note._id);
   const cloudName = process.env.REACT_APP_CLOUDINARY_CLOUD_NAME;
-  
+
   const thumbnailUrl = `https://res.cloudinary.com/${cloudName}/image/upload/w_400,h_300,c_pad,pg_1,f_auto,q_auto/${note.cloudinaryId}.jpg`;
 
   const handleSaveToggle = async () => {
@@ -18,7 +18,7 @@ const NoteCard = ({ note, showActions = false, onEdit, onDelete }) => {
     }
     const config = { headers: { Authorization: `Bearer ${token}` } };
     const endpoint = isSaved ? `/users/unsave/${note._id}` : `/users/save/${note._id}`;
-    
+
     try {
       await axios.put(endpoint, {}, config);
       isSaved ? unsaveNote(note._id) : saveNote(note._id);
@@ -27,23 +27,24 @@ const NoteCard = ({ note, showActions = false, onEdit, onDelete }) => {
     }
   };
 
-  // --- NEW DOWNLOAD HANDLER ---
+  // --- SIMPLIFIED CLOUDINARY DOWNLOAD HANDLER ---
   const handleDownload = async () => {
     try {
-      // First, hit the API to increment the download count
       await axios.put(`/notes/${note._id}/download`);
-
-      // Then, programmatically trigger the download
-      const link = document.createElement('a');
-      link.href = note.filePath;
-      link.setAttribute('download', note.fileName);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      let publicId = note.cloudinaryId;
+      if (!publicId.endsWith('.pdf')) {
+        publicId += '.pdf';
+      }
+      const cloudDownloadUrl = `https://res.cloudinary.com/${cloudName}/image/upload/fl_attachment/${publicId}`;
+      window.open(cloudDownloadUrl, '_blank');
     } catch (error) {
       console.error("Failed to update download count, downloading directly.", error);
-      // If the count update fails, still try to download the file for the user
-      window.open(note.filePath, '_blank');
+      let publicId = note.cloudinaryId;
+      if (!publicId.endsWith('.pdf')) {
+        publicId += '.pdf';
+      }
+      const cloudDownloadUrl = `https://res.cloudinary.com/${cloudName}/image/upload/fl_attachment/${publicId}`;
+      window.open(cloudDownloadUrl, '_blank');
     }
   };
 
@@ -52,15 +53,15 @@ const NoteCard = ({ note, showActions = false, onEdit, onDelete }) => {
       <Link to={`/view/${note._id}`}>
         <img src={thumbnailUrl} alt={`Preview of ${note.title}`} className="card-thumbnail" />
       </Link>
-      
+
       <div className="card-content">
         <h3 className="card-title">{note.title}</h3>
-        
+
         <div className="card-rating">
           <StarRating rating={note.rating} readOnly={true} />
           <span>({note.numReviews} reviews)</span>
         </div>
-        
+
         <ul className="card-details">
           <li><strong>University:</strong> {note.university}</li>
           <li><strong>Course:</strong> {note.course}</li>
@@ -82,8 +83,6 @@ const NoteCard = ({ note, showActions = false, onEdit, onDelete }) => {
             </button>
           )}
           <Link to={`/view/${note._id}`} className="action-button view-btn">View</Link>
-          
-          {/* --- UPDATED DOWNLOAD BUTTON --- */}
           <button onClick={handleDownload} className="action-button download-btn">
             Download
           </button>
