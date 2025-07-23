@@ -13,49 +13,86 @@ const upload = multer({ storage }); // Multer instance for file uploads
 // @route   GET /api/notes
 router.get('/', async (req, res) => {
   try {
-    const limit = 12; // Number of notes per page
-    const page = Number(req.query.page) || 1; // Current page number, default to 1
-    const { search, title, university, course, subject, year, sort } = req.query;
-    let query = {}; // MongoDB query object
+    const limit = 12; // notes per page
+    const page = Number(req.query.page) || 1;
 
-    // Build the query based on search parameters
-    if (search) {
-      // If a general search term is provided, search across multiple fields
-      query = {
+    const {
+      search,
+      title,
+      university,
+      course,
+      subject,
+      year,
+      sort,
+    } = req.query;
+
+    const andConditions = [];
+
+    // General search across multiple fields
+    if (search && search.trim() !== '') {
+      const trimmedSearch = search.trim();
+      andConditions.push({
         $or: [
-          { title: { $regex: search, $options: 'i' } }, // Case-insensitive title search
-          { university: { $regex: search, $options: 'i' } }, // Case-insensitive university search
-          { course: { $regex: search, $options: 'i' } }, // Case-insensitive course search
-          { subject: { $regex: search, $options: 'i' } }, // Case-insensitive subject search
+          { title: { $regex: trimmedSearch, $options: 'i' } },
+          { university: { $regex: trimmedSearch, $options: 'i' } },
+          { course: { $regex: trimmedSearch, $options: 'i' } },
+          { subject: { $regex: trimmedSearch, $options: 'i' } },
         ],
-      };
-    } else {
-      // Otherwise, apply specific filters if provided
-      if (title) query.title = { $regex: title, $options: 'i' };
-      if (university) query.university = { $regex: university, $options: 'i' };
-      if (course) query.course = { $regex: course, $options: 'i' };
-      if (subject) query.subject = { $regex: subject, $options: 'i' };
-      if (year) query.year = year; // Exact match for year
+      });
     }
 
-    let sortOptions = { uploadDate: -1 }; // Default sort by newest upload date
-    if (sort === 'highestRated') sortOptions = { rating: -1 }; // Sort by highest rating
-    if (sort === 'mostDownloaded') sortOptions = { downloadCount: -1 }; // Sort by most downloaded
+    // Specific filters by field, combined with search if any
+    if (title && title.trim() !== '') {
+      andConditions.push({ title: { $regex: title.trim(), $options: 'i' } });
+    }
+    if (university && university.trim() !== '') {
+      andConditions.push({ university: { $regex: university.trim(), $options: 'i' } });
+    }
+    if (course && course.trim() !== '') {
+      andConditions.push({ course: { $regex: course.trim(), $options: 'i' } });
+    }
+    if (subject && subject.trim() !== '') {
+      andConditions.push({ subject: { $regex: subject.trim(), $options: 'i' } });
+    }
+    if (year) {
+      // Convert to number if possible; if invalid, ignore year filter
+      const yearNum = Number(year);
+      if (!isNaN(yearNum)) {
+        andConditions.push({ year: yearNum });
+      }
+    }
 
-    const count = await Note.countDocuments(query); // Total number of documents matching the query
+    // Final query object: if any conditions, join with $and, else empty (all documents)
+    const query = andConditions.length > 0 ? { $and: andConditions } : {};
+
+    // Sorting options
+    let sortOptions = { uploadDate: -1 };
+    if (sort === 'highestRated') sortOptions = { rating: -1 };
+    if (sort === 'mostDownloaded') sortOptions = { downloadCount: -1 };
+
+    console.log('MongoDB query:', JSON.stringify(query, null, 2));
+
+    // Fetch total count matching query
+    const count = await Note.countDocuments(query);
+
+    // Fetch paginated notes
     const notes = await Note.find(query)
-      .populate('user', 'name avatar') // Populate user details (name and avatar) of the uploader
-      .sort(sortOptions) // Apply sorting options
-      .limit(limit) // Limit the number of documents returned
-      .skip(limit * (page - 1)); // Skip documents for pagination
+      .populate('user', 'name avatar')
+      .sort(sortOptions)
+      .limit(limit)
+      .skip(limit * (page - 1));
 
-    res.json({ notes, page, totalPages: Math.ceil(count / limit) }); // Respond with notes, current page, and total pages
-
+    res.json({
+      notes,
+      page,
+      totalPages: Math.ceil(count / limit),
+    });
   } catch (err) {
-    console.error('Error fetching notes (noteRoutes):', err); // Log the detailed error for debugging purposes
-    res.status(500).json({ message: 'Server Error occurred while fetching notes.' }); // Generic error message for client
+    console.error('Error fetching notes (noteRoutes):', err);
+    res.status(500).json({ message: 'Server Error occurred while fetching notes.' });
   }
 });
+
 
 // @route   GET /api/notes/mynotes
 // @desc    Get notes for the logged-in user
