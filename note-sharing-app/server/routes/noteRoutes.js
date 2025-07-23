@@ -7,18 +7,14 @@ const { protect } = require('../middleware/authMiddleware');
 
 const upload = multer({ storage });
 
-// @route   GET /api/notes
-// @desc    Get all notes, with optional search and advanced filtering
-// @route   GET /api/notes
-// @desc    Get all notes, handling both global search and advanced filters
+// @desc    Get all notes, with search, sort, and pagination
 router.get('/', async (req, res) => {
   try {
-    const { search, university, course, subject, year, sort } = req.query;
+    const limit = 12;
+    const page = Number(req.query.page) || 1;
+    const { search, title, university, course, subject, year, sort } = req.query;
     let query = {};
 
-    // --- THIS IS THE CORRECTED LOGIC ---
-    
-    // Handle the single global search term (from the navbar)
     if (search) {
       query = {
         $or: [
@@ -28,23 +24,27 @@ router.get('/', async (req, res) => {
           { subject: { $regex: search, $options: 'i' } },
         ],
       };
-    } 
-    // Handle the advanced filters (from the homepage filter bar)
-    else {
+    } else {
+      if (title) query.title = { $regex: title, $options: 'i' };
       if (university) query.university = { $regex: university, $options: 'i' };
       if (course) query.course = { $regex: course, $options: 'i' };
       if (subject) query.subject = { $regex: subject, $options: 'i' };
       if (year) query.year = year;
     }
 
-    
-    // Sorting logic remains the same
     let sortOptions = { uploadDate: -1 };
     if (sort === 'highestRated') sortOptions = { rating: -1 };
     if (sort === 'mostDownloaded') sortOptions = { downloadCount: -1 };
 
-    const notes = await Note.find(query).populate('user', 'name avatar').sort(sortOptions);
-    res.json(notes);
+    const count = await Note.countDocuments(query);
+    const notes = await Note.find(query)
+      .populate('user', 'name avatar')
+      .sort(sortOptions)
+      .limit(limit)
+      .skip(limit * (page - 1));
+
+    res.json({ notes, page, totalPages: Math.ceil(count / limit) });
+
   } catch (err) {
     res.status(500).json({ message: 'Server Error' });
   }
