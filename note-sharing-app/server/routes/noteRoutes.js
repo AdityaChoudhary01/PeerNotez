@@ -233,9 +233,9 @@ router.delete('/:id', protect, async (req, res) => {
     const note = await Note.findById(req.params.id);
     if (!note) return res.status(404).json({ message: 'Note not found' });
 
-    // IMPORTANT: Ensure req.user.isAdmin is populated by your protect middleware.
+    // IMPORTANT: Ensure req.user.admin is populated by your protect middleware.
     // This is the core logic that enables admin deletion.
-    if (note.user.toString() !== req.user.id && !req.user.isAdmin) {
+    if (note.user.toString() !== req.user.id && !req.user.admin) {
       return res.status(401).json({ message: 'Not authorized to delete this note' });
     }
 
