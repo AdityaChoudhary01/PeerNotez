@@ -84,18 +84,37 @@ router.get('/', async (req, res) => {
 
 
 // @route   GET /api/notes/mynotes
-// @desc    Get notes for the logged-in user
+// @route   GET /api/notes/mynotes
+// @desc    Get notes for the logged-in user with pagination
 router.get('/mynotes', protect, async (req, res) => {
   try {
-    // Ensure req.user.id is correctly populated by your protect middleware
-    const notes = await Note.find({ user: req.user.id }).sort({ uploadDate: -1 }); // Find notes by the authenticated user's ID
-    res.json(notes);
+    const limit = 8; // Or any number of notes you want per page
+    const page = Number(req.query.page) || 1;
+
+    const query = { user: req.user.id }; // Filter notes by the logged-in user
+
+    // 1. Count the total number of notes the user has uploaded
+    const totalNotes = await Note.countDocuments(query);
+
+    // 2. Find the notes for the current page
+    const notes = await Note.find(query)
+      .sort({ uploadDate: -1 })
+      .limit(limit)
+      .skip(limit * (page - 1));
+
+    // 3. Send the response in the format the frontend expects
+    res.json({
+      notes,
+      page,
+      totalPages: Math.ceil(totalNotes / limit),
+      totalNotes,
+    });
+    
   } catch (error) {
-    console.error('Error fetching my notes (noteRoutes):', error); // Log the detailed error
+    console.error('Error fetching my notes (noteRoutes):', error);
     res.status(500).json({ message: 'Server Error occurred while fetching your notes.' });
   }
 });
-
 // @route   GET /api/notes/:id
 // @desc    Get a single note by ID
 router.get('/:id', async (req, res) => {
@@ -251,8 +270,6 @@ router.put('/:id', protect, async (req, res) => {
   }
 });
 
-// @route   DELETE /api/notes/:id
-// @desc    Delete a note (user can delete their own, admin can delete any)
 // @access  Private (Owner or Admin)
 router.delete('/:id', protect, async (req, res) => {
   try {
