@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import useAuth from '../hooks/useAuth';
 import { Link } from 'react-router-dom';
+import Pagination from '../components/common/Pagination'; // ✨ 1. Import the Pagination component
 
 const AdminDashboardPage = () => {
     const [users, setUsers] = useState([]);
@@ -11,31 +12,61 @@ const AdminDashboardPage = () => {
     const { token, user: adminUser } = useAuth();
     const cloudName = process.env.REACT_APP_CLOUDINARY_CLOUD_NAME;
 
+    // ✨ 2. Add state to manage pagination
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(0);
+    // const [totalNotes, setTotalNotes] = useState(0); // Removed unused state
+    const [refetchIndex, setRefetchIndex] = useState(0); // Used to trigger refetch after delete
+
+    // This effect reliably resets the page to 1 when you switch tabs
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [activeTab]);
+
+    // ✨ 3. This effect now handles fetching data for the current page
     useEffect(() => {
         const config = { headers: { Authorization: `Bearer ${token}` } };
 
-        const fetchData = async () => {
+        const fetchUsers = async () => {
             setLoading(true);
             try {
-                if (activeTab === 'users') {
-                    const { data } = await axios.get('/users', config);
-                    setUsers(data);
-                } else {
-                    const { data } = await axios.get('/notes', config);
-                    // Ensure notes is always an array
-                    setNotes(Array.isArray(data) ? data : Array.isArray(data.notes) ? data.notes : []);
-                }
+                const { data } = await axios.get('/users', config);
+                setUsers(data);
             } catch (error) {
-                console.error("Failed to fetch admin data", error);
+                console.error("Failed to fetch users", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        const fetchNotes = async () => {
+            setLoading(true);
+            try {
+                // The API call now includes the current page number
+                const { data } = await axios.get(`/notes?page=${currentPage}`, config);
+                // Update state based on the paginated response from the backend
+                setNotes(data.notes || []);
+                setTotalPages(data.totalPages || 0);
+                // setTotalNotes(data.totalNotes || 0); // Removed unused state
+            } catch (error) {
+                console.error("Failed to fetch notes", error);
+                setNotes([]);
+                setTotalPages(0);
+                // setTotalNotes(0); // Removed unused state
             } finally {
                 setLoading(false);
             }
         };
 
         if (token) {
-            fetchData();
+            if (activeTab === 'users') {
+                fetchUsers();
+            } else {
+                fetchNotes();
+            }
         }
-    }, [activeTab, token]);
+    // The effect re-runs when the page, tab, or refetch trigger changes
+    }, [activeTab, token, currentPage, refetchIndex]);
     
     const handleDeleteUser = async (userId) => {
         if (window.confirm('Are you sure you want to delete this user permanently?')) {
@@ -65,8 +96,19 @@ const AdminDashboardPage = () => {
     const handleDeleteNote = async (noteId) => {
         if (window.confirm('Are you sure you want to delete this note?')) {
             const config = { headers: { Authorization: `Bearer ${token}` } };
-            await axios.delete(`/notes/${noteId}`, config);
-            setNotes(notes.filter(n => n._id !== noteId));
+            try {
+                await axios.delete(`/notes/${noteId}`, config);
+                // After delete, if it was the last item on the page, go to the previous page
+                if (notes.length === 1 && currentPage > 1) {
+                    setCurrentPage(prev => prev - 1);
+                } else {
+                    // Otherwise, trigger a refetch of the current page
+                    setRefetchIndex(prev => prev + 1);
+                }
+            } catch(error) {
+                console.error("Failed to delete note", error);
+                alert('Failed to delete note.');
+            }
         }
     };
 
@@ -129,6 +171,11 @@ const AdminDashboardPage = () => {
                                 </div>
                             );
                         })}
+                        <Pagination 
+                            page={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={setCurrentPage}
+                        />
                     </div>
                 )
             )}
