@@ -3,7 +3,7 @@ import axios from 'axios';
 import useAuth from '../hooks/useAuth';
 import NoteCard from '../components/notes/NoteCard';
 import Pagination from '../components/common/Pagination';
-import EditNoteModal from '../components/notes/EditNoteModal';
+import EditNoteModal from '../components/notes/EditNoteModal'; // <-- Import the new modal
 
 const ProfilePage = () => {
   // State
@@ -12,102 +12,103 @@ const ProfilePage = () => {
   const [activeTab, setActiveTab] = useState('uploads');
   const [loadingNotes, setLoadingNotes] = useState(true);
 
-  // Separate pagination states for 'My Uploads'
+  // Pagination states for 'My Uploads'
   const [currentPageUploads, setCurrentPageUploads] = useState(1);
   const [totalPagesUploads, setTotalPagesUploads] = useState(0);
   const [totalNotesUploads, setTotalNotesUploads] = useState(0);
 
-  // Separate pagination states for 'Saved Notes'
+  // Pagination states for 'Saved Notes'
   const [currentPageSaved, setCurrentPageSaved] = useState(1);
   const [totalPagesSaved, setTotalPagesSaved] = useState(0);
   const [totalNotesSaved, setTotalNotesSaved] = useState(0);
 
-  // Removed [refetchIndex, setRefetchIndex] as it's no longer necessary with combined useEffect
-  // and direct dependency on page states.
+  // Refetch state
+  const [refetchIndex, setRefetchIndex] = useState(0);
 
+  // Editing user profile state
   const [isEditingName, setIsEditingName] = useState(false);
   const [newName, setNewName] = useState('');
 
+  // --- State for the Edit Note Modal ---
   const [editingNote, setEditingNote] = useState(null);
 
-  const { user, token, loading: authLoading, updateUser } = useAuth(); // updateUser is used below
+  const { user, token, loading: authLoading, updateUser } = useAuth();
 
+  // Reset page for the *new* tab when tab changes
+  useEffect(() => {
+    if (activeTab === 'uploads') {
+      setCurrentPageUploads(1);
+    } else {
+      setCurrentPageSaved(1);
+    }
+    // Also trigger a refetch when tab changes to ensure fresh data
+    setRefetchIndex(prev => prev + 1);
+  }, [activeTab]);
+
+  // Fetch notes (uploads or saved) based on active tab and pagination
+  useEffect(() => {
+    if (authLoading || !token) return; // wait for auth
+
+    const fetchData = async () => {
+      setLoadingNotes(true);
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+
+      try {
+        if (activeTab === 'uploads') {
+          const { data } = await axios.get(`/notes/mynotes?page=${currentPageUploads}`, config);
+          setMyNotes(data.notes || []);
+          setTotalPagesUploads(data.totalPages || 0);
+          setTotalNotesUploads(data.totalNotes || 0);
+        } else { // activeTab === 'saved'
+          const { data } = await axios.get(`/users/savednotes?page=${currentPageSaved}`, config);
+          setSavedNotes(data.notes || []);
+          setTotalPagesSaved(data.totalPages || 0);
+          setTotalNotesSaved(data.totalNotes || 0);
+        }
+      } catch (error) {
+        console.error(`Failed to fetch ${activeTab} notes:`, error.response?.data || error.message);
+        // Clear notes and pagination info on error
+        if (activeTab === 'uploads') {
+          setMyNotes([]);
+          setTotalPagesUploads(0);
+          setTotalNotesUploads(0);
+        } else {
+          setSavedNotes([]);
+          setTotalPagesSaved(0);
+          setTotalNotesSaved(0);
+        }
+      } finally {
+        setLoadingNotes(false);
+      }
+    };
+
+    fetchData();
+  }, [token, authLoading, activeTab, currentPageUploads, currentPageSaved, refetchIndex]); // Add new pagination states to deps
+
+  // Update newName when user changes
   useEffect(() => {
     if (user) {
       setNewName(user.name);
     }
   }, [user]);
 
-  // Combined Effect for fetching notes and counts for BOTH tabs
-  useEffect(() => {
-    if (authLoading || !token) {
-      console.warn("ProfilePage: No token found or auth loading, skipping data fetch.");
-      setMyNotes([]);
-      setSavedNotes([]);
-      setTotalNotesUploads(0);
-      setTotalNotesSaved(0);
-      return;
-    }
-
-    const fetchAllData = async () => {
-      setLoadingNotes(true);
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-
-      try {
-        // --- Fetch My Uploads data ---
-        const myNotesResponse = await axios.get(`/notes/mynotes?page=${currentPageUploads}`, config);
-        setMyNotes(myNotesResponse.data.notes || []);
-        setTotalPagesUploads(myNotesResponse.data.totalPages || 0);
-        setTotalNotesUploads(myNotesResponse.data.totalNotes || 0);
-
-        // --- Fetch Saved Notes data (regardless of active tab, to get the count) ---
-        const savedNotesResponse = await axios.get(`/users/savednotes?page=${currentPageSaved}`, config);
-        setSavedNotes(savedNotesResponse.data.notes || []);
-        setTotalPagesSaved(savedNotesResponse.data.totalPages || 0);
-        setTotalNotesSaved(savedNotesResponse.data.totalNotes || 0);
-
-      } catch (error) {
-        console.error("ProfilePage: Error fetching notes or counts:", error.response?.data || error.message);
-        setMyNotes([]);
-        setSavedNotes([]);
-        setTotalNotesUploads(0);
-        setTotalNotesSaved(0);
-      } finally {
-        setLoadingNotes(false);
-      }
-    };
-
-    fetchAllData();
-    // Dependencies: activeTab, currentPageUploads, currentPageSaved, token, authLoading
-    // refetchIndex removed as its function is now covered by other dependencies
-  }, [activeTab, currentPageUploads, currentPageSaved, token, authLoading]);
-
-
-  // Effect specifically for handling tab changes (resets page for the new tab)
-  useEffect(() => {
-    if (activeTab === 'uploads' && currentPageUploads !== 1) {
-      setCurrentPageUploads(1);
-    } else if (activeTab === 'saved' && currentPageSaved !== 1) {
-      setCurrentPageSaved(1);
-    }
-    // Now includes currentPageUploads and currentPageSaved as dependencies
-  }, [activeTab, currentPageUploads, currentPageSaved]);
-
-
   // --- Functions to handle Editing Notes ---
   const handleEditClick = (note) => {
     console.log('Step 1: handleEditClick triggered with note:', note);
-    setEditingNote(note);
+    setEditingNote(note); // Open the modal by setting the note to edit
   };
 
   const handleUpdateNote = (updatedNote) => {
+    // Update the note in the state to reflect changes without a full refetch
     setMyNotes(prevNotes =>
       prevNotes.map(note =>
         note._id === updatedNote._id ? updatedNote : note
       )
     );
-    setEditingNote(null);
-    // Removed setRefetchIndex call here. The page/tab change will re-trigger the main fetch.
+    setEditingNote(null); // Close the modal
+    // Trigger refetch for the uploads tab to ensure consistency,
+    // especially if an update affected total counts or sorting.
+    setRefetchIndex(prev => prev + 1);
   };
 
   // Delete a note uploaded by user
@@ -118,18 +119,9 @@ const ProfilePage = () => {
         await axios.delete(`/notes/${noteId}`, config);
         alert('Note deleted successfully.');
 
-        // Rather than manual state manipulation, trigger re-fetch by changing page or activeTab
-        // A full refetch of both lists will happen naturally due to useEffect dependencies
-        if (activeTab === 'uploads') {
-          // A simple way to trigger re-fetch without changing page if current page has other notes
-          // If you were to only have one note and delete it, consider moving to previous page
-          // For simplicity, just let the useEffect re-run on current page
-          setCurrentPageUploads(prev => prev); // This might not trigger if prev is same, but combined useEffect covers it
-        } else {
-          // You might not want to delete saved notes in this tab, but if you do,
-          // ensure saved notes logic is updated.
-          setCurrentPageSaved(prev => prev);
-        }
+        // Rather than manual state manipulation, rely on refetchIndex
+        // The backend will handle pagination adjustments.
+        setRefetchIndex(prev => prev + 1);
 
       } catch (error) {
         console.error('Failed to delete note', error.response?.data || error.message);
@@ -147,7 +139,7 @@ const ProfilePage = () => {
     try {
       const config = { headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${token}` } };
       const { data } = await axios.put('/users/profile/avatar', formData, config);
-      updateUser(data); // Using updateUser here
+      updateUser(data);
       alert('Profile picture updated!');
     } catch (error) {
       console.error('Failed to upload avatar', error.response?.data || error.message);
@@ -161,7 +153,7 @@ const ProfilePage = () => {
     try {
       const config = { headers: { Authorization: `Bearer ${token}` } };
       const { data } = await axios.put('/users/profile', { name: newName }, config);
-      updateUser(data); // Using updateUser here
+      updateUser(data);
       setIsEditingName(false);
       alert('Name updated successfully!');
     } catch (error) {
@@ -172,7 +164,7 @@ const ProfilePage = () => {
 
   if (authLoading) return <div>Authenticating...</div>;
 
-  // Determine which data to display
+  // Determine which data and pagination to show based on activeTab
   const displayNotes = activeTab === 'uploads' ? myNotes : savedNotes;
   const currentTotalPages = activeTab === 'uploads' ? totalPagesUploads : totalPagesSaved;
   const currentPageState = activeTab === 'uploads' ? currentPageUploads : currentPageSaved;
@@ -209,10 +201,10 @@ const ProfilePage = () => {
       {/* Tabs - Corrected to show individual counts */}
       <div className="profile-tabs">
         <button onClick={() => setActiveTab('uploads')} className={activeTab === 'uploads' ? 'active' : ''}>
-          My Uploads ({totalNotesUploads}) {/* This will now be populated on initial load */}
+          My Uploads ({totalNotesUploads}) {/* Corrected to show totalNotesUploads */}
         </button>
         <button onClick={() => setActiveTab('saved')} className={activeTab === 'saved' ? 'active' : ''}>
-          Saved Notes ({totalNotesSaved}) {/* This will now be populated on initial load */}
+          Saved Notes ({totalNotesSaved}) {/* Corrected to show totalNotesSaved */}
         </button>
       </div>
 
@@ -229,7 +221,7 @@ const ProfilePage = () => {
                   <NoteCard
                     key={note._id}
                     note={note}
-                    showActions={activeTab === 'uploads'}
+                    showActions={activeTab === 'uploads'} // Only show actions for uploaded notes
                     onDelete={activeTab === 'uploads' ? handleDeleteNote : undefined}
                     onEdit={activeTab === 'uploads' ? handleEditClick : undefined}
                   />
@@ -245,7 +237,7 @@ const ProfilePage = () => {
         </div>
       )}
 
-      {/* Edit Modal */}
+      {/* --- Render the Edit Modal conditionally --- */}
       {editingNote && (
         <EditNoteModal
           note={editingNote}
