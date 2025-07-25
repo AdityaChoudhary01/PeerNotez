@@ -129,7 +129,7 @@ router.get('/savednotes', protect, async (req, res) => {
   try {
     const userId = req.user.id;
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10; // Default limit per page
+    const limit = parseInt(req.query.limit) || 10; // Or your desired default limit
     const skip = (page - 1) * limit;
 
     const user = await User.findById(userId);
@@ -148,9 +148,10 @@ router.get('/savednotes', protect, async (req, res) => {
                             .skip(skip)
                             .limit(limit);
 
-    const totalNotes = savedNoteIds.length; // Total count is simply the number of IDs in the array
+    const totalNotes = savedNoteIds.length; // Total count is the number of IDs in the array
     const totalPages = Math.ceil(totalNotes / limit);
 
+    // THIS IS THE CRUCIAL PART THAT NEEDS TO BE EXACTLY LIKE THIS
     res.json({
       notes: notes,
       page: page,
@@ -163,6 +164,7 @@ router.get('/savednotes', protect, async (req, res) => {
     res.status(500).json({ message: 'Server Error occurred while fetching saved notes.' });
   }
 });
+
 
 // ADMIN ROUTES FOR USERS
 
