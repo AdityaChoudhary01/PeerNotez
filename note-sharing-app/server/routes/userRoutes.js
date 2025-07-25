@@ -1,12 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const { storage } = require('../config/cloudinary'); // Only storage needed for user avatar uploads
-const User = require('../models/User'); // User model is essential here
-const { protect } = require('../middleware/authMiddleware'); // For user authentication
-const { admin } = require('../middleware/adminMiddleware'); // For admin-specific user routes
+const { storage } = require('../config/cloudinary');
+const User = require('../models/User');
+const Note = require('../models/Note'); // <-- ADD THIS LINE: Import your Note model
+const { protect } = require('../middleware/authMiddleware');
+const { admin } = require('../middleware/adminMiddleware');
 
-const upload = multer({ storage }); // Multer instance for file uploads (specifically for avatar)
+const upload = multer({ storage });
 
 // @route   PUT /api/users/profile/avatar
 // @desc    Update user profile picture
@@ -28,7 +29,7 @@ router.put('/profile/avatar', protect, upload.single('avatar'), async (req, res)
         name: updatedUser.name,
         email: updatedUser.email,
         avatar: updatedUser.avatar, // Send back the new avatar URL
-        savedNotes: updatedUser.savedNotes // Include other necessary user fields
+        // savedNotes: updatedUser.savedNotes // No need to send this entire array here, it can be large
       });
     } else {
       res.status(404).json({ message: 'User not found' });
@@ -60,7 +61,7 @@ router.put('/profile', protect, async (req, res) => {
                 name: updatedUser.name,
                 email: updatedUser.email,
                 avatar: updatedUser.avatar,
-                savedNotes: updatedUser.savedNotes,
+                // savedNotes: updatedUser.savedNotes, // No need to send this entire array here, it can be large
             });
         } else {
             res.status(404).json({ message: 'User not found' });
@@ -84,9 +85,10 @@ router.put('/save/:noteId', protect, async (req, res) => {
     if (!user.savedNotes.includes(req.params.noteId)) {
       user.savedNotes.push(req.params.noteId);
       await user.save();
-      res.status(200).json({ message: 'Note saved successfully!', savedNotes: user.savedNotes });
+      // Send back only relevant info, not the full user object
+      res.status(200).json({ message: 'Note saved successfully!', savedNotesCount: user.savedNotes.length });
     } else {
-      res.status(200).json({ message: 'Note already saved.', savedNotes: user.savedNotes });
+      res.status(200).json({ message: 'Note already saved.', savedNotesCount: user.savedNotes.length });
     }
   } catch (error) {
     console.error('Error saving note (userRoutes):', error);
@@ -109,9 +111,10 @@ router.put('/unsave/:noteId', protect, async (req, res) => {
     );
     if (user.savedNotes.length < initialLength) {
       await user.save();
-      res.status(200).json({ message: 'Note unsaved successfully!', savedNotes: user.savedNotes });
+      // Send back only relevant info, not the full user object
+      res.status(200).json({ message: 'Note unsaved successfully!', savedNotesCount: user.savedNotes.length });
     } else {
-        res.status(200).json({ message: 'Note was not found in saved list.', savedNotes: user.savedNotes });
+        res.status(200).json({ message: 'Note was not found in saved list.', savedNotesCount: user.savedNotes.length });
     }
   } catch (error) {
     console.error('Error unsaving note (userRoutes):', error);
@@ -120,24 +123,41 @@ router.put('/unsave/:noteId', protect, async (req, res) => {
 });
 
 // @route   GET /api/users/savednotes
-// @desc    Get all saved notes for a user
+// @desc    Get all saved notes for a user with pagination
 // @access  Private
 router.get('/savednotes', protect, async (req, res) => {
   try {
-    // Populate savedNotes and then populate the 'user' field within each saved note
-    const user = await User.findById(req.user.id).populate({
-        path: 'savedNotes', // Populate the array of Note IDs
-        populate: {
-            path: 'user', // Within each Note, populate its 'user' field
-            select: 'name avatar' // Select only name and avatar of the note's uploader
-        }
-    });
+    const userId = req.user.id;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10; // Default limit per page
+    const skip = (page - 1) * limit;
+
+    const user = await User.findById(userId);
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    res.json(user.savedNotes);
+    const savedNoteIds = user.savedNotes; // Array of note IDs stored on the user document
+
+    // Fetch the actual Note documents that correspond to the savedNoteIds
+    // Apply pagination (skip and limit) and populate the uploader's info
+    const notes = await Note.find({ _id: { $in: savedNoteIds } })
+                            .populate('user', 'name avatar') // Populate the 'user' field within each Note
+                            .sort({ createdAt: -1 }) // Sort by creation date, newest first
+                            .skip(skip)
+                            .limit(limit);
+
+    const totalNotes = savedNoteIds.length; // Total count is simply the number of IDs in the array
+    const totalPages = Math.ceil(totalNotes / limit);
+
+    res.json({
+      notes: notes,
+      page: page,
+      totalPages: totalPages,
+      totalNotes: totalNotes,
+    });
+
   } catch (error) {
     console.error('Error fetching saved notes (userRoutes):', error);
     res.status(500).json({ message: 'Server Error occurred while fetching saved notes.' });
