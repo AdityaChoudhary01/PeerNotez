@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
+
 const reviewSchema = new Schema({
   user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   rating: { type: Number, required: true, min: 1, max: 5 },
@@ -18,7 +19,9 @@ const NoteSchema = new Schema({
   filePath: { type: String, required: true },
   fileType: { type: String, required: true },
   fileSize: { type: Number, required: true }, // This field is crucial
-  cloudinaryId: { type: String, required: true },
+  cloudinaryId: { type: String, required: false }, // <--- CHANGED: Set to required: false
+  // Alternatively, you could just remove the 'required: true' property entirely:
+  // cloudinaryId: { type: String },
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   uploadDate: { type: Date, default: Date.now },
   reviews: [reviewSchema],
@@ -32,6 +35,11 @@ const NoteSchema = new Schema({
     required: true,
     default: 0
   },
+  downloadCount: {
+    type: Number,
+    required: true,
+    default: 0
+  }
 });
 
 module.exports = mongoose.model('Note', NoteSchema);
