@@ -21,7 +21,7 @@ const uploadToMemory = multer({
 });
 
 // =========================================================================
-// Existing GET Routes (No changes here, providing for completeness)
+// Existing GET Routes
 // =========================================================================
 
 // @route   GET /api/notes
@@ -38,10 +38,10 @@ router.get('/', async (req, res) => {
       const s = search.trim();
       andConditions.push({
         $or: [
-          { title: { $regex: s, $options: 'i' } },
+          { title: { $regex: s, $options: 'i' } }, // Corrected: $options
           { university: { $regex: s, $options: 'i' } },
-          { course: { $regex: s, 's': 'i' } },
-          { subject: { $regex: s, 's': 'i' } }, // Corrected a potential typo here
+          { course: { $regex: s, $options: 'i' } }, // Corrected: $options
+          { subject: { $regex: s, $options: 'i' } }, // Corrected: $options
         ],
       });
     }
@@ -53,10 +53,10 @@ router.get('/', async (req, res) => {
       andConditions.push({ university: { $regex: university.trim(), $options: 'i' } });
     }
     if (course && course.trim() !== '' && course.trim() !== '0') {
-      andConditions.push({ course: { $regex: course.trim(), 's': 'i' } }); // Corrected a potential typo here
+      andConditions.push({ course: { $regex: course.trim(), $options: 'i' } }); // Corrected: $options
     }
     if (subject && subject.trim() !== '' && subject.trim() !== '0') {
-      andConditions.push({ subject: { $regex: subject.trim(), 's': 'i' } }); // Corrected a potential typo here
+      andConditions.push({ subject: { $regex: subject.trim(), $options: 'i' } }); // Corrected: $options
     }
     if (year && year.trim() !== '' && year.trim() !== '0') {
       const y = Number(year);
@@ -212,7 +212,10 @@ router.post('/upload', protect, uploadToMemory.single('file'), async (req, res) 
           const uploadStream = cloudinary.uploader.upload_stream(
             {
               folder: 'notes_uploads', // Cloudinary folder for notes
-              resource_type: isImage ? 'image' : 'raw', // Image for images, raw for PDFs
+              // --- CORRECTED resource_type HERE ---
+              resource_type: (isImage || isPDF) ? 'image' : 'raw', // <--- THIS WAS THE FIX!
+              // For images: 'image'. For PDFs: 'image' (to generate preview). For others: 'raw'.
+              // ------------------------------------
               allowed_formats: ['pdf', 'jpg', 'jpeg', 'png'], // Cloudinary's specific allowed formats for these types
               public_id: path.parse(file.originalname).name + '-' + Date.now() // Unique public ID
             },
@@ -266,7 +269,7 @@ router.post('/upload', protect, uploadToMemory.single('file'), async (req, res) 
       filePath: finalFilePath, // This will be the URL from S3 or Cloudinary
       fileType: file.mimetype,
       fileSize: file.size,
-      cloudinaryId: finalCloudinaryId, // Will be null for S3 files, contains public_id for Cloudinary
+      cloudinaryId: finalCloudinaryId, // Null for S3 files, contains public_id for Cloudinary
       user: req.user._id,
     });
 
@@ -430,20 +433,20 @@ router.delete('/:id', protect, async (req, res) => {
 // Global Error Handling Middleware (for Multer and other uncaught errors)
 // =========================================================================
 router.use((err, req, res, next) => {
-  if (err instanceof multer.MulterError) {
-    console.error('--- START MULTER ERROR ---');
-    console.error('MulterError caught:', err.code, err.message);
-    console.error('Multer Stack:', err.stack);
-    console.error('--- END MULTER ERROR ---');
-    return res.status(400).json({ message: `File upload error: ${err.message}` });
-  } else if (err) {
-    console.error('--- START GENERAL UPLOAD ERROR ---');
-    console.error('General upload error caught:', err);
-    console.error('General Error Stack:', err.stack);
-    console.error('--- END GENERAL UPLOAD ERROR ---');
-    return res.status(500).json({ message: 'An unexpected file upload error occurred.' });
-  }
-  next(); // Pass to the next middleware (if any)
+  if (err instanceof multer.MulterError) {
+    console.error('--- START MULTER ERROR ---');
+    console.error('MulterError caught:', err.code, err.message);
+    console.error('Multer Stack:', err.stack);
+    console.error('--- END MULTER ERROR ---');
+    return res.status(400).json({ message: `File upload error: ${err.message}` });
+  } else if (err) {
+    console.error('--- START GENERAL UPLOAD ERROR ---');
+    console.error('General upload error caught:', err);
+    console.error('General Error Stack:', err.stack);
+    console.error('--- END GENERAL UPLOAD ERROR ---');
+    return res.status(500).json({ message: 'An unexpected file upload error occurred.' });
+  }
+  next(); // Pass to the next middleware (if any)
 });
 
 module.exports = router;
