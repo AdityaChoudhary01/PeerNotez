@@ -9,45 +9,34 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
   const isSaved = user?.savedNotes?.includes(note._id);
   const cloudName = process.env.REACT_APP_CLOUDINARY_CLOUD_NAME;
 
-  // -------------------------------------------------------------------
-  // --- UPDATED LOGIC FOR THUMBNAIL URL BASED ON STORAGE SERVICE ---
-  // -------------------------------------------------------------------
   let thumbnailUrl = '';
-  // Determine if the file is hosted on S3 (cloudinaryId will be null)
   const isS3Hosted = !note.cloudinaryId;
 
   if (isS3Hosted) {
-    // For S3-hosted office documents, display a generic icon based on file type
-    // You need to place these icon files in your public/images/icons/ folder
-    if (note.fileType.includes('word')) { // .doc, .docx
-      thumbnailUrl = '/images/icons/word-icon.png';
-    } else if (note.fileType.includes('powerpoint')) { // .ppt, .pptx
-      thumbnailUrl = '/images/icons/ppt-icon.png';
-    } else if (note.fileType.includes('excel')) { // .xls, .xlsx
-      thumbnailUrl = '/images/icons/excel-icon.png';
-    } else if (note.fileType.includes('text')) { // .txt
-      thumbnailUrl = '/images/icons/text-icon.png';
+    if (note.fileType.includes('word')) {
+      thumbnailUrl = '../../../public/images/icons/word-icon.png';
+    } else if (note.fileType.includes('powerpoint')) {
+      thumbnailUrl = '../../../public/images/icons/ppt-icon.png';
+    } else if (note.fileType.includes('excel')) {
+      thumbnailUrl = '../../../public/images/icons/excel-icon.png';
+    } else if (note.fileType.includes('text')) {
+      thumbnailUrl = '../../../public/images/icons/text-icon.png';
     }
     else {
-      // Fallback for any other S3-hosted file types
-      thumbnailUrl = '/images/icons/document-icon.png';
+      thumbnailUrl = '../../../public/images/icons/document-icon.png';
     }
   } else {
     // For Cloudinary-hosted files (images or PDFs), generate dynamic URLs
     if (note.fileType.startsWith('image/')) {
-      // For images, generate a standard thumbnail
-      thumbnailUrl = `https://res.cloudinary.com/${cloudName}/image/upload/w_400,h_300,c_fill,f_auto,q_auto/${note.cloudinaryId}`;
+      // Corrected: Append .jpg extension
+      thumbnailUrl = `https://res.cloudinary.com/${cloudName}/image/upload/w_400,h_300,c_fill,f_auto,q_auto/${note.cloudinaryId}.jpg`; // <-- ADDED .jpg HERE
     } else if (note.fileType === 'application/pdf') {
-      // For PDFs, generate a thumbnail from the first page
-      thumbnailUrl = `https://res.cloudinary.com/${cloudName}/image/upload/w_400,h_300,c_pad,pg_1,f_jpg,q_auto/${note.cloudinaryId}`;
+      // Corrected: Append .jpg extension (for PDF page thumbnail output)
+      thumbnailUrl = `https://res.cloudinary.com/${cloudName}/image/upload/w_400,h_300,c_pad,pg_1,f_jpg,q_auto/${note.cloudinaryId}.jpg`; // <-- ADDED .jpg HERE
     } else {
-      // Fallback for any other 'raw' files stored on Cloudinary (e.g., text files)
       thumbnailUrl = '/images/icons/document-icon.png';
     }
   }
-  // -------------------------------------------------------------------
-  // --- END UPDATED LOGIC ---
-  // -------------------------------------------------------------------
 
   const handleSaveToggle = async (e) => {
     e.stopPropagation();
@@ -72,13 +61,12 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
     } catch (error) {
       console.error('Failed to update download count', error);
     }
-    window.open(note.filePath, '_blank'); // This correctly uses the filePath (S3 or Cloudinary)
+    window.open(note.filePath, '_blank');
   };
 
   return (
     <div className="project-card">
       <Link to={`/view/${note._id}`} className="card-thumbnail-link">
-        {/* Use the dynamically determined thumbnailUrl */}
         <img src={thumbnailUrl} alt={`Preview of ${note.title}`} className="card-thumbnail" />
       </Link>
 
