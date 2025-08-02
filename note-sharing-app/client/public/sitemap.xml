@@ -4,13 +4,44 @@
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
             http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
-<!-- created with Free Online Sitemap Generator www.xml-sitemaps.com -->
-
-
 <url>
   <loc>https://peernotez.netlify.app/</loc>
   <lastmod>2025-08-02T09:07:11+00:00</lastmod>
 </url>
 
+<url>
+  <loc>https://peernotez.netlify.app/about</loc>
+  <lastmod>2025-08-02T15:04:30+00:00</lastmod>
+</url>
+
+<url>
+  <loc>https://peernotez.netlify.app/contact</loc>
+  <lastmod>2025-08-02T15:04:30+00:00</lastmod>
+</url>
+
+<url>
+  <loc>https://peernotez.netlify.app/donate</loc>
+  <lastmod>2025-08-02T15:04:30+00:00</lastmod>
+</url>
+
+<url>
+  <loc>https://peernotez.netlify.app/login</loc>
+  <lastmod>2025-08-02T15:04:30+00:00</lastmod>
+</url>
+
+<url>
+  <loc>https://peernotez.netlify.app/signup</loc>
+  <lastmod>2025-08-02T15:04:30+00:00</lastmod>
+</url>
+
+<url>
+  <loc>https://peernotez.netlify.app/profile</loc>
+  <lastmod>2025-08-02T15:04:30+00:00</lastmod>
+</url>
+
+<url>
+  <loc>https://peernotez.netlify.app/upload</loc>
+  <lastmod>2025-08-02T15:04:30+00:00</lastmod>
+</url>
 
 </urlset>
