@@ -2015,3 +2015,91 @@ input[type="number"] {
   transform: none;
   box-shadow: none;
 }
+
+/* ==================================== */
+/* === LINK STYLES ADDED FOR CONSISTENCY === */
+/* ==================================== */
+
+/* This handles general text links in paragraphs, etc. */
+a, a:visited {
+  color: var(--primary-color);
+  text-decoration: underline;
+  transition: color 0.2s ease-in-out;
+}
+
+a:hover {
+  color: #8c73f0;
+  text-decoration: underline;
+}
+
+/* This handles links that are meant to look like buttons */
+a.nav-button, a.nav-button:visited {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  text-decoration: none;
+  border-radius: 5px;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--primary-color);
+  background-color: transparent;
+  color: var(--primary-color);
+  transition: all 0.2s ease-in-out;
+}
+
+a.nav-button:hover {
+  background-color: var(--primary-color);
+  color: white;
+  transform: translateY(-2px);
+}
+
+a.nav-button.signup-btn {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+a.nav-button.signup-btn:hover {
+  background-color: #405de6;
+}
+
+/* Auth hint links (Login/Sign Up) */
+.auth-hint a {
+  text-decoration: none;
+  font-weight: bold;
+  color: var(--primary-color);
+  transition: color 0.2s ease, text-shadow 0.2s ease;
+}
+
+.auth-hint a:hover {
+  text-decoration: underline;
+  color: #8c73f0;
+  text-shadow: 0 0 5px rgba(83, 114, 240, 0.5);
+}
+
+/* Links within the footer */
+.footer-section ul a {
+  color: var(--subtle-text-color);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footer-section ul a:hover {
+  color: var(--primary-color);
+}
+
+.footer-brand-link {
+  color: var(--heading-color);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footer-brand-link:hover {
+  color: var(--primary-color);
+}
+
+/* Links inside a note's detail text */
+.note-viewer-container p a,
+.note-viewer-container p a:visited {
+  color: var(--primary-color);
+  text-decoration: underline;
+}
