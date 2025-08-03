@@ -60,10 +60,11 @@ const ContactPage = () => {
             {status && <p className="form-status">{status}</p>}
 
             <p>
-                <Link to="/">Return to the Peernotez homepage</Link>
+                <Link to="/" className="linktag">Return to the Peernotez homepage</Link>
             </p>
         </div>
     );
 };
 
 export default ContactPage;
+
