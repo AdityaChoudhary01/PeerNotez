@@ -16,7 +16,7 @@ const DonatePage = () => {
             <h1 className="visually-hidden">Support PeerNotez: Your Contribution Makes a Difference</h1>
 
             {/* The h2 will be the visible heading, keeping your UI clean */}
-            <h2 className="visible-heading">Become a Supporter</h2>
+            <h2>Become a Supporter</h2>
             
             <section className="donate-intro">
                 <p>
