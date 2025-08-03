@@ -26,7 +26,18 @@
     --gradient-auth-border: linear-gradient(135deg, #3a4b6b 0%, #2a3858 100%);
     --gradient-auth-button-hover: linear-gradient(90deg, #e973b8 0%, #5a40e6 100%);
 }
-
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    border: 0;
+    padding: 0;
+    white-space: nowrap;
+    clip-path: inset(100%);
+    clip: rect(0 0 0 0);
+    overflow: hidden;
+}
 *, *::before, *::after {
     box-sizing: border-box;
 }
@@ -2726,3 +2737,4 @@ input[type="number"] {
   transform: none;
   box-shadow: none;
 }
+
