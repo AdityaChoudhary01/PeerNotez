@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Helmet } from 'react-helmet'; // --- IMPORT HELMET ---
-import { Link } from 'react-router-dom'; // --- IMPORT LINK ---
+import { Helmet } from 'react-helmet';
+import { Link } from 'react-router-dom';
 import NoteCard from '../components/notes/NoteCard';
 import FilterBar from '../components/common/FilterBar';
 import Pagination from '../components/common/Pagination';
@@ -12,7 +12,6 @@ const HomePage = () => {
     const [filters, setFilters] = useState({});
     const [sortBy, setSortBy] = useState('uploadDate');
     
-    // --- STATE FOR PAGINATION ---
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
 
@@ -25,13 +24,10 @@ const HomePage = () => {
                     sort: sortBy,
                     page: page,
                 };
-                // NOTE: Using a relative URL like '/notes' is a good practice
                 const { data } = await axios.get('/notes', { params });
-                
                 setNotes(data.notes);
                 setPage(data.page);
                 setTotalPages(data.totalPages);
-
             } catch (error) {
                 console.error("Failed to fetch notes", error);
             } finally {
@@ -53,29 +49,60 @@ const HomePage = () => {
         <div>
             <Helmet>
                 <title>PeerNotez | Share and Discover Academic Notes</title>
-        <meta 
-        name="description" 
-        content="Find, share, and explore academic notes across universities and courses. PeerNotez helps students collaborate and learn more effectively. Aditya, Aditya Choudhary" 
-    />
-             <script type="application/ld+json">
-        {`
-        {
-          "@context": "https://schema.org",
-          "@type": "WebSite",
-          "name": "PeerNotez",
-          "url": "https://peernotez.netlify.app/",
-          "description": "PeerNotez helps students share and find academic notes globally."
-        }
-        `}
-    </script>
-    <link rel="canonical" href="https://peernotez.netlify.app/" />
+                <meta 
+                    name="description" 
+                    content="Find, share, and explore academic notes across universities and courses. PeerNotez helps students collaborate and learn more effectively. Aditya, Aditya Choudhary" 
+                />
+                
+                {/* Canonical URL */}
+                <link rel="canonical" href="https://peernotez.netlify.app/" />
+
+                {/* JSON-LD WebSite schema */}
+                <script type="application/ld+json">
+                {`
+                {
+                  "@context": "https://schema.org",
+                  "@type": "WebSite",
+                  "name": "PeerNotez",
+                  "url": "https://peernotez.netlify.app/",
+                  "description": "PeerNotez helps students share and find academic notes globally."
+                }
+                `}
+                </script>
+
+                {/* JSON-LD Organization schema */}
+                <script type="application/ld+json">
+                {`
+                {
+                  "@context": "https://schema.org",
+                  "@type": "Organization",
+                  "name": "PeerNotez",
+                  "url": "https://peernotez.netlify.app/",
+                  "logo": "https://peernotez.netlify.app/logo192.png",
+                  "sameAs": [
+                    "https://www.instagram.com/aditya_choudhary__021/",
+                    "https://www.linkedin.com/in/aditya-kumar-38093a304/"
+                  ]
+                }
+                `}
+                </script>
+
+                {/* Open Graph Meta Tags */}
+                <meta property="og:title" content="PeerNotez | Share and Discover Academic Notes" />
+                <meta property="og:description" content="Find, share, and explore academic notes across universities and courses. PeerNotez helps students collaborate and learn more effectively." />
+                <meta property="og:url" content="https://peernotez.netlify.app/" />
+                <meta property="og:type" content="website" />
+                <meta property="og:image" content="https://peernotez.netlify.app/logo192.png" />
             </Helmet>
 
-            {/* A more descriptive and branded h1 for the homepage */}
             <h1>Welcome to PeerNotez! Share and Discover Notes from Students</h1>
             
-            <section className="welcome-section" style={{marginBottom: '2.5rem'}}>
-                <p>PeerNotez is a collaborative platform dedicated to helping students learn and share knowledge freely. Use the search and filters below to find notes from universities and courses worldwide, or <Link to="/signup" className="linktag">create an account</Link> to start uploading your own!</p>
+            <section className="welcome-section" style={{ marginBottom: '2.5rem' }}>
+                <p>
+                    PeerNotez is a collaborative platform dedicated to helping students learn and share knowledge freely. 
+                    Use the search and filters below to find notes from universities and courses worldwide, or{' '}
+                    <Link to="/signup" className="linktag">create an account</Link> to start uploading your own!
+                </p>
             </section>
             
             <FilterBar onFilterSubmit={handleFilterSubmit} />
@@ -84,7 +111,11 @@ const HomePage = () => {
                 <h2>All Notes</h2>
                 <div className="sort-container">
                     <label htmlFor="sort-select">Sort by:</label>
-                    <select id="sort-select" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+                    <select 
+                        id="sort-select" 
+                        value={sortBy} 
+                        onChange={(e) => setSortBy(e.target.value)}
+                    >
                         <option value="uploadDate">Most Recent</option>
                         <option value="highestRated">Highest Rated</option>
                         <option value="mostDownloaded">Most Downloaded</option>
@@ -106,13 +137,14 @@ const HomePage = () => {
                     />
                 </>
             ) : (
-                <p style={{textAlign: 'center', marginTop: '2rem'}}>No notes found matching your criteria.</p>
+                <p style={{ textAlign: 'center', marginTop: '2rem' }}>
+                    No notes found matching your criteria.
+                </p>
             )}
 
-            {/* --- ADD INTERNAL LINKS TO THE FOOTER OR A SIDEBAR --- */}
-            <div className="footer-links" style={{marginTop: '2rem', textAlign: 'center'}}>
-                <Link to="/about" className="linktag" style={{marginRight: '1rem'}}>About Peernotez</Link>
-                <Link to="/contact" className="linktag" style={{marginRight: '1rem'}}>Contact Us</Link>
+            <div className="footer-links" style={{ marginTop: '2rem', textAlign: 'center' }}>
+                <Link to="/about" className="linktag" style={{ marginRight: '1rem' }}>About Peernotez</Link>
+                <Link to="/contact" className="linktag" style={{ marginRight: '1rem' }}>Contact Us</Link>
                 <Link to="/donate" className="linktag">Support This Project</Link>
             </div>
         </div>
@@ -120,6 +152,3 @@ const HomePage = () => {
 };
 
 export default HomePage;
-
-
-
