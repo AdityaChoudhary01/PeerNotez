@@ -53,6 +53,22 @@ const HomePage = () => {
         <div>
             <Helmet>
                 <title>PeerNotez | Share and Discover Academic Notes</title>
+        <meta 
+        name="description" 
+        content="Find, share, and explore academic notes across universities and courses. PeerNotez helps students collaborate and learn more effectively. Aditya, Aditya Choudhary" 
+    />
+             <script type="application/ld+json">
+        {`
+        {
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          "name": "PeerNotez",
+          "url": "https://peernotez.com",
+          "description": "PeerNotez helps students share and find academic notes globally."
+        }
+        `}
+    </script>
+    <link rel="canonical" href="https://peernotez.com/" />
             </Helmet>
 
             {/* A more descriptive and branded h1 for the homepage */}
@@ -104,4 +120,5 @@ const HomePage = () => {
 };
 
 export default HomePage;
+
 
