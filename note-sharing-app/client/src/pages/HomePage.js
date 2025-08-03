@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { Helmet } from 'react-helmet'; // --- IMPORT HELMET ---
+import { Link } from 'react-router-dom'; // --- IMPORT LINK ---
 import NoteCard from '../components/notes/NoteCard';
 import FilterBar from '../components/common/FilterBar';
-import Pagination from '../components/common/Pagination'; // --- ADD THIS IMPORT ---
+import Pagination from '../components/common/Pagination';
 
 const HomePage = () => {
     const [notes, setNotes] = useState([]);
@@ -18,15 +20,14 @@ const HomePage = () => {
         const fetchNotes = async () => {
             setLoading(true);
             try {
-                // Combine all parameters for the API call
                 const params = {
                     ...filters,
                     sort: sortBy,
                     page: page,
                 };
+                // NOTE: Using a relative URL like '/notes' is a good practice
                 const { data } = await axios.get('/notes', { params });
                 
-                // Set state from the new API response structure
                 setNotes(data.notes);
                 setPage(data.page);
                 setTotalPages(data.totalPages);
@@ -38,24 +39,29 @@ const HomePage = () => {
             }
         };
         fetchNotes();
-    }, [filters, sortBy, page]); // Re-fetch when filters, sort, or page changes
+    }, [filters, sortBy, page]);
 
     const handleFilterSubmit = (newFilters) => {
         const activeFilters = Object.fromEntries(
             Object.entries(newFilters).filter(([_, value]) => value !== '')
         );
-        setPage(1); // Reset to page 1 on a new filter
+        setPage(1);
         setFilters(activeFilters);
     };
 
     return (
         <div>
-            <section className="welcome-section" style={{marginBottom: '2.5rem'}}>
-                <h2>Welcome to PeerNotez!</h2>
-                <p>Share and discover notes from students across universities and courses.</p>
-            </section>
+            <Helmet>
+                <title>PeerNotez | Share and Discover Academic Notes</title>
+            </Helmet>
 
-            <h1>Find Notes</h1>
+            {/* A more descriptive and branded h1 for the homepage */}
+            <h1>Welcome to PeerNotez! Share and Discover Notes from Students</h1>
+            
+            <section className="welcome-section" style={{marginBottom: '2.5rem'}}>
+                <p>PeerNotez is a collaborative platform dedicated to helping students learn and share knowledge freely. Use the search and filters below to find notes from universities and courses worldwide, or <Link to="/signup">create an account</Link> to start uploading your own!</p>
+            </section>
+            
             <FilterBar onFilterSubmit={handleFilterSubmit} />
             
             <div className="notes-header">
@@ -77,7 +83,6 @@ const HomePage = () => {
                     <div className="notes-grid">
                         {notes.map(note => <NoteCard key={note._id} note={note} />)}
                     </div>
-                    {/* --- ADD THE PAGINATION COMPONENT --- */}
                     <Pagination 
                         page={page} 
                         totalPages={totalPages} 
@@ -87,6 +92,13 @@ const HomePage = () => {
             ) : (
                 <p style={{textAlign: 'center', marginTop: '2rem'}}>No notes found matching your criteria.</p>
             )}
+
+            {/* --- ADD INTERNAL LINKS TO THE FOOTER OR A SIDEBAR --- */}
+            <div className="footer-links" style={{marginTop: '2rem', textAlign: 'center'}}>
+                <Link to="/about" style={{marginRight: '1rem'}}>About Peernotez</Link>
+                <Link to="/contact" style={{marginRight: '1rem'}}>Contact Us</Link>
+                <Link to="/donate">Support This Project</Link>
+            </div>
         </div>
     );
 };
