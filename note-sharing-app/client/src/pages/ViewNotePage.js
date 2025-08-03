@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom'; // --- IMPORT LINK ---
+import { Helmet } from 'react-helmet'; // --- IMPORT HELMET ---
 import Reviews from '../components/notes/Reviews';
 import StarRating from '../components/common/StarRating';
 
@@ -37,7 +38,7 @@ const ViewNotePage = () => {
         if (
             fileType === 'application/pdf' ||
             fileType === 'application/vnd.openxmlformats-officedocument.presentationml.presentation' || // .pptx
-            fileType === 'application/vnd.ms-powerpoint' || // .ppt - This line was corrected
+            fileType === 'application/vnd.ms-powerpoint' || // .ppt
             fileType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || // .docx
             fileType === 'application/msword' // .doc
         ) {
@@ -61,19 +62,25 @@ const ViewNotePage = () => {
         return <div>Loading...</div>;
     }
 
-       return (
+    return (
         <div className="content-page">
-           <h1 className="visually-hidden">
-  Upload Your Study Notes – Help Fellow Students Learn and Succeed
-</h1>
+            <Helmet>
+                <title>{note.title} - {note.subject} | PeerNotez</title>
+            </Helmet>
 
             <div className="note-viewer-container">
-                <h2>{note.title}</h2>
+                {/* Promote the note title to an h1 tag */}
+                <h1>{note.title}</h1>
+                <p>
+                    <strong>Subject:</strong> <Link to={`/search?q=${note.subject}`}>{note.subject}</Link>
+                    <br />
+                    <strong>University:</strong> <Link to={`/search?q=${note.university}`}>{note.university}</Link>
+                </p>
                 <div className="note-meta-details">
                     <StarRating rating={note.rating} readOnly={true} />
                     <span>{note.numReviews} Reviews</span>
                 </div>
-                <p>{note.subject} - {note.university}</p>
+                
                 <div className="file-viewer-frame">
                     {renderFileViewer()}
                 </div>
