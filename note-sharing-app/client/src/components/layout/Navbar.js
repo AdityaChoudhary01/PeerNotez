@@ -24,15 +24,22 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="navbar">
+    <nav className="navbar" aria-label="Main navigation">
       <div className="navbar-container">
+        {/* Brand link with a clear accessible label */}
         <Link to="/" className="navbar-brand" onClick={() => setMenuOpen(false)}>
+          <span className="visually-hidden">Peernotez Home</span>
           PeerNotez 📚
         </Link>
         
-        <div className="hamburger" onClick={() => setMenuOpen(!menuOpen)}>
+        {/* Added aria-label for accessibility */}
+        <button
+          className="hamburger"
+          onClick={() => setMenuOpen(!menuOpen)}
+          aria-label={menuOpen ? "Close main menu" : "Open main menu"}
+        >
           {menuOpen ? '✕' : '☰'}
-        </div>
+        </button>
 
         <div className={menuOpen ? "nav-menu active" : "nav-menu"}>
           <form onSubmit={handleSearch} className="search-form-nav">
@@ -42,8 +49,9 @@ const Navbar = () => {
               placeholder="Search notes..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              aria-label="Search notes"
             />
-            <button type="submit" className="search-button">Search</button>
+            <button type="submit" className="search-button" aria-label="Submit search">Search</button>
           </form>
 
           <div className="navbar-links">
@@ -51,7 +59,7 @@ const Navbar = () => {
             <Link to="/about" className="nav-link" onClick={() => setMenuOpen(false)}>About</Link>
             <Link to="/contact" className="nav-link" onClick={() => setMenuOpen(false)}>Contact</Link>
             <Link to="/donate" className="nav-link" onClick={() => setMenuOpen(false)}>Donate ❤️</Link>
-                  {user && user.role === 'admin' && (
+            {user && user.role === 'admin' && (
               <Link to="/admin" className="nav-link admin-link" onClick={() => setMenuOpen(false)}>Admin</Link>
             )}
           </div>
@@ -59,7 +67,6 @@ const Navbar = () => {
           <div className="navbar-auth">
             {user ? (
               <>
-                {/* --- THIS BLOCK IS UPDATED --- */}
                 <Link to="/upload" className="nav-button signup-btn" onClick={() => setMenuOpen(false)}>Upload</Link>
                 <button onClick={handleLogout} className="nav-button logout-btn">Logout</button>
                 <Link to="/profile" className="nav-link-avatar" onClick={() => setMenuOpen(false)}>
