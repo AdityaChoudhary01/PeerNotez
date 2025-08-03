@@ -2738,3 +2738,39 @@ input[type="number"] {
   transform: none;
   box-shadow: none;
 }
+
+/*
+ * This style applies to any element with the 'linktag' class.
+ * It's ideal for a standard text link that appears in a paragraph,
+ * a list, or other content areas.
+ */
+.linktag {
+  /* Use your primary brand color for the link text */
+  color: var(--primary-color);
+  
+  /* Remove the default underline for a cleaner look */
+  text-decoration: none;
+  
+  /* Add a smooth transition for color and underline changes */
+  transition: color 0.2s ease-in-out, text-decoration 0.2s ease-in-out;
+}
+
+/* * This is the hover state for the link. When a user hovers over the link,
+ * it changes to a brighter color and adds an underline for better
+ * visual feedback.
+ */
+.linktag:hover {
+  /* A brighter, more engaging color on hover */
+  color: #8c73f0;
+  
+  /* Add an underline to signal that it is clickable */
+  text-decoration: underline;
+}
+
+/*
+ * To ensure consistency, you can also apply the same style
+ * to links that a user has already visited.
+ */
+.linktag:visited {
+  color: var(--primary-color);
+}
