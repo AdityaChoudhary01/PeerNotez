@@ -1,34 +1,63 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-<meta name="description" content="PeerNotez is a note-sharing platform for students to discover handwritten notes, collaborate with peers, and boost study efficiency." />
-
-<meta name="google-site-verification" content="kX6DyOp_ozeNUBXniCtuPZOPdK1MTJxpQZ6v0OXeVLI" />
-   <meta name="google-site-verification" content="ftdUSQ0-7RzVhdMCxpKJOqlfjqOVyCy_ee4WIEwSjG0" />
-    <meta name="msvalidate.01" content="2395AC146C62BB5D66E421F75E9E7DCF" />
-    <meta name="keywords" content="PeerNotez, student notes, note sharing app, collaborative study, handwritten notes, study material, education" />
-<meta property="og:title" content="PeerNotez" />
-<meta property="og:description" content="Collaborative note-sharing platform for students." />
-<meta property="og:url" content="https://peernotez.netlify.app" />
-<meta property="og:image" content="https://peernotez.netlify.app/logo192.png" />
-
-<meta name="twitter:card" content="summary_large_image" />
-
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+<head>
+  <meta charset="utf-8" />
+  <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#000000" />
+  
+  <meta name="description" content="PeerNotez is a note-sharing platform for students to discover handwritten notes, collaborate with peers, and boost study efficiency." />
+  
+  <meta name="google-site-verification" content="kX6DyOp_ozeNUBXniCtuPZOPdK1MTJxpQZ6v0OXeVLI" />
+  
+  <meta name="msvalidate.01" content="2395AC146C62BB5D66E421F75E9E7DCF" />
+  
+  <meta name="keywords" content="PeerNotez, peernotes, peer notez, student notes, note sharing app, collaborative study, handwritten notes, study material, education" />
+  
+  <!-- Open Graph Meta Tags -->
+  <meta property="og:title" content="PeerNotez" />
+  <meta property="og:description" content="Collaborative note-sharing platform for students." />
+  <meta property="og:url" content="https://peernotez.netlify.app/" />
+  <meta property="og:image" content="https://peernotez.netlify.app/logo192.png" />  
+  <!-- Canonical URL -->
+  <link rel="canonical" href="https://peernotez.netlify.app/" />
+  
+  <!-- Apple Touch Icon & Manifest -->
+  <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+  <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+  
   <title>PeerNotez – Share and Discover Student Notes Online</title>
 
-  </head>
-  <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-<h1 style="position: absolute; left: -9999px;">
-  PeerNotez – A Student-Powered Platform to Discover & Share Notes
-</h1>
-    <div id="root"></div>
-  </body>
-</html>
+  <!-- JSON-LD Website Schema -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "PeerNotez",
+    "url": "https://peernotez.netlify.app/",
+    "description": "PeerNotez helps students share and find academic notes globally."
+  }
+  </script>
 
+  <!-- JSON-LD Organization Schema -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "PeerNotez",
+    "url": "https://peernotez.netlify.app/",
+    "logo": "https://peernotez.netlify.app/logo192.png",
+  }
+  </script>
+</head>
+<body>
+  <noscript>You need to enable JavaScript to run this app.</noscript>
+  
+  <!-- Hidden H1 for non-JS crawlers, matches React app's visible <h1> -->
+  <h1 style="position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden;">
+    PeerNotez – A Student-Powered Platform to Discover & Share Notes
+  </h1>
+  
+  <div id="root"></div>
+</body>
+</html>
