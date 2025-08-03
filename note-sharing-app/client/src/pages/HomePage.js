@@ -63,12 +63,12 @@ const HomePage = () => {
           "@context": "https://schema.org",
           "@type": "WebSite",
           "name": "PeerNotez",
-          "url": "https://peernotez.com",
+          "url": "https://peernotez.netlify.app/",
           "description": "PeerNotez helps students share and find academic notes globally."
         }
         `}
     </script>
-    <link rel="canonical" href="https://peernotez.com/" />
+    <link rel="canonical" href="https://peernotez.netlify.app/" />
             </Helmet>
 
             {/* A more descriptive and branded h1 for the homepage */}
@@ -120,5 +120,6 @@ const HomePage = () => {
 };
 
 export default HomePage;
+
 
 
