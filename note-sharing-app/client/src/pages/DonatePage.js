@@ -67,7 +67,7 @@ const DonatePage = () => {
                     </div>
                 </div>
                 <p>
-                    <Link to="/">Return to the Peernotez homepage</Link>
+                    <Link to="/" className="linktag">Return to the Peernotez homepage</Link>
                 </p>
             </section>
         </div>
@@ -75,3 +75,4 @@ const DonatePage = () => {
 };
 
 export default DonatePage;
+
