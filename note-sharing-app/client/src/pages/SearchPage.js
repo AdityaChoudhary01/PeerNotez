@@ -53,7 +53,7 @@ const SearchPage = () => {
             ) : (
                 <>
                     <p>No notes found matching your search criteria.</p>
-                    <p><Link to="/">Return to the homepage</Link> to browse for other notes.</p>
+                    <p><Link to="/" className="linktag">Return to the homepage</Link> to browse for other notes.</p>
                 </>
             )}
         </div>
