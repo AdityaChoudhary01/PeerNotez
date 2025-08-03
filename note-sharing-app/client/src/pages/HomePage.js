@@ -59,7 +59,7 @@ const HomePage = () => {
             <h1>Welcome to PeerNotez! Share and Discover Notes from Students</h1>
             
             <section className="welcome-section" style={{marginBottom: '2.5rem'}}>
-                <p>PeerNotez is a collaborative platform dedicated to helping students learn and share knowledge freely. Use the search and filters below to find notes from universities and courses worldwide, or <Link to="/signup">create an account</Link> to start uploading your own!</p>
+                <p>PeerNotez is a collaborative platform dedicated to helping students learn and share knowledge freely. Use the search and filters below to find notes from universities and courses worldwide, or <Link to="/signup" className="linktag">create an account</Link> to start uploading your own!</p>
             </section>
             
             <FilterBar onFilterSubmit={handleFilterSubmit} />
@@ -95,12 +95,13 @@ const HomePage = () => {
 
             {/* --- ADD INTERNAL LINKS TO THE FOOTER OR A SIDEBAR --- */}
             <div className="footer-links" style={{marginTop: '2rem', textAlign: 'center'}}>
-                <Link to="/about" style={{marginRight: '1rem'}}>About Peernotez</Link>
-                <Link to="/contact" style={{marginRight: '1rem'}}>Contact Us</Link>
-                <Link to="/donate">Support This Project</Link>
+                <Link to="/about" className="linktag" style={{marginRight: '1rem'}}>About Peernotez</Link>
+                <Link to="/contact" className="linktag" style={{marginRight: '1rem'}}>Contact Us</Link>
+                <Link to="/donate" className="linktag">Support This Project</Link>
             </div>
         </div>
     );
 };
 
 export default HomePage;
+
