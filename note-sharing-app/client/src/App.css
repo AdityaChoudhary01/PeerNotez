@@ -4,19 +4,18 @@
 
 /* --- GENERAL & SETUP --- */
 :root {
-    --primary-color: #5372f0;
-    --secondary-color: #1a2744;
-    --background-color: #121220;
-    --card-background: #1a2744;
-    --border-color: #2a3858;
-    --text-color: #e0e0e0;
-    --heading-color: #ffffff;
-    --subtle-text-color: #a0a0c0;
-    --input-background: #0f172a;
-    --error-color: #e94560;
-    --success-color: #1abc9c;
-    --warning-color: #f39c12;
-
+    --primary-color: #5372f0;
+    --secondary-color: #1a2744;
+    --background-color: #121220;
+    --card-background: #1a2744;
+    --border-color: #2a3858;
+    --text-color: #e0e0e0;
+    --heading-color: #ffffff;
+    --subtle-text-color: #a0a0c0;
+    --input-background: #0f172a;
+    --error-color: #e94560;
+    --success-color: #1abc9c;
+    --warning-color: #f39c12;
     /* New Gradient Variables for consistency */
     --gradient-primary: linear-gradient(90deg, #5372f0 0%, #6a53f0 100%);
     --gradient-primary-hover: linear-gradient(90deg, #405de6 0%, #5a40e6 100%);
@@ -2010,3 +2009,4 @@ input[type="number"] {
   transform: none;
   box-shadow: none;
 }
+
