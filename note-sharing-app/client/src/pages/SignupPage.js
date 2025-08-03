@@ -41,10 +41,11 @@ const SignupPage = () => {
             </form>
 
             <div className="auth-footer" style={{marginTop: '1rem', textAlign: 'center'}}>
-                <Link to="/">Return to Homepage</Link>
+                <Link to="/" className="linktag">Return to Homepage</Link>
             </div>
         </div>
     );
 };
 
 export default SignupPage;
+
