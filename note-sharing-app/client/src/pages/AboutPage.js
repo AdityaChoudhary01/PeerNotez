@@ -17,7 +17,7 @@ const AboutPage = () => {
                     Our mission at PeerNotez is to create a collaborative, open, and accessible platform where students can freely share and discover academic resources. We believe that education should be a community effort, and by sharing knowledge, we can all learn and grow together.
                 </p>
                 <p>
-                    Learn more about what we do on the <Link to="/">Peernotez homepage</Link>.
+                    Learn more about what we do on the <Link to="/" className="linktag">Peernotez homepage</Link>.
                 </p>
             </section>
 
@@ -42,3 +42,4 @@ const AboutPage = () => {
 };
 
 export default AboutPage;
+
