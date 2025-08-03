@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { Helmet } from 'react-helmet';
+import { Link } from 'react-router-dom';
 
 const ContactPage = () => {
     const [formData, setFormData] = useState({
@@ -19,7 +21,7 @@ const ContactPage = () => {
         try {
             const res = await axios.post('https://peernotez.onrender.com/api/contact', formData);
             setStatus(res.data.message);
-            setFormData({ name: '', email: '', message: '' }); // Clear form
+            setFormData({ name: '', email: '', message: '' });
         } catch (error) {
             setStatus(error.response.data.message || 'Failed to send message.');
         }
@@ -27,8 +29,16 @@ const ContactPage = () => {
 
     return (
         <div className="contact-page">
-            <h1>Contact Us</h1>
-            <p>Have a question or feedback? Fill out the form below to get in touch with us.</p>
+            <Helmet>
+                <title>Contact Peernotez | Get in Touch</title>
+            </Helmet>
+
+            <h1>Contact the Peernotez Team</h1>
+            
+            <p>
+                Have a question or feedback for PeerNotez? Fill out the form below to get in touch with us.
+            </p>
+            
             <form onSubmit={handleSubmit} className="contact-form">
                 <div className="form-group">
                     <label htmlFor="name">Your Name</label>
@@ -46,7 +56,12 @@ const ContactPage = () => {
                     {status === 'Sending...' ? 'Sending...' : 'Send Message'}
                 </button>
             </form>
+            
             {status && <p className="form-status">{status}</p>}
+
+            <p>
+                <Link to="/">Return to the Peernotez homepage</Link>
+            </p>
         </div>
     );
 };
