@@ -7,7 +7,7 @@ const Footer = () => {
       <div className="footer-container">
         <div className="footer-section">
           <h4>
-            <Link to="/" className="footer-brand-link">
+            <Link to="/" className="footer-brand-link" className="linktag">
               About PeerNotez
             </Link>
           </h4>
@@ -69,3 +69,4 @@ const Footer = () => {
 };
 
 export default Footer;
+
