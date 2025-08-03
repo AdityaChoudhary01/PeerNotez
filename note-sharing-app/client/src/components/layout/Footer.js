@@ -7,9 +7,7 @@ const Footer = () => {
       <div className="footer-container">
         <div className="footer-section">
           <h4>
-            <Link to="/" className="footer-brand-link" className="linktag">
               About PeerNotez
-            </Link>
           </h4>
           <p>
             A collaborative platform for students to share and discover academic notes, fostering a community of learning.
@@ -69,4 +67,5 @@ const Footer = () => {
 };
 
 export default Footer;
+
 
