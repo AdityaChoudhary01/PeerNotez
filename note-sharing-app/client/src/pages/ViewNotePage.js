@@ -72,9 +72,9 @@ const ViewNotePage = () => {
                 {/* Promote the note title to an h1 tag */}
                 <h1>{note.title}</h1>
                 <p>
-                    <strong>Subject:</strong> <Link to={`/search?q=${note.subject}`}>{note.subject}</Link>
+                    <strong>Subject:</strong> <Link to={`/search?q=${note.subject}`} className="linktag">{note.subject}</Link>
                     <br />
-                    <strong>University:</strong> <Link to={`/search?q=${note.university}`}>{note.university}</Link>
+                    <strong>University:</strong> <Link to={`/search?q=${note.university}`} className="linktag">{note.university}</Link>
                 </p>
                 <div className="note-meta-details">
                     <StarRating rating={note.rating} readOnly={true} />
@@ -94,3 +94,4 @@ const ViewNotePage = () => {
 };
 
 export default ViewNotePage;
+
