@@ -1,14 +1,23 @@
 import React from 'react';
+import { Helmet } from 'react-helmet';
+import { Link } from 'react-router-dom'; // Assuming you use react-router-dom
 
 const AboutPage = () => {
     return (
         <div className="content-page">
+            <Helmet>
+                <title>About PeerNotez | Mission, Vision, and Community</title>
+            </Helmet>
+            
             <h1>About PeerNotez</h1>
             
             <section>
                 <h2>Our Mission</h2>
                 <p>
                     Our mission at PeerNotez is to create a collaborative, open, and accessible platform where students can freely share and discover academic resources. We believe that education should be a community effort, and by sharing knowledge, we can all learn and grow together.
+                </p>
+                <p>
+                    Learn more about what we do on the <Link to="/">Peernotez homepage</Link>.
                 </p>
             </section>
 
