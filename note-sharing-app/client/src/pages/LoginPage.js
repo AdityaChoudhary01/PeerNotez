@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom'; // --- IMPORT LINK ---
+import { Helmet } from 'react-helmet'; // --- IMPORT HELMET ---
 import useAuth from '../hooks/useAuth';
 
 const LoginPage = () => {
@@ -21,7 +22,11 @@ const LoginPage = () => {
     
     return (
         <div className="auth-card">
-        <h1 className="visually-hidden">Login to PeerNotez – Access Your Notes, Favorites, and Personalized Content</h1>
+            <Helmet>
+                <title>Login to Peernotez | Access Your Account</title>
+            </Helmet>
+            
+            <h1 className="visually-hidden">Login to PeerNotez – Access Your Notes, Favorites, and Personalized Content</h1>
 
             <form onSubmit={handleSubmit} className="auth-form">
                 <h2 style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
@@ -30,8 +35,12 @@ const LoginPage = () => {
                 <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" required className="auth-input" />
                 <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Password" required className="auth-input" />
                 <button type="submit" className="auth-btn">Login</button>
-                <div className="auth-hint">Don't have an account? <a href="/signup">Sign Up</a></div>
+                <div className="auth-hint">Don't have an account? <Link to="/signup">Sign Up</Link></div>
             </form>
+            
+            <div className="auth-footer" style={{marginTop: '1rem', textAlign: 'center'}}>
+                <Link to="/">Return to Homepage</Link>
+            </div>
         </div>
     );
 };
