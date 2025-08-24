@@ -3,7 +3,7 @@ import axios from 'axios';
 import useAuth from '../../hooks/useAuth';
 import StarRating from '../common/StarRating';
 
-const Reviews = ({ noteId, reviews }) => {
+const Reviews = ({ noteId, reviews, onReviewSubmitted }) => {
     const [rating, setRating] = useState(0);
     const [comment, setComment] = useState('');
     const { user, token } = useAuth();
@@ -13,17 +13,21 @@ const Reviews = ({ noteId, reviews }) => {
         try {
             const config = { headers: { Authorization: `Bearer ${token}` } };
             await axios.post(`/notes/${noteId}/reviews`, { rating, comment }, config);
-            window.location.reload();
+            onReviewSubmitted(); // Refresh the parent component
+            setRating(0);
+            setComment('');
         } catch (error) {
             alert(error.response?.data?.message || 'Failed to submit review.');
         }
     };
     
-    // Helper function to format dates
     const formatDate = (dateString) => {
+        if (!dateString) return '';
         const options = { year: 'numeric', month: 'long', day: 'numeric' };
         return new Date(dateString).toLocaleDateString(undefined, options);
     };
+
+    const defaultAvatar = 'https://res.cloudinary.com/dmtnonxtt/image/upload/v1752478950/avatar-default_g5gzu2.png';
 
     return (
         <div className="reviews-section">
@@ -34,9 +38,14 @@ const Reviews = ({ noteId, reviews }) => {
                 {reviews.map((review) => (
                     <div key={review._id} className="review-card">
                         <div className="review-author">
-                            <img src={review.user.avatar} alt={review.user.name} className="review-avatar" />
+                            {/* --- THIS BLOCK IS CORRECTED --- */}
+                            <img 
+                                src={review.user?.avatar || defaultAvatar} 
+                                alt={review.user?.name || 'Deleted User'} 
+                                className="review-avatar" 
+                            />
                             <div className="review-author-info">
-                                <strong>{review.user.name}</strong>
+                                <strong>{review.user?.name || 'Deleted User'}</strong>
                                 <span>{formatDate(review.createdAt)}</span>
                             </div>
                         </div>
@@ -52,7 +61,7 @@ const Reviews = ({ noteId, reviews }) => {
                 <div className="review-form">
                     <h3>Write a Review</h3>
                     <form onSubmit={handleSubmit}>
-                        <div className="form-group">
+                         <div className="form-group">
                             <label>Your Rating</label>
                             <StarRating rating={rating} setRating={setRating} />
                         </div>
