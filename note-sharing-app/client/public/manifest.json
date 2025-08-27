@@ -10,15 +10,17 @@
     {
       "src": "logo192.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "any"
     },
     {
       "src": "logo512.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any"
     },
-      {
-      "src": "logo_maskable.png", 
+    {
+      "src": "logo_maskable.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "maskable"
@@ -26,7 +28,6 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#5372f0",
+  "theme_color": "#1a2744",
   "background_color": "#121220"
 }
-
