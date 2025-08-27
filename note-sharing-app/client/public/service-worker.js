@@ -5,9 +5,9 @@ self.addEventListener("install", event => {
         "/",
         "/index.html",
         "/manifest.json",
-        "/icons/logo192.png",
-        "/icons/logo512.png",
-        "/icons/favicon.ico"
+        "/logo192.png",
+        "/logo512.png",
+        "/favicon.ico"
         
       ]);
     })
