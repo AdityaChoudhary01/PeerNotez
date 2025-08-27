@@ -20,18 +20,25 @@ import AdminDashboardPage from './pages/AdminDashboardPage';
 import './App.css';
 
 function App() {
-  const [loading, setLoading] = useState(true);
+  // --- CHANGE: Check if the app is in PWA standalone mode ---
+  const isPWA = window.matchMedia('(display-mode: standalone)').matches;
+
+  // Show splash screen only if it's a PWA, otherwise load instantly.
+  const [loading, setLoading] = useState(isPWA);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 3000);
+    // Only run the timer if it's a PWA
+    if (isPWA) {
+      const timer = setTimeout(() => {
+        setLoading(false);
+      }, 2000); // 2-second splash screen
 
-    return () => clearTimeout(timer);
-  }, []);
+      return () => clearTimeout(timer);
+    }
+  }, [isPWA]); // Effect depends on the PWA status
 
   if (loading) {
-    return <CustomSplashScreen />; 
+    return <CustomSplashScreen />;
   }
 
   return (
