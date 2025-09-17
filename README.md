@@ -3,7 +3,7 @@
 **PeerNotez** is a modern, full-stack web application where students can **upload**, **share**, and **discover academic notes** — including PDFs, DOCX, PPTX, and images. Designed for seamless collaboration and easy access across devices, it's built using the **MERN stack** (MongoDB, Express, React, Node.js).
 
 ---
-#Live Demo
+## Live Demo👇
 https://peernotez.netlify.app/
 
 ## 🚀 Features
