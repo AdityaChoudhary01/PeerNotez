@@ -30,7 +30,7 @@ const AdminDashboardPage = () => {
         const fetchUsers = async () => {
             setLoading(true);
             try {
-                const { data } = await axios.get('http://localhost:5001/api/users', config);
+                const { data } = await axios.get('https://peernotez.netlify.app/api/users', config);
                 setUsers(data);
             } catch (error) {
                 console.error("Failed to fetch users", error);
@@ -44,7 +44,7 @@ const AdminDashboardPage = () => {
         const fetchNotes = async () => {
             setLoading(true);
             try {
-                const { data } = await axios.get(`http://localhost:5001/api/notes?page=${currentPage}&limit=10`, config); // Added limit
+                const { data } = await axios.get(`https://peernotez.netlify.app/api/notes?page=${currentPage}&limit=10`, config); // Added limit
                 setNotes(data.notes || []);
                 setTotalPages(data.totalPages || 0);
             } catch (error) {
@@ -70,7 +70,7 @@ const AdminDashboardPage = () => {
         if (window.confirm('Are you sure you want to delete this user permanently? This action cannot be undone.')) {
             try {
                 const config = { headers: { Authorization: `Bearer ${token}` } };
-                await axios.delete(`http://localhost:5001/api/users/${userId}`, config);
+                await axios.delete(`https://peernotez.netlify.app/api/users/${userId}`, config);
                 setUsers(users.filter(u => u._id !== userId));
                 alert('User deleted successfully.');
             } catch (error) {
@@ -83,7 +83,7 @@ const AdminDashboardPage = () => {
     const handleRoleChange = async (userId) => {
         try {
             const config = { headers: { Authorization: `Bearer ${token}` } };
-            await axios.put(`http://localhost:5001/api/users/${userId}/role`, {}, config);
+            await axios.put(`https://peernotez.netlify.app/api/users/${userId}/role`, {}, config);
             setUsers(users.map(u => 
                 u._id === userId ? { ...u, role: u.role === 'admin' ? 'user' : 'admin' } : u
             ));
@@ -97,7 +97,7 @@ const AdminDashboardPage = () => {
         if (window.confirm('Are you sure you want to delete this note? This action cannot be undone.')) {
             const config = { headers: { Authorization: `Bearer ${token}` } };
             try {
-                await axios.delete(`http://localhost:5001/api/notes/${noteId}`, config);
+                await axios.delete(`https://peernotez.netlify.app/api/notes/${noteId}`, config);
                 if (notes.length === 1 && currentPage > 1) {
                     setCurrentPage(prev => prev - 1);
                 } else {
@@ -120,7 +120,7 @@ const AdminDashboardPage = () => {
         
         try {
             const config = { headers: { Authorization: `Bearer ${token}` } };
-            const { data } = await axios.put(`http://localhost:5001/api/notes/${noteId}/toggle-featured`, {}, config);
+            const { data } = await axios.put(`https://peernotez.netlify.app/api/notes/${noteId}/toggle-featured`, {}, config);
             
             setNotes(notes.map(note => 
                 note._id === noteId ? { ...note, isFeatured: data.isFeatured } : note
@@ -267,3 +267,4 @@ const AdminDashboardPage = () => {
 };
 
 export default AdminDashboardPage;
+
