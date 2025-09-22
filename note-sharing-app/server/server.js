@@ -30,7 +30,7 @@ app.use(xss()); // Sanitizes user input coming from POST bodies, GET queries, an
 // --- CORS Configuration ---
 const allowedOrigins = [
   'http://localhost:3000', // Your local development front-end
-  'https://yourproduction-frontend.com', // Your production front-end URL
+  'https://peernotez.netlify.app/', // Your production front-end URL
 ];
 const corsOptions = {
   origin: function (origin, callback) {
@@ -94,3 +94,4 @@ app.use((err, req, res, next) => {
 
 // --- Server Startup ---
 app.listen(PORT, () => console.log(`🚀 Server is running on port ${PORT}`));
+
