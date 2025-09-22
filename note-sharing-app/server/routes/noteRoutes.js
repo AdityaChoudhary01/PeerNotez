@@ -1,24 +1,20 @@
 const express = require('express');
 const router = express.Router();
-const multer = require('multer'); // Used for memory storage
-const { cloudinary } = require('../config/cloudinary'); // Import only cloudinary.v2 instance (not storage)
-const s3 = require('../config/s3Config'); // Import the configured S3 instance
-const Note = require('../models/Note'); // Your Mongoose Note model
-const User = require('../models/User'); // <--- IMPORTANT: Import the User model!
-const { protect } = require('../middleware/authMiddleware'); // Middleware to protect routes
-const path = require('path'); // Node.js path module for file paths/extensions
-const { Readable } = require('stream'); // Node.js stream module for Cloudinary uploads
+const multer = require('multer');
+const { cloudinary } = require('../config/cloudinary');
+const Note = require('../models/Note');
+const User = require('../models/User'); 
+const { protect } = require('../middleware/authMiddleware');
+const path = require('path');
+const { Readable } = require('stream');
 
 // -------------------------------------------------------------------------
 // Multer setup to store files in memory temporarily
-// This allows your code to inspect the file's mimetype and decide
-// whether to upload to S3 or Cloudinary after the file is received.
 // -------------------------------------------------------------------------
 const memoryStorage = multer.memoryStorage();
 const uploadToMemory = multer({
   storage: memoryStorage,
-  limits: { fileSize: 50 * 1024 * 1024 } // Example: 50MB limit for files stored in memory
-                                        // Adjust based on typical note file sizes
+  limits: { fileSize: 50 * 1024 * 1024 }
 });
 
 // =========================================================================
@@ -51,7 +47,7 @@ router.get('/', async (req, res) => {
       andConditions.push({ title: { $regex: title.trim(), $options: 'i' } });
     }
     if (university && university.trim() !== '' && university.trim() !== '0') {
-      andConditions.push({ university: { $regex: university.trim(), $options: 'i' } });
+      andConditions.push({ university: { $regex: university.trim(), 'options': 'i' } });
     }
     if (course && course.trim() !== '' && course.trim() !== '0') {
       andConditions.push({ course: { $regex: course.trim(), $options: 'i' } });
@@ -145,16 +141,15 @@ router.get('/:id', async (req, res) => {
 });
 
 // =========================================================================
-// NEW/UPDATED POST/PUT/DELETE Routes with Conditional Logic
+// UPDATED POST/PUT/DELETE Routes
 // =========================================================================
 
 // @route   POST /api/notes/upload
-// @desc    Upload a new note (Conditional: S3 for Office, Cloudinary for PDF/Image)
+// @desc    Upload a new note (All files uploaded to Cloudinary)
 router.post('/upload', protect, uploadToMemory.single('file'), async (req, res) => {
   let uploadResult;
   let finalFilePath;
   let finalCloudinaryId = null;
-  let storageService = '';
   const file = req.file;
 
   try {
@@ -179,64 +174,56 @@ router.post('/upload', protect, uploadToMemory.single('file'), async (req, res) 
     const isOfficeDoc = officeMimeTypes.includes(file.mimetype);
     const isPDF = file.mimetype === 'application/pdf';
     const isImage = file.mimetype.startsWith('image/');
-
-    if (isOfficeDoc) {
-      console.log('Attempting to upload office document to S3...');
-      storageService = 's3';
-      const s3Params = {
-        Bucket: process.env.AWS_S3_BUCKET_NAME,
-        Key: `office-notes/${Date.now()}_${Math.round(Math.random() * 1E9)}${path.extname(file.originalname)}`,
-        Body: file.buffer,
-        ContentType: file.mimetype,
-        ACL: 'public-read'
-      };
-      uploadResult = await s3.upload(s3Params).promise();
-      finalFilePath = uploadResult.Location;
-      console.log('S3 Upload Result (Location):', uploadResult.Location);
-
-    } else if (isPDF || isImage) {
-      console.log('Attempting to upload PDF/Image to Cloudinary...');
-      storageService = 'cloudinary';
-
-      const uploadToCloudinary = () => {
-        return new Promise((resolve, reject) => {
-          const uploadStream = cloudinary.uploader.upload_stream(
-            {
-              folder: 'notes_uploads',
-              resource_type: (isImage || isPDF) ? 'image' : 'raw',
-              allowed_formats: ['pdf', 'jpg', 'jpeg', 'png'],
-              public_id: path.parse(file.originalname).name + '-' + Date.now()
-            },
-            (error, result) => {
-              if (error) {
-                console.error('Cloudinary Stream Upload Error:', error);
-                return reject(error);
-              }
-              resolve(result);
-            }
-          );
-          const stream = Readable.from(file.buffer);
-          stream.pipe(uploadStream);
-        });
-      };
-
-      uploadResult = await uploadToCloudinary();
-      finalFilePath = uploadResult.secure_url;
-      finalCloudinaryId = uploadResult.public_id;
-      console.log('Cloudinary Upload Result (Secure URL):', uploadResult.secure_url);
-
+    
+    // --- ALL FILES WILL NOW BE UPLOADED TO CLOUDINARY ---
+    let resourceType;
+    if (isImage || isPDF) {
+      // Images and PDFs are uploaded as 'image' for transformation capabilities
+      resourceType = 'image';
+    } else if (isOfficeDoc) {
+      // Office documents are uploaded as 'raw' as they are not transformable on the free tier
+      resourceType = 'raw';
     } else {
-      return res.status(400).json({ message: 'Unsupported file type. Please upload a PDF, image, or office document.' });
+        return res.status(400).json({ message: 'Unsupported file type. Please upload a PDF, image, or office document.' });
     }
+
+    console.log(`Attempting to upload file to Cloudinary as resource type: ${resourceType}...`);
+    
+    const uploadToCloudinary = () => {
+      return new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+          {
+            folder: 'notes_uploads',
+            resource_type: resourceType,
+            // Only include extension in public_id for 'raw' files (office docs)
+            public_id: path.parse(file.originalname).name + '-' + Date.now() + (resourceType === 'raw' ? path.extname(file.originalname) : ''),
+          },
+          (error, result) => {
+            if (error) {
+              console.error('Cloudinary Stream Upload Error:', error);
+              return reject(error);
+            }
+            resolve(result);
+          }
+        );
+        const stream = Readable.from(file.buffer);
+        stream.pipe(uploadStream);
+      });
+    };
+
+    uploadResult = await uploadToCloudinary();
+    finalFilePath = uploadResult.secure_url;
+    // For 'raw' files, the public_id includes the extension, so we store the full value.
+    finalCloudinaryId = uploadResult.public_id;
+    console.log('Cloudinary Upload Result (Secure URL):', uploadResult.secure_url);
+    console.log('Cloudinary Public ID:', uploadResult.public_id);
+
 
     if (!title || !university || !course || !subject || !year) {
       console.log('Error: Missing required text fields for note after file upload.');
-      if (storageService === 's3' && uploadResult && uploadResult.Key) {
-        await s3.deleteObject({ Bucket: process.env.AWS_S3_BUCKET_NAME, Key: uploadResult.Key }).promise();
-        console.warn(`Cleaned up orphaned S3 asset: ${uploadResult.Key} due to missing note details.`);
-      } else if (storageService === 'cloudinary' && finalCloudinaryId) {
-        const resourceTypeForDeletion = file.mimetype.startsWith('image/') ? 'image' : 'raw';
-        await cloudinary.uploader.destroy(finalCloudinaryId, { resource_type: resourceTypeForDeletion });
+      // Clean up orphaned Cloudinary asset
+      if (finalCloudinaryId) {
+        await cloudinary.uploader.destroy(finalCloudinaryId, { resource_type: resourceType });
         console.warn(`Cleaned up orphaned Cloudinary asset: ${finalCloudinaryId} due to missing note details.`);
       }
       return res.status(400).json({ message: 'Please provide all required fields: title, university, course, subject, and year.' });
@@ -273,22 +260,14 @@ router.post('/upload', protect, uploadToMemory.single('file'), async (req, res) 
     }
     console.error('--- END SERVER-SIDE ERROR LOG (Conditional Upload) ---');
 
-    if (file && storageService && uploadResult) {
-        if (storageService === 's3' && uploadResult.Key) {
-            try {
-                await s3.deleteObject({ Bucket: process.env.AWS_S3_BUCKET_NAME, Key: uploadResult.Key }).promise();
-                console.warn(`Cleaned up orphaned S3 asset: ${uploadResult.Key} after failed DB save.`);
-            } catch (cleanupError) {
-                console.error('Failed to clean up S3 asset after upload error:', cleanupError);
-            }
-        } else if (storageService === 'cloudinary' && uploadResult.public_id) {
-            try {
-                const resourceTypeForDeletion = file.mimetype.startsWith('image/') ? 'image' : 'raw';
-                await cloudinary.uploader.destroy(uploadResult.public_id, { resource_type: resourceTypeForDeletion });
-                console.warn(`Cleaned up Cloudinary asset: ${uploadResult.public_id} after failed DB save.`);
-            } catch (cleanupError) {
-                console.error('Failed to clean up Cloudinary asset after upload error:', cleanupError);
-            }
+    if (file && finalCloudinaryId) {
+        try {
+            const isOfficeDoc = ['application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'].includes(file.mimetype);
+            const resourceTypeForDeletion = (file.mimetype.startsWith('image/') || file.mimetype === 'application/pdf') ? 'image' : 'raw';
+            await cloudinary.uploader.destroy(finalCloudinaryId, { resource_type: resourceTypeForDeletion });
+            console.warn(`Cleaned up Cloudinary asset: ${finalCloudinaryId} after failed DB save.`);
+        } catch (cleanupError) {
+            console.error('Failed to clean up Cloudinary asset after upload error:', cleanupError);
         }
     }
     res.status(500).json({ message: 'Upload failed. Please check the file and form data and try again.' });
