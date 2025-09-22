@@ -108,11 +108,36 @@ const AdminDashboardPage = () => {
             }
         }
     };
+    
+    // --- NEW: Handle toggling a note's featured status ---
+    const handleToggleFeatured = async (noteId, isCurrentlyFeatured) => {
+        if (isCurrentlyFeatured && !window.confirm('Are you sure you want to un-feature this note?')) {
+            return;
+        } else if (!isCurrentlyFeatured && !window.confirm('Are you sure you want to feature this note? Only 3 featured notes will be shown on the homepage.')) {
+            return;
+        }
+        
+        try {
+            const config = { headers: { Authorization: `Bearer ${token}` } };
+            const { data } = await axios.put(`/notes/${noteId}/toggle-featured`, {}, config);
+            
+            // Update the notes state to reflect the change
+            setNotes(notes.map(note => 
+                note._id === noteId ? { ...note, isFeatured: data.isFeatured } : note
+            ));
+            
+            alert(data.message);
+        } catch (error) {
+            console.error('Failed to toggle featured status', error);
+            alert('Failed to toggle featured status.');
+        }
+    };
 
-    // --- UPDATED RENDER FUNCTION ---
+    // --- UPDATED RENDER FUNCTION WITH FEATURED BUTTON ---
     const renderNoteItem = (note) => {
         let thumbnailUrl;
 
+        // Correct and reliable MIME type checks for Office documents
         const isWordDoc = note.fileType === 'application/msword' || note.fileType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
         const isExcelDoc = note.fileType === 'application/vnd.ms-excel' || note.fileType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
         const isPptDoc = note.fileType === 'application/vnd.ms-powerpoint' || note.fileType === 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
@@ -137,8 +162,16 @@ const AdminDashboardPage = () => {
                 <div className="user-info">
                     <strong>{note.title}</strong><br />
                     <span>Uploaded by: {note.user?.name || 'N/A'}</span>
+                    {/* Display if the note is featured */}
+                    {note.isFeatured && <span className="featured-badge">Featured</span>}
                 </div>
                 <div className="admin-user-actions">
+                    <button
+                        onClick={() => handleToggleFeatured(note._id, note.isFeatured)}
+                        className={`action-button feature-btn ${note.isFeatured ? 'unfeature' : 'feature'}`}
+                    >
+                        {note.isFeatured ? 'Un-feature' : 'Feature'}
+                    </button>
                     <Link to={`/view/${note._id}`} target="_blank" rel="noopener noreferrer" className="action-button view-btn">View</Link>
                     <button onClick={() => handleDeleteNote(note._id)} className="action-button delete-btn">Delete</button>
                 </div>
