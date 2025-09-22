@@ -19,9 +19,6 @@ router.put('/profile/avatar', protect, upload.single('avatar'), async (req, res)
     }
     const user = await User.findById(req.user.id);
     if (user) {
-      // If there was an old avatar, you might want to delete it from Cloudinary
-      // For simplicity, we are just updating the URL here.
-      // Implementing old avatar deletion would require storing public_id for avatar too.
       user.avatar = req.file.path; // Multer (via CloudinaryStorage) gives you the URL in req.file.path
       const updatedUser = await user.save();
       res.json({
@@ -29,7 +26,6 @@ router.put('/profile/avatar', protect, upload.single('avatar'), async (req, res)
         name: updatedUser.name,
         email: updatedUser.email,
         avatar: updatedUser.avatar, // Send back the new avatar URL
-        // savedNotes: updatedUser.savedNotes // No need to send this entire array here, it can be large
       });
     } else {
       res.status(404).json({ message: 'User not found' });
@@ -48,20 +44,15 @@ router.put('/profile', protect, async (req, res) => {
         const user = await User.findById(req.user.id);
 
         if (user) {
-            // Update name if provided in the request body
             user.name = req.body.name || user.name;
-            // You might want to allow email change but it often requires re-verification
-            // user.email = req.body.email || user.email;
 
             const updatedUser = await user.save();
 
-            // Send back the necessary user object data
             res.json({
                 _id: updatedUser._id,
                 name: updatedUser.name,
                 email: updatedUser.email,
                 avatar: updatedUser.avatar,
-                // savedNotes: updatedUser.savedNotes, // No need to send this entire array here, it can be large
             });
         } else {
             res.status(404).json({ message: 'User not found' });
@@ -81,11 +72,9 @@ router.put('/save/:noteId', protect, async (req, res) => {
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
-    // Ensure the noteId is not already saved
     if (!user.savedNotes.includes(req.params.noteId)) {
       user.savedNotes.push(req.params.noteId);
       await user.save();
-      // Send back only relevant info, not the full user object
       res.status(200).json({ message: 'Note saved successfully!', savedNotesCount: user.savedNotes.length });
     } else {
       res.status(200).json({ message: 'Note already saved.', savedNotesCount: user.savedNotes.length });
@@ -104,14 +93,12 @@ router.put('/unsave/:noteId', protect, async (req, res) => {
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
-    // Filter out the noteId
     const initialLength = user.savedNotes.length;
     user.savedNotes = user.savedNotes.filter(
-      (noteId) => noteId.toString() !== req.params.noteId.toString() // Ensure strict comparison
+      (noteId) => noteId.toString() !== req.params.noteId.toString()
     );
     if (user.savedNotes.length < initialLength) {
       await user.save();
-      // Send back only relevant info, not the full user object
       res.status(200).json({ message: 'Note unsaved successfully!', savedNotesCount: user.savedNotes.length });
     } else {
         res.status(200).json({ message: 'Note was not found in saved list.', savedNotesCount: user.savedNotes.length });
@@ -129,7 +116,7 @@ router.get('/savednotes', protect, async (req, res) => {
   try {
     const userId = req.user.id;
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10; // Or your desired default limit
+    const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
     const user = await User.findById(userId);
@@ -138,20 +125,17 @@ router.get('/savednotes', protect, async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    const savedNoteIds = user.savedNotes; // Array of note IDs stored on the user document
+    const savedNoteIds = user.savedNotes;
 
-    // Fetch the actual Note documents that correspond to the savedNoteIds
-    // Apply pagination (skip and limit) and populate the uploader's info
     const notes = await Note.find({ _id: { $in: savedNoteIds } })
-                            .populate('user', 'name avatar') // Populate the 'user' field within each Note
-                            .sort({ createdAt: -1 }) // Sort by creation date, newest first
+                            .populate('user', 'name avatar')
+                            .sort({ createdAt: -1 })
                             .skip(skip)
                             .limit(limit);
 
-    const totalNotes = savedNoteIds.length; // Total count is the number of IDs in the array
+    const totalNotes = savedNoteIds.length;
     const totalPages = Math.ceil(totalNotes / limit);
 
-    // THIS IS THE CRUCIAL PART THAT NEEDS TO BE EXACTLY LIKE THIS
     res.json({
       notes: notes,
       page: page,
@@ -173,7 +157,7 @@ router.get('/savednotes', protect, async (req, res) => {
 // @access  Private/Admin
 router.get('/', protect, admin, async (req, res) => {
   try {
-    const users = await User.find({}); // Fetches all users
+    const users = await User.find({});
     res.json(users);
   } catch (error) {
     console.error('Error fetching all users (userRoutes):', error);
@@ -186,18 +170,13 @@ router.get('/', protect, admin, async (req, res) => {
 // @access  Private/Admin
 router.delete('/:id', protect, admin, async (req, res) => {
   try {
-    // Prevent admin from deleting themselves
     if (req.params.id.toString() === req.user.id.toString()) {
       return res.status(400).json({ message: 'Cannot delete yourself as an admin.' });
     }
 
     const user = await User.findById(req.params.id);
     if (user) {
-      // Optional: Add logic here to delete associated notes or other content created by this user
-      // This would involve finding all notes where user: req.params.id and deleting them.
-      // Also, consider deleting their Cloudinary avatar if public_id was stored.
-
-      await user.deleteOne(); // Delete the user document
+      await user.deleteOne();
       res.json({ message: 'User removed successfully' });
     } else {
       res.status(404).json({ message: 'User not found' });
@@ -213,14 +192,12 @@ router.delete('/:id', protect, admin, async (req, res) => {
 // @access  Private/Admin
 router.put('/:id/role', protect, admin, async (req, res) => {
   try {
-    // Prevent changing your own role via this endpoint (should be done carefully through specific UI)
     if (req.params.id.toString() === req.user.id.toString()) {
       return res.status(400).json({ message: 'Cannot change your own role via this endpoint.' });
     }
 
     const user = await User.findById(req.params.id);
     if (user) {
-      // Toggle role: if admin, make user; if user, make admin
       user.role = user.role === 'admin' ? 'user' : 'admin';
       await user.save();
       res.json({ message: `User role for ${user.name} updated to ${user.role}`, userId: user._id, newRole: user.role });
@@ -232,5 +209,37 @@ router.put('/:id/role', protect, admin, async (req, res) => {
     res.status(500).json({ message: 'Server Error occurred while changing user role.' });
   }
 });
+// @route GET /api/users/top-contributors
+// @desc Get top contributors for the homepage (based on note count)
+router.get('/top-contributors', async (req, res) => {
+    try {
+        const topContributors = await User.aggregate([
+            {
+                $lookup: {
+                    from: 'notes', // The name of your notes collection
+                    localField: '_id',
+                    foreignField: 'user',
+                    as: 'notes'
+                }
+            },
+            {
+                $project: {
+                    _id: 1,
+                    name: 1,
+                    avatar: 1,
+                    noteCount: { $size: '$notes' }
+                }
+            },
+            { $sort: { noteCount: -1 } },
+            { $limit: 4 } // Fetch top 4 contributors
+        ]);
+
+        res.json({ users: topContributors });
+    } catch (error) {
+        console.error('Error fetching top contributors:', error);
+        res.status(500).json({ message: 'Failed to fetch top contributors.' });
+    }
+});
+
 
 module.exports = router;
