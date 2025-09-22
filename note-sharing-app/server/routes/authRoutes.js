@@ -15,8 +15,13 @@ router.post('/register', async (req, res) => {
     if (userExists) {
       return res.status(400).json({ message: 'User already exists' });
     }
-    const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff&size=128`;
-    const user = await User.create({ name, email, password, avatar: avatarUrl });
+    // ➡️ CORRECTED: Use a consistent, static placeholder URL for all platforms
+    const user = await User.create({
+      name,
+      email,
+      password,
+      avatar: 'https://via.placeholder.com/120/CCCCCC/FFFFFF?text=P',
+    });
 
     if (user) {
       res.status(201).json({
@@ -24,7 +29,7 @@ router.post('/register', async (req, res) => {
         name: user.name,
         email: user.email,
         avatar: user.avatar,
-        role: user.role, // --- ADDED THIS ---
+        role: user.role,
         savedNotes: user.savedNotes,
         token: generateToken(user._id),
       });
@@ -46,7 +51,7 @@ router.post('/login', async (req, res) => {
       name: user.name,
       email: user.email,
       avatar: user.avatar,
-      role: user.role, // --- ADDED THIS ---
+      role: user.role,
       savedNotes: user.savedNotes,
       token: generateToken(user._id),
     });
