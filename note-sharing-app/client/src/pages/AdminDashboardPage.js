@@ -29,10 +29,10 @@ const AdminDashboardPage = () => {
 
         const fetchUsers = async () => {
             setLoading(true);
-            setUsers([]); // Reset state to an empty array
+            setNotes([]); // Reset notes to prevent rendering errors
             try {
                 const { data } = await axios.get('https://peernotez.netlify.app/api/users', config);
-                setUsers(data || []); // Use || [] to ensure data is always an array
+                setUsers(data || []); // Safeguard against non-array response
             } catch (error) {
                 console.error("Failed to fetch users", error);
                 setError('Failed to fetch user data. Please try again later.');
@@ -44,7 +44,7 @@ const AdminDashboardPage = () => {
 
         const fetchNotes = async () => {
             setLoading(true);
-            setNotes([]); // Reset state to an empty array
+            setUsers([]); // Reset users to prevent rendering errors
             try {
                 const { data } = await axios.get(`https://peernotez.netlify.app/api/notes?page=${currentPage}&limit=10`, config);
                 setNotes(data.notes || []);
