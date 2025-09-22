@@ -5,6 +5,7 @@ const { cloudinary } = require('../config/cloudinary');
 const Note = require('../models/Note');
 const User = require('../models/User'); 
 const { protect } = require('../middleware/authMiddleware');
+const { admin } = require('../middleware/adminMiddleware');
 const path = require('path');
 const { Readable } = require('stream');
 
@@ -18,16 +19,84 @@ const uploadToMemory = multer({
 });
 
 // =========================================================================
-// Existing GET Routes
+// NEW ORDERED ROUTES
+// Place more specific routes at the top to avoid conflicts with :id
 // =========================================================================
+
+// @route GET /api/notes/stats
+// @desc Get key statistics for the homepage
+router.get('/stats', async (req, res) => {
+    try {
+        const totalNotes = await Note.countDocuments();
+        const totalUsers = await User.countDocuments();
+        
+        const totalDownloadsResult = await Note.aggregate([
+            { $group: { _id: null, total: { $sum: "$downloadCount" } } }
+        ]);
+        
+        const totalDownloads = totalDownloadsResult.length > 0 ? totalDownloadsResult[0].total : 0;
+
+        res.json({
+            totalNotes,
+            totalUsers,
+            downloadsThisMonth: totalDownloads,
+        });
+    } catch (error) {
+        console.error('Error fetching statistics:', error);
+        res.status(500).json({ message: 'Failed to fetch statistics.' });
+    }
+});
+
+// @route GET /api/notes/users/top-contributors
+// @desc Get top contributors for the homepage (based on note count)
+router.get('/users/top-contributors', async (req, res) => {
+    try {
+        const topContributors = await User.aggregate([
+            {
+                $lookup: {
+                    from: 'peernotez_notes',
+                    localField: '_id',
+                    foreignField: 'user',
+                    as: 'notes'
+                }
+            },
+            {
+                $project: {
+                    _id: 1,
+                    name: 1,
+                    avatar: 1,
+                    noteCount: { $size: '$notes' }
+                }
+            },
+            { $sort: { noteCount: -1 } },
+            { $limit: 4 }
+        ]);
+
+        res.json({ users: topContributors });
+    } catch (error) {
+        console.error('Error fetching top contributors:', error);
+        res.status(500).json({ message: 'Failed to fetch top contributors.' });
+    }
+});
+
+// @route GET /api/notes/blog-posts
+// @desc Get mock blog posts for the homepage
+router.get('/blog-posts', (req, res) => {
+    const mockPosts = [
+        { id: 1, title: "The Best Note-Taking Strategies for University", summary: "Learn how to optimize your study habits with these proven note-taking techniques.", slug: "best-note-taking-strategies" },
+        { id: 2, title: "How PeerNotez Can Boost Your Grades", summary: "Discover how our collaborative platform gives you an edge in your academic career.", slug: "how-peernotez-boosts-grades" },
+        { id: 3, title: "Top 10 Courses to Study in 2025", summary: "A look at the most popular and in-demand courses for students planning their future.", slug: "top-10-courses" },
+    ];
+    res.json({ posts: mockPosts });
+});
 
 // @route   GET /api/notes
 // @desc    Get all notes with search and filters
 router.get('/', async (req, res) => {
   try {
-    const limit = 12;
+    const limit = parseInt(req.query.limit) || 12;
     const page = Number(req.query.page) || 1;
-    const { search, title, university, course, subject, year, sort } = req.query;
+    const { search, title, university, course, subject, year, sort, isFeatured } = req.query;
 
     const andConditions = [];
 
@@ -44,7 +113,7 @@ router.get('/', async (req, res) => {
     }
 
     if (title && title.trim() !== '' && title.trim() !== '0') {
-      andConditions.push({ title: { $regex: title.trim(), $options: 'i' } });
+      andConditions.push({ title: { $regex: title.trim(), 'options': 'i' } });
     }
     if (university && university.trim() !== '' && university.trim() !== '0') {
       andConditions.push({ university: { $regex: university.trim(), 'options': 'i' } });
@@ -61,6 +130,10 @@ router.get('/', async (req, res) => {
         andConditions.push({ year: y });
       }
     }
+    
+    if (isFeatured) {
+        andConditions.push({ isFeatured: true });
+    }
 
     let query = {};
     if (andConditions.length === 1) {
@@ -74,6 +147,10 @@ router.get('/', async (req, res) => {
     let sortOptions = { uploadDate: -1 };
     if (sort === 'highestRated') sortOptions = { rating: -1 };
     if (sort === 'mostDownloaded') sortOptions = { downloadCount: -1 };
+    
+    if (isFeatured) {
+        sortOptions = { uploadDate: -1 };
+    }
 
     const count = await Note.countDocuments(query);
     const notes = await Note.find(query)
@@ -175,13 +252,10 @@ router.post('/upload', protect, uploadToMemory.single('file'), async (req, res) 
     const isPDF = file.mimetype === 'application/pdf';
     const isImage = file.mimetype.startsWith('image/');
     
-    // --- ALL FILES WILL NOW BE UPLOADED TO CLOUDINARY ---
     let resourceType;
     if (isImage || isPDF) {
-      // Images and PDFs are uploaded as 'image' for transformation capabilities
       resourceType = 'image';
     } else if (isOfficeDoc) {
-      // Office documents are uploaded as 'raw' as they are not transformable on the free tier
       resourceType = 'raw';
     } else {
         return res.status(400).json({ message: 'Unsupported file type. Please upload a PDF, image, or office document.' });
@@ -195,7 +269,6 @@ router.post('/upload', protect, uploadToMemory.single('file'), async (req, res) 
           {
             folder: 'notes_uploads',
             resource_type: resourceType,
-            // Only include extension in public_id for 'raw' files (office docs)
             public_id: path.parse(file.originalname).name + '-' + Date.now() + (resourceType === 'raw' ? path.extname(file.originalname) : ''),
           },
           (error, result) => {
@@ -213,7 +286,6 @@ router.post('/upload', protect, uploadToMemory.single('file'), async (req, res) 
 
     uploadResult = await uploadToCloudinary();
     finalFilePath = uploadResult.secure_url;
-    // For 'raw' files, the public_id includes the extension, so we store the full value.
     finalCloudinaryId = uploadResult.public_id;
     console.log('Cloudinary Upload Result (Secure URL):', uploadResult.secure_url);
     console.log('Cloudinary Public ID:', uploadResult.public_id);
@@ -221,7 +293,6 @@ router.post('/upload', protect, uploadToMemory.single('file'), async (req, res) 
 
     if (!title || !university || !course || !subject || !year) {
       console.log('Error: Missing required text fields for note after file upload.');
-      // Clean up orphaned Cloudinary asset
       if (finalCloudinaryId) {
         await cloudinary.uploader.destroy(finalCloudinaryId, { resource_type: resourceType });
         console.warn(`Cleaned up orphaned Cloudinary asset: ${finalCloudinaryId} due to missing note details.`);
@@ -348,6 +419,30 @@ router.put('/:id', protect, async (req, res) => {
   }
 });
 
+// @route   PUT /api/notes/:id/toggle-featured
+// @desc    Toggle a note's featured status (Admin only)
+// @access  Private/Admin
+router.put('/:id/toggle-featured', protect, admin, async (req, res) => {
+  try {
+    const note = await Note.findById(req.params.id);
+    if (!note) {
+      return res.status(404).json({ message: 'Note not found.' });
+    }
+
+    note.isFeatured = !note.isFeatured;
+
+    const updatedNote = await note.save();
+    res.json({
+      message: `Note's featured status updated to ${updatedNote.isFeatured}.`,
+      isFeatured: updatedNote.isFeatured
+    });
+
+  } catch (error) {
+    console.error('Error toggling featured status:', error);
+    res.status(500).json({ message: 'Server Error occurred while updating the note.' });
+  }
+});
+
 // @route   DELETE /api/notes/:id
 // @desc    Delete a note (only by owner or Admin), and clean up from saved lists
 // @access  Private (Owner or Admin)
@@ -356,43 +451,25 @@ router.delete('/:id', protect, async (req, res) => {
     const note = await Note.findById(req.params.id);
     if (!note) return res.status(404).json({ message: 'Note not found' });
 
-    // Authorization check
     if (note.user.toString() !== req.user.id && req.user.role !== 'admin') {
       return res.status(401).json({ message: 'Not authorized to delete this note' });
     }
 
-    // --- CRITICAL ADDITION: Remove this note's ID from all users' savedNotes arrays ---
-    await User.updateMany( // Use User model here
-      { savedNotes: note._id }, // Find users who have this note saved
-      { $pull: { savedNotes: note._id } } // Pull (remove) this ID from their savedNotes array
+    await User.updateMany(
+      { savedNotes: note._id },
+      { $pull: { savedNotes: note._id } }
     );
     console.log(`Cleaned up note ID ${note._id} from all users' savedNotes lists.`);
 
+    if (note.cloudinaryId) {
+      const resourceTypeForDeletion = (note.fileType && (note.fileType.startsWith('image/') || note.fileType === 'application/pdf')) ? 'image' : 'raw';
 
-    // Conditional deletion based on where the file was stored (using cloudinaryId as indicator)
-    if (note.cloudinaryId) { // If a cloudinaryId exists, it's on Cloudinary
-      let resourceTypeForDeletion = note.fileType && note.fileType.startsWith('image/') ? 'image' : 'raw';
-      if (note.fileType === 'application/pdf') { // PDFs are treated as 'image' for preview generation in Cloudinary
-        resourceTypeForDeletion = 'image';
-      }
       await cloudinary.uploader.destroy(note.cloudinaryId, { resource_type: resourceTypeForDeletion });
       console.log(`Deleted Cloudinary asset: ${note.cloudinaryId}`);
-    } else if (note.filePath && note.filePath.includes(process.env.AWS_S3_BUCKET_NAME)) { // If filePath contains S3 bucket name
-        const s3Bucket = process.env.AWS_S3_BUCKET_NAME;
-        const s3KeyMatch = note.filePath.match(new RegExp(`/${s3Bucket}/(.*)`));
-        const s3Key = s3KeyMatch ? s3KeyMatch[1] : null;
-
-        if (s3Key) {
-            await s3.deleteObject({ Bucket: s3Bucket, Key: s3Key }).promise();
-            console.log(`Deleted S3 asset: ${s3Key}`);
-        } else {
-            console.warn(`Could not determine S3 key for deletion from filePath: ${note.filePath}. Manual cleanup may be required.`);
-        }
     } else {
-        console.warn(`File deletion failed: Could not determine storage service for note ID ${note._id}. FilePath: ${note.filePath}`);
+      console.warn(`File deletion failed: Could not determine storage service for note ID ${note._id}. FilePath: ${note.filePath}`);
     }
 
-    // Finally, delete the note document from MongoDB
     await note.deleteOne();
     res.json({ message: 'Note removed successfully' });
   } catch (error) {
