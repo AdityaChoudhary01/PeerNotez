@@ -2,14 +2,14 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const helmet = require('helmet'); // New: Security headers
-const rateLimit = require('express-rate-limit'); // New: API rate limiting
-const mongoSanitize = require('express-mongo-sanitize'); // New: Prevents NoSQL injection
-const xss = require('xss-clean'); // New: Prevents XSS attacks
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const mongoSanitize = require('express-mongo-sanitize');
+const xss = require('xss-clean');
 require('dotenv').config();
 
 // --- Schema Imports ---
-require('./models/Comment'); // Ensure all required models are loaded
+require('./models/Comment');
 
 // --- Route Imports ---
 const authRoutes = require('./routes/authRoutes');
@@ -20,39 +20,46 @@ const blogRoutes = require('./routes/blogRoutes');
 
 // --- App Initialization ---
 const app = express();
+
+// Set the 'trust proxy' setting. This is crucial for rate limiting on
+// services like Render, which use a proxy. It ensures the rate limiter
+// uses the client's real IP address from the X-Forwarded-For header.
+app.set('trust proxy', 1);
+
 const PORT = process.env.PORT || 5001;
 
 // --- Security Middleware ---
-app.use(helmet()); // Sets various HTTP headers to protect against common attacks
-app.use(mongoSanitize()); // Sanitizes user-supplied data to prevent MongoDB Operator Injection
-app.use(xss()); // Sanitizes user input coming from POST bodies, GET queries, and URL params
+app.use(helmet());
+app.use(mongoSanitize());
+app.use(xss());
 
 // --- CORS Configuration ---
 const allowedOrigins = [
-  'http://localhost:3000', // Your local development front-end
-  'https://peernotez.netlify.app', // Your production front-end URL
+  'http://localhost:3000',
+  'https://peernotez.netlify.app',
 ];
 const corsOptions = {
   origin: function (origin, callback) {
+    // Check if the request origin is in our whitelist or if it's a same-origin request
     if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
     }
   },
-  credentials: true, // Allow cookies to be sent
+  credentials: true,
   optionsSuccessStatus: 200,
 };
 app.use(cors(corsOptions));
-app.use(express.json()); // Parses incoming JSON requests
+app.use(express.json());
 
 // --- Rate Limiting ---
 const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Max 100 requests per 15 minutes per IP
+  windowMs: 15 * 60 * 1000,
+  max: 100,
   message: 'Too many requests from this IP, please try again after 15 minutes.',
 });
-app.use('/api/', apiLimiter); // Apply rate limiting to all API routes
+app.use('/api/', apiLimiter);
 
 // --- Database Connection ---
 mongoose.connect(process.env.MONGO_URI, {
@@ -62,7 +69,7 @@ mongoose.connect(process.env.MONGO_URI, {
   .then(() => console.log('✅ MongoDB connected successfully.'))
   .catch(err => {
     console.error('❌ MongoDB Connection Error:', err);
-    process.exit(1); // Exit with a failure code
+    process.exit(1);
   });
 
 // --- Route Mounting ---
@@ -94,5 +101,3 @@ app.use((err, req, res, next) => {
 
 // --- Server Startup ---
 app.listen(PORT, () => console.log(`🚀 Server is running on port ${PORT}`));
-
-
