@@ -16,7 +16,7 @@ const ViewNotePage = () => {
     useEffect(() => {
         const fetchNote = async () => {
             try {
-                const { data } = await axios.get(`http://localhost:5001/api/notes/${noteId}`);
+                const { data } = await axios.get(`https://peernotez.onrender.com/api/notes/${noteId}`);
                 setNote(data);
             } catch (err) {
                 setError('Could not load the note. Please ensure the URL is correct.');
@@ -34,7 +34,7 @@ const ViewNotePage = () => {
         setIsSaving(true);
         try {
             const config = { headers: { Authorization: `Bearer ${token}` } };
-            const { data } = await axios.post(`http://localhost:5001/api/notes/${noteId}/save`, {}, config);
+            const { data } = await axios.post(`https://peernotez.onrender.com/api/notes/${noteId}/save`, {}, config);
             alert(data.message);
         } catch (error) {
             console.error('Failed to save note', error);
@@ -160,3 +160,4 @@ const ViewNotePage = () => {
 };
 
 export default ViewNotePage;
+
