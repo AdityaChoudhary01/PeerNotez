@@ -113,9 +113,9 @@ const AdminDashboardPage = () => {
     const renderNoteItem = (note) => {
         let thumbnailUrl;
 
-        const isWordDoc = note.fileType.includes('word');
-        const isExcelDoc = note.fileType.includes('excel');
-        const isPptDoc = note.fileType.includes('powerpoint');
+        const isWordDoc = note.fileType === 'application/msword' || note.fileType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+        const isExcelDoc = note.fileType === 'application/vnd.ms-excel' || note.fileType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+        const isPptDoc = note.fileType === 'application/vnd.ms-powerpoint' || note.fileType === 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
 
         if (note.fileType.startsWith('image/')) {
             thumbnailUrl = `https://res.cloudinary.com/${cloudName}/image/upload/w_120,h_90,c_fill,f_auto,q_auto/${note.cloudinaryId}.jpg`;
