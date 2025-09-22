@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import useAuth from '../hooks/useAuth';
 import { Link } from 'react-router-dom';
-import { Helmet } from 'react-helmet'; // Import Helmet for SEO
+import { Helmet } from 'react-helmet';
 import Pagination from '../components/common/Pagination';
 
 const AdminDashboardPage = () => {
@@ -10,7 +10,7 @@ const AdminDashboardPage = () => {
     const [notes, setNotes] = useState([]);
     const [activeTab, setActiveTab] = useState('users');
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(''); // New state for error messages
+    const [error, setError] = useState('');
     const { token, user: adminUser } = useAuth();
     const cloudName = process.env.REACT_APP_CLOUDINARY_CLOUD_NAME;
 
@@ -29,9 +29,10 @@ const AdminDashboardPage = () => {
 
         const fetchUsers = async () => {
             setLoading(true);
+            setUsers([]); // Reset state to an empty array
             try {
                 const { data } = await axios.get('https://peernotez.netlify.app/api/users', config);
-                setUsers(data);
+                setUsers(data || []); // Use || [] to ensure data is always an array
             } catch (error) {
                 console.error("Failed to fetch users", error);
                 setError('Failed to fetch user data. Please try again later.');
@@ -43,8 +44,9 @@ const AdminDashboardPage = () => {
 
         const fetchNotes = async () => {
             setLoading(true);
+            setNotes([]); // Reset state to an empty array
             try {
-                const { data } = await axios.get(`https://peernotez.netlify.app/api/notes?page=${currentPage}&limit=10`, config); // Added limit
+                const { data } = await axios.get(`https://peernotez.netlify.app/api/notes?page=${currentPage}&limit=10`, config);
                 setNotes(data.notes || []);
                 setTotalPages(data.totalPages || 0);
             } catch (error) {
@@ -267,4 +269,3 @@ const AdminDashboardPage = () => {
 };
 
 export default AdminDashboardPage;
-
