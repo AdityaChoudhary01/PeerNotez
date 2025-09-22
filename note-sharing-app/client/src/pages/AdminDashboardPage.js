@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import useAuth from '../hooks/useAuth';
 import { Link } from 'react-router-dom';
-import Pagination from '../components/common/Pagination'; // ✨ 1. Import the Pagination component
+import Pagination from '../components/common/Pagination';
 
 const AdminDashboardPage = () => {
     const [users, setUsers] = useState([]);
@@ -12,18 +12,17 @@ const AdminDashboardPage = () => {
     const { token, user: adminUser } = useAuth();
     const cloudName = process.env.REACT_APP_CLOUDINARY_CLOUD_NAME;
 
-    // ✨ 2. Add state to manage pagination
+    // Add state to manage pagination
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
-    // const [totalNotes, setTotalNotes] = useState(0); // Removed unused state
-    const [refetchIndex, setRefetchIndex] = useState(0); // Used to trigger refetch after delete
+    const [refetchIndex, setRefetchIndex] = useState(0);
 
     // This effect reliably resets the page to 1 when you switch tabs
     useEffect(() => {
         setCurrentPage(1);
     }, [activeTab]);
 
-    // ✨ 3. This effect now handles fetching data for the current page
+    // This effect now handles fetching data for the current page
     useEffect(() => {
         const config = { headers: { Authorization: `Bearer ${token}` } };
 
@@ -47,12 +46,10 @@ const AdminDashboardPage = () => {
                 // Update state based on the paginated response from the backend
                 setNotes(data.notes || []);
                 setTotalPages(data.totalPages || 0);
-                // setTotalNotes(data.totalNotes || 0); // Removed unused state
             } catch (error) {
                 console.error("Failed to fetch notes", error);
                 setNotes([]);
                 setTotalPages(0);
-                // setTotalNotes(0); // Removed unused state
             } finally {
                 setLoading(false);
             }
@@ -112,6 +109,43 @@ const AdminDashboardPage = () => {
         }
     };
 
+    // --- UPDATED RENDER FUNCTION ---
+    const renderNoteItem = (note) => {
+        let thumbnailUrl;
+
+        const isWordDoc = note.fileType.includes('word');
+        const isExcelDoc = note.fileType.includes('excel');
+        const isPptDoc = note.fileType.includes('powerpoint');
+
+        if (note.fileType.startsWith('image/')) {
+            thumbnailUrl = `https://res.cloudinary.com/${cloudName}/image/upload/w_120,h_90,c_fill,f_auto,q_auto/${note.cloudinaryId}.jpg`;
+        } else if (note.fileType === 'application/pdf') {
+            thumbnailUrl = `https://res.cloudinary.com/${cloudName}/image/upload/w_120,h_90,c_pad,pg_1,f_jpg,q_auto/${note.cloudinaryId}.jpg`;
+        } else if (isWordDoc) {
+            thumbnailUrl = '/images/icons/word-icon.png';
+        } else if (isExcelDoc) {
+            thumbnailUrl = '/images/icons/excel-icon.png';
+        } else if (isPptDoc) {
+            thumbnailUrl = '/images/icons/ppt-icon.png';
+        } else {
+            thumbnailUrl = '/images/icons/document-icon.png';
+        }
+        
+        return (
+            <div key={note._id} className="admin-list-item">
+                <img src={thumbnailUrl} alt="Thumbnail" className="admin-note-thumbnail" />
+                <div className="user-info">
+                    <strong>{note.title}</strong><br />
+                    <span>Uploaded by: {note.user?.name || 'N/A'}</span>
+                </div>
+                <div className="admin-user-actions">
+                    <Link to={`/view/${note._id}`} target="_blank" rel="noopener noreferrer" className="action-button view-btn">View</Link>
+                    <button onClick={() => handleDeleteNote(note._id)} className="action-button delete-btn">Delete</button>
+                </div>
+            </div>
+        );
+    };
+
     return (
         <div className="content-page">
             <h1>Admin Dashboard</h1>
@@ -155,22 +189,7 @@ const AdminDashboardPage = () => {
                 ) : (
                     <div className="admin-list">
                         <h2>All Notes ({notes.length})</h2>
-                        {notes.map(note => {
-                            const thumbnailUrl = `https://res.cloudinary.com/${cloudName}/image/upload/w_120,h_90,c_pad,pg_1/${note.cloudinaryId}.jpg`;
-                            return (
-                                <div key={note._id} className="admin-list-item">
-                                    <img src={thumbnailUrl} alt="Thumbnail" className="admin-note-thumbnail" />
-                                    <div className="user-info">
-                                        <strong>{note.title}</strong><br />
-                                        <span>Uploaded by: {note.user?.name || 'N/A'}</span>
-                                    </div>
-                                    <div className="admin-user-actions">
-                                        <Link to={`/view/${note._id}`} target="_blank" rel="noopener noreferrer" className="action-button view-btn">View</Link>
-                                        <button onClick={() => handleDeleteNote(note._id)} className="action-button delete-btn">Delete</button>
-                                    </div>
-                                </div>
-                            );
-                        })}
+                        {notes.map(note => renderNoteItem(note))}
                         <Pagination 
                             page={currentPage}
                             totalPages={totalPages}
