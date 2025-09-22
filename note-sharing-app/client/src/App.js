@@ -16,6 +16,8 @@ import PrivateRoute from './utils/PrivateRoute';
 import ProfilePage from './pages/ProfilePage';
 import AdminRoute from './utils/AdminRoute';
 import AdminDashboardPage from './pages/AdminDashboardPage';
+// --- ADDED IMPORT FOR SUPPORTERS PAGE ---
+import SupportersPage from './pages/SupportersPage'; 
 import './App.css';
 
 function App() {
@@ -34,6 +36,8 @@ function App() {
               <Route path="/contact" element={<ContactPage />} /> 
               <Route path="/about" element={<AboutPage />} />
               <Route path="/donate" element={<DonatePage />} />
+              {/* --- ADDED ROUTE FOR SUPPORTERS PAGE --- */}
+              <Route path="/supporters" element={<SupportersPage />} />
               <Route path="/profile" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
               <Route path="/upload" element={<PrivateRoute><UploadPage /></PrivateRoute>} />
               <Route path="/admin" element={<AdminRoute><AdminDashboardPage /></AdminRoute>} />
