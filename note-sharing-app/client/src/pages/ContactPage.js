@@ -22,7 +22,7 @@ const ContactPage = () => {
 
         try {
             // Replace with your actual backend endpoint
-            const res = await axios.post('http://localhost:5001/api/contact', formData);
+            const res = await axios.post('https://peernotez.onrender.com/api/contact', formData);
             
             if (res.status === 200) {
                 setStatus('Message sent successfully!');
@@ -150,3 +150,4 @@ const ContactPage = () => {
 };
 
 export default ContactPage;
+
