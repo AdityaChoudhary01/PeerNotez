@@ -9,12 +9,13 @@ const authRoutes = require('./routes/authRoutes');
 const noteRoutes = require('./routes/noteRoutes');
 const contactRoutes = require('./routes/contactRoutes');
 const userRoutes = require('./routes/userRoutes');
+const blogRoutes = require('./routes/blogRoutes'); // Add this line
 
 const app = express();
 const PORT = process.env.PORT || 5001;
 
 // Middleware
-app.use(cors()); // For development. Can be configured for production.
+app.use(cors());
 app.use(express.json());
 
 // DB Connect
@@ -24,9 +25,10 @@ mongoose.connect(process.env.MONGO_URI)
 
 // --- USE ALL ROUTE FILES ---
 app.use('/api/auth', authRoutes);
-app.use('/api/notes', noteRoutes);
+app.use('/api/notes', noteRoutes); // New endpoints for stats and blog posts are under this router
 app.use('/api/contact', contactRoutes);
-app.use('/api/users', userRoutes);
+app.use('/api/users', userRoutes); // New endpoint for top contributors is under this router
+app.use('/api/blogs', blogRoutes); // Add this line
 
 
 // --- ADD THIS HEALTH CHECK ROUTE ---
