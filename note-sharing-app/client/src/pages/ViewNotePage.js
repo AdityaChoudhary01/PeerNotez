@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useParams, Link } from 'react-router-dom'; // --- IMPORT LINK ---
-import { Helmet } from 'react-helmet'; // --- IMPORT HELMET ---
+import { useParams, Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet';
 import Reviews from '../components/notes/Reviews';
 import StarRating from '../components/common/StarRating';
 
@@ -10,10 +10,12 @@ const ViewNotePage = () => {
     const [error, setError] = useState('');
     const { noteId } = useParams();
 
+    // The API base URL is defined in client/src/context/AuthContext.js.
+    // The axios instance automatically uses it for relative paths.
     useEffect(() => {
         const fetchNote = async () => {
             try {
-                const { data } = await axios.get(`https://peernotez.onrender.com/api/notes/${noteId}`);
+                const { data } = await axios.get(`/notes/${noteId}`);
                 setNote(data);
             } catch (err) {
                 setError('Could not load the note. Please ensure the URL is correct.');
@@ -34,13 +36,15 @@ const ViewNotePage = () => {
             return <img src={note.filePath} alt={note.title} style={{ maxWidth: '100%', height: 'auto', borderRadius: '8px' }} />;
         }
 
-        // Use the Google Docs Viewer for all common document types
+        // Use the Google Docs Viewer for all common document types (PDFs and Office files)
         if (
             fileType === 'application/pdf' ||
             fileType === 'application/vnd.openxmlformats-officedocument.presentationml.presentation' || // .pptx
             fileType === 'application/vnd.ms-powerpoint' || // .ppt
             fileType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || // .docx
-            fileType === 'application/msword' // .doc
+            fileType === 'application/msword' || // .doc
+            fileType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || // .xlsx
+            fileType === 'application/vnd.ms-excel' // .xls
         ) {
             return <iframe src={googleDocsViewerUrl} style={{ width: '100%', height: '80vh', border: 'none' }} title={note.title}></iframe>;
         }
@@ -94,4 +98,3 @@ const ViewNotePage = () => {
 };
 
 export default ViewNotePage;
-
