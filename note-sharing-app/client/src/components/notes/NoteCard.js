@@ -11,18 +11,19 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
 
   let thumbnailUrl = '';
   
-  // Logic for generating a thumbnail based on file type
+  const isWordDoc = note.fileType === 'application/msword' || note.fileType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+  const isExcelDoc = note.fileType === 'application/vnd.ms-excel' || note.fileType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+  const isPptDoc = note.fileType === 'application/vnd.ms-powerpoint' || note.fileType === 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
+
   if (note.fileType.startsWith('image/')) {
-    // For images, generate a thumbnail using Cloudinary transformations
     thumbnailUrl = `https://res.cloudinary.com/${cloudName}/image/upload/w_400,h_300,c_fill,f_auto,q_auto/${note.cloudinaryId}.jpg`;
   } else if (note.fileType === 'application/pdf') {
-    // For PDFs, get the first page as a JPG thumbnail using Cloudinary
     thumbnailUrl = `https://res.cloudinary.com/${cloudName}/image/upload/w_400,h_300,c_pad,pg_1,f_jpg,q_auto/${note.cloudinaryId}.jpg`;
-  } else if (note.fileType.includes('word')) {
+  } else if (isWordDoc) {
     thumbnailUrl = '/images/icons/word-icon.png';
-  } else if (note.fileType.includes('excel')) {
+  } else if (isExcelDoc) {
     thumbnailUrl = '/images/icons/excel-icon.png';
-  } else if (note.fileType.includes('powerpoint')) {
+  } else if (isPptDoc) {
     thumbnailUrl = '/images/icons/ppt-icon.png';
   } else if (note.fileType === 'text/plain') {
     thumbnailUrl = '/images/icons/text-icon.png';
