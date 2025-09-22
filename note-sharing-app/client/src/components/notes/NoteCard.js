@@ -10,42 +10,27 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
   const cloudName = process.env.REACT_APP_CLOUDINARY_CLOUD_NAME;
 
   let thumbnailUrl = '';
-  const isS3Hosted = !note.cloudinaryId; // Assuming if no cloudinaryId, it's S3 hosted
-
-  if (isS3Hosted) {
-    // Log the file type for debugging S3 hosted files
-    console.log('S3 Hosted File Type:', note.fileType);
-
-    // Use more specific MIME type checks
-    if (note.fileType === 'application/vnd.openxmlformats-officedocument.presentationml.presentation' ||
-        note.fileType === 'application/vnd.ms-powerpoint') {
-      thumbnailUrl = '/images/icons/ppt-icon.png';
-    } else if (note.fileType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
-               note.fileType === 'application/vnd.ms-excel') {
-      thumbnailUrl = '/images/icons/excel-icon.png';
-    } else if (note.fileType === 'application/msword' ||
-               note.fileType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
-      thumbnailUrl = '/images/icons/word-icon.png';
-    } else if (note.fileType === 'text/plain') {
-      thumbnailUrl = '/images/icons/text-icon.png';
-    } else if (note.fileType === 'application/pdf') {
-      // If S3 hosted PDFs should have a generic PDF icon
-      thumbnailUrl = '/images/icons/pdf-icon.png'; // Make sure you have this icon
-    }
-    else {
-      thumbnailUrl = '/images/icons/document-icon.png'; // Generic fallback for S3 hosted files
-    }
+  
+  // Logic for generating a thumbnail based on file type
+  if (note.fileType.startsWith('image/')) {
+    // For images, generate a thumbnail using Cloudinary transformations
+    thumbnailUrl = `https://res.cloudinary.com/${cloudName}/image/upload/w_400,h_300,c_fill,f_auto,q_auto/${note.cloudinaryId}.jpg`;
+  } else if (note.fileType === 'application/pdf') {
+    // For PDFs, get the first page as a JPG thumbnail using Cloudinary
+    thumbnailUrl = `https://res.cloudinary.com/${cloudName}/image/upload/w_400,h_300,c_pad,pg_1,f_jpg,q_auto/${note.cloudinaryId}.jpg`;
+  } else if (note.fileType.includes('word')) {
+    thumbnailUrl = '/images/icons/word-icon.png';
+  } else if (note.fileType.includes('excel')) {
+    thumbnailUrl = '/images/icons/excel-icon.png';
+  } else if (note.fileType.includes('powerpoint')) {
+    thumbnailUrl = '/images/icons/ppt-icon.png';
+  } else if (note.fileType === 'text/plain') {
+    thumbnailUrl = '/images/icons/text-icon.png';
   } else {
-    // For Cloudinary-hosted files (images or PDFs), generate dynamic URLs
-    if (note.fileType.startsWith('image/')) {
-      thumbnailUrl = `https://res.cloudinary.com/${cloudName}/image/upload/w_400,h_300,c_fill,f_auto,q_auto/${note.cloudinaryId}.jpg`;
-    } else if (note.fileType === 'application/pdf') {
-      thumbnailUrl = `https://res.cloudinary.com/${cloudName}/image/upload/w_400,h_300,c_pad,pg_1,f_jpg,q_auto/${note.cloudinaryId}.jpg`;
-    } else {
-      // Fallback for unexpected Cloudinary types (e.g., if a non-image/pdf somehow got uploaded)
-      thumbnailUrl = '/images/icons/document-icon.png';
-    }
+    // Generic fallback for any other raw file
+    thumbnailUrl = '/images/icons/document-icon.png';
   }
+
 
   const handleSaveToggle = async (e) => {
     e.stopPropagation();
