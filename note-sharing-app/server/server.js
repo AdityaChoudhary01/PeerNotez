@@ -21,7 +21,9 @@ const blogRoutes = require('./routes/blogRoutes');
 // --- App Initialization ---
 const app = express();
 
-// Trust proxy (important on services like Render/Heroku)
+// Set the 'trust proxy' setting. This is crucial for rate limiting on
+// services like Render, which use a proxy. It ensures the rate limiter
+// uses the client's real IP address from the X-Forwarded-For header.
 app.set('trust proxy', 1);
 
 const PORT = process.env.PORT || 5001;
@@ -32,15 +34,23 @@ app.use(mongoSanitize());
 app.use(xss());
 
 // --- CORS Configuration ---
-// Allow from ANY origin (while still supporting credentials)
-app.use(cors({
-  origin: (origin, callback) => {
-    callback(null, true); // accept any origin dynamically
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://peernotez.netlify.app',
+];
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Check if the request origin is in our whitelist or if it's a same-origin request
+    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
   },
   credentials: true,
   optionsSuccessStatus: 200,
-}));
-
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // --- Rate Limiting ---
