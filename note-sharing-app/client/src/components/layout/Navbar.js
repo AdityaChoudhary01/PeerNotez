@@ -54,7 +54,7 @@ const Navbar = () => {
             <Link to="/" className="nav-link" onClick={() => setMenuOpen(false)}>Home</Link>
             <Link to="/about" className="nav-link" onClick={() => setMenuOpen(false)}>About</Link>
             <Link to="/contact" className="nav-link" onClick={() => setMenuOpen(false)}>Contact</Link>
-            <Link to="/donate" className="nav-link" onClick={() => setMenuOpen(false)}>Donate ❤️</Link>
+            <Link to="/donate" className="nav-link" onClick={() => setMenuOpen(false)}>Donate</Link>
             {user && user.role === 'admin' && (
               <Link to="/admin" className="nav-link admin-link" onClick={() => setMenuOpen(false)}>Admin</Link>
             )}
@@ -83,3 +83,4 @@ const Navbar = () => {
 };
 
 export default Navbar;
+
