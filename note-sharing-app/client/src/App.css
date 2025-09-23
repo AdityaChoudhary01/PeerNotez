@@ -3269,570 +3269,254 @@ hr {
 
 
 
-
-
-
 /* =================================== */
-/* === SUPER MODERN DONATE PAGE STYLES === */
+/* === SUPER MODERN DONATE & SUPPORTERS PAGE STYLES === */
 /* =================================== */
 
-.donate-page-wrapper {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 3rem 1.5rem;
-    line-height: 1.6;
-}
-
-/* --- Hero Section --- */
-.donate-hero-section {
-    text-align: center;
-    margin-bottom: 5rem;
-}
-
-.hero-title {
-    font-size: clamp(3rem, 7vw, 5rem);
-    font-weight: 800;
-    color: var(--heading-color);
-    line-height: 1.2;
-    margin-bottom: 1rem;
-    text-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
-}
-
-.hero-subtitle {
-    font-size: clamp(1rem, 2.5vw, 1.4rem);
-    color: var(--subtle-text-color);
-    max-width: 700px;
-    margin: 0 auto;
-}
-
-/* --- Section Headings --- */
-.section-heading {
-    font-size: clamp(2rem, 4vw, 3rem);
-    font-weight: 700;
-    color: var(--primary-color);
-    text-align: center;
-    margin-bottom: 3rem;
-}
-
-/* --- Impact Section (Grid of Cards) --- */
-.impact-cards-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 2rem;
-}
-
-.impact-card {
-    background: var(--card-background);
-    padding: 2.5rem 1.5rem;
-    border-radius: 12px;
-    border: 1px solid var(--border-color);
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
-    text-align: center;
-    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-}
-
-.impact-card:hover {
-    transform: translateY(-8px) scale(1.02);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    border-color: var(--primary-color);
-}
-
-.impact-icon {
-    font-size: 3rem;
-    color: var(--warning-color);
-    margin-bottom: 1rem;
-}
-
-.impact-card h3 {
-    font-size: 1.5rem;
-    color: var(--heading-color);
-    margin: 0 0 0.5rem 0;
-    border: none;
-}
-
-/* --- Donation Methods Section --- */
-.donate-methods-section {
-    margin-top: 5rem;
-    text-align: center;
-}
-
-.methods-cards-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 3rem;
-    margin-top: 3rem;
-}
-
-.method-card {
-    background: var(--card-background);
-    padding: 3rem 2rem;
-    border-radius: 16px;
-    border: 1px solid var(--border-color);
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    max-width: 450px;
-    width: 100%;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.method-card:hover {
-    transform: translateY(-8px) scale(1.02);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
-}
-
-.card-header {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 1rem;
-}
-
-.card-header .icon {
-    font-size: 2.5rem;
-    color: var(--primary-color);
-}
-
-.card-header h3 {
-    font-size: 2rem;
-    color: var(--heading-color);
-    margin: 0;
-    border: none;
-}
-
-.card-description {
-    font-size: 1.1rem;
-    color: var(--subtle-text-color);
-    margin-bottom: 2rem;
-    text-align: center;
-}
-
-.qr-code-wrapper {
-    background-color: white;
-    padding: 1.5rem;
-    border-radius: 12px;
-    width: fit-content;
-    margin-bottom: 1.5rem;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-}
-
-.qr-code-img {
-    width: 180px;
-    height: auto;
-    display: block;
-}
-
-.upi-id-label {
-    font-size: 1.1rem;
-    color: var(--text-color);
-}
-
-/* --- Buy Me a Coffee Card --- */
-.bmac-profile {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 1.5rem;
-}
-
-.bmac-profile-img {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 3px solid var(--warning-color);
-    margin-bottom: 0.5rem;
-}
-
-.profile-name {
-    font-size: 1.2rem;
-    font-weight: bold;
-    color: var(--warning-color);
-}
-
-.profile-tagline {
-    font-size: 0.95rem;
-    color: var(--subtle-text-color);
-}
-
-.bmac-button {
-    display: inline-block;
-    padding: 0.9rem 2.5rem;
-    background: linear-gradient(45deg, #ffdd00, #ffc400);
-    color: #000000;
-    font-size: 1.1rem;
-    font-weight: bold;
-    text-decoration: none;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-.bmac-button:hover {
-    transform: translateY(-3px) scale(1.03);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-}
-
-/* --- Community Section --- */
-.donate-community-section {
-    text-align: center;
-    margin-top: 5rem;
-}
-
-.community-cta-text {
-    font-size: 1.1rem;
-    color: var(--text-color);
-    max-width: 600px;
-    margin: 0 auto 2rem auto;
-}
-
-.main-cta-button {
-    display: inline-block;
-    background: var(--gradient-primary);
-    color: var(--heading-color);
-    padding: 1rem 3rem;
-    border-radius: 50px;
-    text-decoration: none;
-    font-weight: bold;
-    font-size: 1.2rem;
-    transition: all 0.3s ease-in-out;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-}
-
-.main-cta-button:hover {
-    background: var(--gradient-primary-hover);
-    transform: translateY(-5px) scale(1.02);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
-}
-
-/* --- Media Queries for Responsive Design --- */
-@media (max-width: 768px) {
-    .methods-cards-container {
-        flex-direction: column;
-        align-items: center;
-        gap: 2rem;
-    }
-}
-
-/* =================================== */
-/* === SUPER MODERN DONATE PAGE STYLES === */
-/* =================================== */
-
-.donate-page-wrapper {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 3rem 1.5rem;
-    line-height: 1.6;
-}
-
-/* --- Hero Section --- */
-.donate-hero-section {
-    text-align: center;
-    margin-bottom: 5rem;
-}
-
-.hero-title {
-    font-size: clamp(3rem, 7vw, 5rem);
-    font-weight: 800;
-    color: var(--heading-color);
-    line-height: 1.2;
-    margin-bottom: 1rem;
-    text-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
-}
-
-.hero-subtitle {
-    font-size: clamp(1rem, 2.5vw, 1.4rem);
-    color: var(--subtle-text-color);
-    max-width: 700px;
-    margin: 0 auto;
-}
-
-/* --- Section Headings --- */
-.section-heading {
-    font-size: clamp(2rem, 4vw, 3rem);
-    font-weight: 700;
-    color: var(--primary-color);
-    text-align: center;
-    margin-bottom: 3rem;
-}
-
-/* --- Impact Section (Grid of Cards) --- */
-.impact-cards-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 2rem;
-}
-
-.impact-card {
-    background: var(--card-background);
-    padding: 2.5rem 1.5rem;
-    border-radius: 12px;
-    border: 1px solid var(--border-color);
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
-    text-align: center;
-    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-}
-
-.impact-card:hover {
-    transform: translateY(-8px) scale(1.02);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    border-color: var(--primary-color);
-}
-
-.impact-icon {
-    font-size: 3rem;
-    color: var(--warning-color);
-    margin-bottom: 1rem;
-}
-
-.impact-card h3 {
-    font-size: 1.5rem;
-    color: var(--heading-color);
-    margin: 0 0 0.5rem 0;
-    border: none;
-}
-
-/* --- Donation Methods Section --- */
-.donate-methods-section {
-    margin-top: 5rem;
-    text-align: center;
-}
-
-.methods-cards-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 3rem;
-    margin-top: 3rem;
-}
-
-.method-card {
-    background: var(--card-background);
-    padding: 3rem 2rem;
-    border-radius: 16px;
-    border: 1px solid var(--border-color);
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    max-width: 450px;
-    width: 100%;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.method-card:hover {
-    transform: translateY(-8px) scale(1.02);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
-}
-
-.card-header {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 1rem;
-}
-
-.card-header .icon {
-    font-size: 2.5rem;
-    color: var(--primary-color);
-}
-
-.card-header h3 {
-    font-size: 2rem;
-    color: var(--heading-color);
-    margin: 0;
-    border: none;
-}
-
-.card-description {
-    font-size: 1.1rem;
-    color: var(--subtle-text-color);
-    margin-bottom: 2rem;
-    text-align: center;
-}
-
-.qr-code-wrapper {
-    background-color: white;
-    padding: 1.5rem;
-    border-radius: 12px;
-    width: fit-content;
-    margin-bottom: 1.5rem;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-}
-
-.qr-code-img {
-    width: 180px;
-    height: auto;
-    display: block;
-}
-
-.upi-id-label {
-    font-size: 1.1rem;
-    color: var(--text-color);
-}
-
-/* --- Buy Me a Coffee Card --- */
-.bmac-profile {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 1.5rem;
-}
-
-.bmac-profile-img {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 3px solid var(--warning-color);
-    margin-bottom: 0.5rem;
-}
-
-.profile-name {
-    font-size: 1.2rem;
-    font-weight: bold;
-    color: var(--warning-color);
-}
-
-.profile-tagline {
-    font-size: 0.95rem;
-    color: var(--subtle-text-color);
-}
-
-.bmac-button {
-    display: inline-block;
-    padding: 0.9rem 2.5rem;
-    background: linear-gradient(45deg, #ffdd00, #ffc400);
-    color: #000000;
-    font-size: 1.1rem;
-    font-weight: bold;
-    text-decoration: none;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-.bmac-button:hover {
-    transform: translateY(-3px) scale(1.03);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-}
-
-/* --- Community Section --- */
-.donate-community-section {
-    text-align: center;
-    margin-top: 5rem;
-}
-
-.community-cta-text {
-    font-size: 1.1rem;
-    color: var(--text-color);
-    max-width: 600px;
-    margin: 0 auto 2rem auto;
-}
-
-.main-cta-button {
-    display: inline-block;
-    background: var(--gradient-primary);
-    color: var(--heading-color);
-    padding: 1rem 3rem;
-    border-radius: 50px;
-    text-decoration: none;
-    font-weight: bold;
-    font-size: 1.2rem;
-    transition: all 0.3s ease-in-out;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-}
-
-.main-cta-button:hover {
-    background: var(--gradient-primary-hover);
-    transform: translateY(-5px) scale(1.02);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
-}
-
-/* =================================== */
-/* === RESPONSIVE DESIGN BREAKPOINTS === */
-/* =================================== */
-
-/* For smaller phones (e.g., screens less than 480px) */
-@media (max-width: 480px) {
-    .donate-page-wrapper {
-        padding: 2rem 1rem;
-    }
-
-    .hero-title {
-        font-size: clamp(2.5rem, 8vw, 4rem);
-    }
-    
-    .hero-subtitle,
-    .card-description,
-    .upi-id-label,
-    .community-cta-text {
-        font-size: 1rem;
-    }
-
-    .impact-cards-container {
-        /* This will stack the cards in a single column on very small screens */
-        grid-template-columns: 1fr;
-    }
-    
-    .donate-hero-section {
-        margin-bottom: 3rem;
-    }
-
-    .methods-cards-container {
-        flex-direction: column;
-        align-items: center;
-        gap: 2rem;
-    }
-
-    .method-card {
-        padding: 2rem 1.5rem;
-    }
-}
-
-/* For tablets and larger phones (e.g., screens between 481px and 768px) */
-@media (min-width: 481px) and (max-width: 768px) {
-    .donate-page-wrapper {
-        padding: 3rem 1.5rem;
-    }
-    
-    .impact-cards-container {
-        /* This will allow for 2 columns on tablets */
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    }
-    
-    .methods-cards-container {
-        flex-direction: column;
-        align-items: center;
-        gap: 2.5rem;
-    }
-}
-
-/* For large desktops (e.g., screens larger than 1200px) */
-@media (min-width: 1201px) {
-    .donate-page-wrapper {
-        padding: 4rem 2rem;
-    }
-
-    .donate-hero-section {
-        margin-bottom: 6rem;
-    }
-}
-
-/* =================================== */
-/* === SUPPORTERS PAGE STYLES (Modernized) === */
-/* =================================== */
-
+/* --- Page Wrappers --- */
+.donate-page-wrapper,
 .supporters-page-wrapper {
     max-width: 1200px;
     margin: 0 auto;
     padding: 3rem 1.5rem;
     line-height: 1.6;
+    overflow-x: hidden; /* Added to prevent horizontal scroll */
 }
 
-/* --- Page Header --- */
+/* --- Hero Section --- */
+.donate-hero-section {
+    text-align: center;
+    margin-bottom: 5rem;
+}
+
+.hero-title {
+    font-size: clamp(3rem, 7vw, 5rem);
+    font-weight: 800;
+    color: var(--heading-color);
+    line-height: 1.2;
+    margin-bottom: 1rem;
+    text-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+}
+
+.hero-subtitle {
+    font-size: clamp(1rem, 2.5vw, 1.4rem);
+    color: var(--subtle-text-color);
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+/* --- Section Headings --- */
+.section-heading {
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 700;
+    color: var(--primary-color);
+    text-align: center; /* Corrected centering method */
+    margin-bottom: 3rem;
+    display: block; /* Ensures it takes up full width for centering */
+}
+
+/* --- Impact Section (Grid of Cards) --- */
+.impact-cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 2rem;
+}
+
+.impact-card {
+    background: var(--card-background);
+    padding: 2.5rem 1.5rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.impact-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    border-color: var(--primary-color);
+}
+
+.impact-icon {
+    font-size: 3rem;
+    color: var(--warning-color);
+    margin-bottom: 1rem;
+}
+
+.impact-card h3 {
+    font-size: 1.5rem;
+    color: var(--heading-color);
+    margin: 0 0 0.5rem 0;
+    border: none;
+}
+
+/* --- Donation Methods Section --- */
+.donate-methods-section {
+    margin-top: 5rem;
+    text-align: center;
+}
+
+.methods-cards-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 3rem;
+    margin-top: 3rem;
+}
+
+.method-card {
+    background: var(--card-background);
+    padding: 3rem 2rem;
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 450px;
+    width: 100%;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.method-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.card-header .icon {
+    font-size: 2.5rem;
+    color: var(--primary-color);
+}
+
+.card-header h3 {
+    font-size: 2rem;
+    color: var(--heading-color);
+    margin: 0;
+    border: none;
+}
+
+.card-description {
+    font-size: 1.1rem;
+    color: var(--subtle-text-color);
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.qr-code-wrapper {
+    background-color: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    width: fit-content;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.qr-code-img {
+    width: 180px;
+    height: auto;
+    display: block;
+}
+
+.upi-id-label {
+    font-size: 1.1rem;
+    color: var(--text-color);
+}
+
+/* --- Buy Me a Coffee Card --- */
+.bmac-profile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.bmac-profile-img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--warning-color);
+    margin-bottom: 0.5rem;
+}
+
+.profile-name {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--warning-color);
+}
+
+.profile-tagline {
+    font-size: 0.95rem;
+    color: var(--subtle-text-color);
+}
+
+.bmac-button {
+    display: inline-block;
+    padding: 0.9rem 2.5rem;
+    background: linear-gradient(45deg, #ffdd00, #ffc400);
+    color: #000000;
+    font-size: 1.1rem;
+    font-weight: bold;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.bmac-button:hover {
+    transform: translateY(-3px) scale(1.03);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* --- Community Section --- */
+.donate-community-section {
+    text-align: center;
+    margin-top: 5rem;
+}
+
+.community-cta-text {
+    font-size: 1.1rem;
+    color: var(--text-color);
+    max-width: 600px;
+    margin: 0 auto 2rem auto;
+}
+
+.main-cta-button {
+    display: inline-block;
+    background: var(--gradient-primary);
+    color: var(--heading-color);
+    padding: 1rem 3rem;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1.2rem;
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.main-cta-button:hover {
+    background: var(--gradient-primary-hover);
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+
+/* --- Supporters Page Styles --- */
+.supporters-page-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem;
+    line-height: 1.6;
+    overflow-x: hidden; /* Added to prevent horizontal scroll */
+}
+
 .page-header {
     text-align: center;
     margin-bottom: 5rem;
@@ -3871,21 +3555,6 @@ hr {
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
-/* --- Section Headings & Descriptions --- */
-.section-heading {
-    font-size: clamp(2.2rem, 4vw, 3rem);
-    font-weight: 700;
-    color: var(--primary-color);
-    text-align: center;
-    margin-bottom: 2rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid rgba(var(--primary-color-rgb), 0.3);
-    display: inline-block;
-    position: relative;
-    left: 50%;
-    transform: translateX(-50%);
-}
-
 .section-description {
     font-size: clamp(1rem, 2vw, 1.15rem);
     color: var(--text-color);
@@ -3894,7 +3563,6 @@ hr {
     margin: 0 auto 3rem auto;
 }
 
-/* --- Supporters Story Section --- */
 .supporters-story-section {
     margin-top: 5rem;
     margin-bottom: 5rem;
@@ -3912,7 +3580,6 @@ hr {
     line-height: 1.8;
 }
 
-/* --- Supporters Wall Section (Grid) --- */
 .supporters-wall-section {
     margin-top: 5rem;
 }
@@ -4028,6 +3695,72 @@ hr {
 /* === RESPONSIVE DESIGN BREAKPOINTS === */
 /* =================================== */
 
+/* For smaller phones (e.g., screens less than 480px) */
+@media (max-width: 480px) {
+    .donate-page-wrapper {
+        padding: 2rem 1rem;
+    }
+
+    .hero-title {
+        font-size: clamp(2.5rem, 8vw, 4rem);
+    }
+    
+    .hero-subtitle,
+    .card-description,
+    .upi-id-label,
+    .community-cta-text {
+        font-size: 1rem;
+    }
+
+    .impact-cards-container {
+        /* This will stack the cards in a single column on very small screens */
+        grid-template-columns: 1fr;
+    }
+    
+    .donate-hero-section {
+        margin-bottom: 3rem;
+    }
+
+    .methods-cards-container {
+        flex-direction: column;
+        align-items: center;
+        gap: 2rem;
+    }
+
+    .method-card {
+        padding: 2rem 1.5rem;
+    }
+}
+
+/* For tablets and larger phones (e.g., screens between 481px and 768px) */
+@media (min-width: 481px) and (max-width: 768px) {
+    .donate-page-wrapper {
+        padding: 3rem 1.5rem;
+    }
+    
+    .impact-cards-container {
+        /* This will allow for 2 columns on tablets */
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+    
+    .methods-cards-container {
+        flex-direction: column;
+        align-items: center;
+        gap: 2.5rem;
+    }
+}
+
+/* For large desktops (e.g., screens larger than 1200px) */
+@media (min-width: 1201px) {
+    .donate-page-wrapper {
+        padding: 4rem 2rem;
+    }
+
+    .donate-hero-section {
+        margin-bottom: 6rem;
+    }
+}
+
 /* For smaller phones (less than 576px) */
 @media (max-width: 575.98px) {
     .supporters-page-wrapper {
@@ -4077,6 +3810,7 @@ hr {
         padding: 4rem 2rem;
     }
 }
+
 
 
 /* =================================== */
@@ -5137,3 +4871,4 @@ hr {
         min-height: 300px;
     }
 }
+
