@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
 
+// Assuming your logo file is named 'peernotez-logo.png' and is in your assets folder
+import logo from '../../assets/peernotez-logo.png'; 
+
 const Navbar = () => {
   const { user, logout } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
@@ -24,22 +27,16 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="navbar" aria-label="Main navigation">
+    <nav className="navbar">
       <div className="navbar-container">
-        {/* Brand link with a clear accessible label */}
+        {/* Replace the text with an image tag for the logo */}
         <Link to="/" className="navbar-brand" onClick={() => setMenuOpen(false)}>
-          <span className="visually-hidden">Peernotez Home</span>
-          PeerNotez 📚
+          <img src={logo} alt="PeerNotez Logo" className="navbar-logo" />
         </Link>
         
-        {/* Added aria-label for accessibility */}
-        <button
-          className="hamburger"
-          onClick={() => setMenuOpen(!menuOpen)}
-          aria-label={menuOpen ? "Close main menu" : "Open main menu"}
-        >
+        <div className="hamburger" onClick={() => setMenuOpen(!menuOpen)}>
           {menuOpen ? '✕' : '☰'}
-        </button>
+        </div>
 
         <div className={menuOpen ? "nav-menu active" : "nav-menu"}>
           <form onSubmit={handleSearch} className="search-form-nav">
@@ -49,9 +46,8 @@ const Navbar = () => {
               placeholder="Search notes..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              aria-label="Search notes"
             />
-            <button type="submit" className="search-button" aria-label="Submit search">Search</button>
+            <button type="submit" className="search-button">Search</button>
           </form>
 
           <div className="navbar-links">
