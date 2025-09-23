@@ -90,11 +90,10 @@ h3 {
     padding: 0;
     margin-bottom: 1rem;
 }
+
+
 /* --- ENHANCED ULTRA-MODERN NAVBAR --- */
-/*
-  Themed for a dark mode interface.
-  Using CSS custom properties for easy theme switching.
-*/
+/* Themed for a dark mode interface. Using CSS custom properties for easy theme switching. */
 :root {
   --background-dark: #0A0D14;
   --secondary-dark: #121A26;
@@ -135,6 +134,7 @@ body {
   align-items: center;
   width: 100%;
   max-width: 1600px;
+  position: relative;
 }
 
 .navbar-brand {
@@ -144,12 +144,29 @@ body {
   text-decoration: none;
   transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), color 0.3s ease;
   letter-spacing: -0.5px;
+  display: flex;
+  align-items: center;
+  height: 100%;
 }
 
 .navbar-brand:hover {
   color: var(--primary-accent);
   transform: translateY(-2px);
   text-shadow: 0 0 10px var(--primary-accent);
+}
+
+.navbar-logo {
+  height: 55px;
+  width: auto;
+  display: block;
+  object-fit: contain;
+  margin: 0;
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.navbar-logo:hover {
+  transform: scale(1.05);
+  filter: drop-shadow(0 0 6px var(--primary-accent));
 }
 
 .nav-menu {
@@ -310,14 +327,18 @@ body {
   box-shadow: 0 4px 15px rgba(207, 68, 68, 0.4);
 }
 
+/* --- HAMBURGER BUTTON --- */
 .hamburger {
+  position: absolute;      /* fix overlapping */
+  top: 10px;
+  right: 10px;
   display: none;
   font-size: 2rem;
   cursor: pointer;
   color: var(--text-light);
   background: none;
   border: none;
-  z-index: 1100;
+  z-index: 1101;           /* above menu & search */
   transition: transform 0.2s ease;
 }
 
@@ -326,8 +347,6 @@ body {
 }
 
 /* --- RESPONSIVENESS --- */
-/* The main change is in the media query breakpoint for the hamburger menu. */
-
 /* Tablet and smaller screens */
 @media screen and (max-width: 1280px) {
   .nav-menu {
@@ -335,8 +354,10 @@ body {
   }
   .hamburger {
     display: block;
-    margin-left: auto;
   }
+  
+
+  /* --- ENHANCED HAMBURGER MENU --- */
   .nav-menu.active {
     display: flex;
     flex-direction: column;
@@ -345,12 +366,17 @@ body {
     position: fixed;
     top: 0;
     left: 0;
-    background-color: var(--secondary-dark);
-    padding: 2rem;
+    background: var(--secondary-dark);
+    padding-top: 4rem;      /* prevent overlap with X */
+    padding-left: 2rem;
+    padding-right: 2rem;
     z-index: 1050;
     overflow-y: auto;
-    animation: slideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    animation: slideIn 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    justify-content: flex-start;
+    align-items: center;
   }
+
   .nav-menu.active .navbar-links,
   .nav-menu.active .navbar-auth {
     flex-direction: column;
@@ -358,25 +384,91 @@ body {
     gap: 1.5rem;
     margin-bottom: 2rem;
   }
-  .nav-menu.active .nav-link,
-  .nav-menu.active .nav-button {
+  .nav-menu.active .nav-link {
+    width: 100%; /* Ensures the link takes up full width for proper centering */
+    padding: 0.8rem 1rem;
     text-align: center;
+    font-size: 1.15rem;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    background: rgba(108, 99, 255, 0.05); /* Added to match button style */
+  }
+  /* Make this rule more specific to avoid conflicts */
+  .nav-menu.active .nav-button:not(.logout-btn) {
     width: 100%;
-    font-size: 1.1rem;
-    border-radius: 10px;
+    padding: 0.8rem 1rem;
+    text-align: center;
+    font-size: 1.15rem;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    background: rgba(108, 99, 255, 0.05);
   }
-  .nav-menu.active .nav-link::before {
-    content: none;
+
+  .nav-menu.active .logout-btn {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    text-align: center;
+    font-size: 1.15rem;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    background-color: #A32929;
+    border-color: #A32929;
+    color: white;
   }
+
+  .nav-menu.active .nav-link:hover {
+    background: rgba(108, 99, 255, 0.15);
+    color: var(--text-light);
+    transform: translateY(-2px);
+  }
+
+  .nav-menu.active .nav-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px var(--hover-glow);
+  }
+
+  /* This fixes the hover state specifically for the logout button */
+  .nav-menu.active .logout-btn:hover {
+    background-color: #CF4444;
+    border-color: #CF4444;
+    box-shadow: 0 4px 15px rgba(207, 68, 68, 0.4);
+  }
+
   .nav-menu.active .search-form-nav {
     width: 100%;
     margin-bottom: 2rem;
-    border-radius: 10px;
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
   }
+
+  .search-input {
+    flex-grow: 1;
+    padding: 0.6rem 1rem;
+    border-radius: 12px 0 0 12px;
+  }
+
   .search-button {
-    padding: 0 1rem;
-    border-radius: 0 10px 10px 0;
+    padding: 0 1.2rem;
+    border-radius: 0 12px 12px 0;
   }
+
+  /* Smooth slide-in for menu items */
+  .nav-menu.active .nav-link,
+  .nav-menu.active .nav-button,
+  .nav-menu.active .search-form-nav {
+    opacity: 0;
+    transform: translateY(-20px);
+    animation: menuItemFade 0.4s forwards;
+  }
+
+  .nav-menu.active .nav-link:nth-child(1),
+  .nav-menu.active .nav-button:nth-child(1),
+  .nav-menu.active .search-form-nav:nth-child(1) { animation-delay: 0.1s; }
+  .nav-menu.active .nav-link:nth-child(2) { animation-delay: 0.15s; }
+  .nav-menu.active .nav-link:nth-child(3) { animation-delay: 0.2s; }
+  .nav-menu.active .nav-link:nth-child(4) { animation-delay: 0.25s; }
+  .nav-menu.active .nav-button:nth-child(2) { animation-delay: 0.3s; }
 }
 
 /* Extra small mobile screens */
@@ -394,46 +486,25 @@ body {
   .navbar-container {
     padding: 0 1rem;
   }
+  .navbar-logo {
+    height: 45px;
+  }
 }
 
 /* --- Animations --- */
 @keyframes slideIn {
-  from {
-    transform: translateX(-100%);
-  }
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes menuItemFade {
   to {
-    transform: translateX(0);
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
 
-/* --- LOGO STYLING (final fixed) --- */
-.navbar-brand {
-  display: flex;          /* Flexbox for centering */
-  align-items: center;    /* Vertically center the logo */
-  height: 100%;           /* Match navbar height */
-}
-
-.navbar-logo {
-  height: 55px;           /* Larger logo inside 70px navbar */
-  width: auto;            /* Keeps proportions correct */
-  display: block;         /* Prevents inline spacing issues */
-  object-fit: contain;    /* Prevents cropping */
-  margin: 0;
-  transition: transform 0.3s ease, filter 0.3s ease;
-}
-
-.navbar-logo:hover {
-  transform: scale(1.05);
-  filter: drop-shadow(0 0 6px var(--primary-accent));
-}
-
-/* Smaller screens */
-@media screen and (max-width: 480px) {
-  .navbar-logo {
-    height: 45px; /* Slightly smaller for tiny screens */
-  }
-}
 
 /* --- NOTES GRID & CARDS --- */
 .notes-grid {
@@ -4871,4 +4942,5 @@ hr {
         min-height: 300px;
     }
 }
+
 
