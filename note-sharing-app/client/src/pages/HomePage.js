@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import NoteCard from '../components/notes/NoteCard';
 import FilterBar from '../components/common/FilterBar';
 import Pagination from '../components/common/Pagination';
+import { FaFilter } from 'react-icons/fa'; // Make sure you have react-icons installed
 
 const HomePage = () => {
     // State for main notes grid
@@ -27,6 +28,9 @@ const HomePage = () => {
     const [topContributors, setTopContributors] = useState([]);
     const [loadingContributors, setLoadingContributors] = useState(true);
     
+    // --- State for mobile filter bar ---
+    const [isFilterBarOpen, setIsFilterBarOpen] = useState(false);
+
     // --- Data Fetching Hooks ---
 
     // Fetch All Notes (for the main grid)
@@ -122,6 +126,12 @@ const HomePage = () => {
         );
         setPage(1); // Reset to page 1 on a new filter
         setFilters(activeFilters);
+        setIsFilterBarOpen(false); // Close the filter bar after submission
+    };
+    
+    // --- Function to toggle the filter bar on mobile ---
+    const toggleFilterBar = () => {
+        setIsFilterBarOpen(!isFilterBarOpen);
     };
 
     return (
@@ -176,7 +186,7 @@ const HomePage = () => {
                     </div>
                 </div>
             </section>
-            
+
             <hr/>
 
             {/* --- Key Statistics Section --- */}
@@ -240,14 +250,29 @@ const HomePage = () => {
                     <p style={{textAlign: 'center'}}>No featured notes have been selected yet.</p>
                 )}
             </section>
-            
+
             <hr/>
+
+            {/* --- Filter Bar Toggle Button for Mobile --- */}
+            <div className="filter-toggle-container">
+                <button 
+                    className="filter-toggle-btn" 
+                    onClick={toggleFilterBar}
+                >
+                    {isFilterBarOpen ? 'Hide Filters' : 'Show Filters'}
+                    <FaFilter className="filter-icon" />
+                </button>
+            </div>
 
             {/* --- Main Notes Section with Filter and Sort --- */}
             <section className="all-notes-section">
                 <h1>Find Notes</h1>
-                <FilterBar onFilterSubmit={handleFilterSubmit} />
-                
+                <FilterBar
+                    onFilterSubmit={handleFilterSubmit}
+                    // Conditionally add the 'open' class for mobile visibility
+                    className={isFilterBarOpen ? 'filter-bar open' : 'filter-bar'}
+                />
+
                 <div className="notes-header">
                     <h2>All Notes</h2>
                     <div className="sort-container">
@@ -259,7 +284,7 @@ const HomePage = () => {
                         </select>
                     </div>
                 </div>
-                
+
                 {loading ? (
                     <div>Loading notes...</div>
                 ) : notes.length > 0 ? (
@@ -299,7 +324,7 @@ const HomePage = () => {
                     <p>No contributors to show yet.</p>
                 )}
             </section>
-            
+
             <hr/>
 
             {/* --- Blog/Resources Section --- */}
