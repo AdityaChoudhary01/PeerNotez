@@ -143,6 +143,10 @@ const HomePage = () => {
         fetchFullBlogPost();
     }, [selectedBlogSlug]); 
 
+
+
+
+   
     // --- UTILITY FUNCTIONS ---
     const handleFilterSubmit = (newFilters) => {
         const activeFilters = Object.fromEntries(
@@ -196,7 +200,30 @@ const HomePage = () => {
         );
     };
 
-    // --- FULL BLOG POST COMPONENT ---
+    // Utility function to convert line breaks in the raw text into separate <p> tags.
+    // This ensures natural paragraph breaks and allows CSS to control the gap between them.
+    const renderContentWithParagraphs = (rawContent) => {
+        if (!rawContent) return null;
+        
+        // Split the content by double line breaks ('\n\n'), which typically denotes a paragraph break.
+        const contentBlocks = rawContent.split('\n\n'); 
+        
+        // Wrap each block in a <p> tag with a specific class for styling the gap.
+        return contentBlocks.map((block, index) => {
+            const trimmedBlock = block.trim();
+            // Skip rendering empty blocks that might result from extra newlines
+            if (trimmedBlock === '') return null; 
+    
+            return (
+                <p key={index} className="article-paragraph">
+                    {trimmedBlock}
+                </p>
+            );
+        });
+    };
+    
+    
+    // --- FULL BLOG POST COMPONENT (UPDATED) ---
     const FullBlogContent = () => {
         if (loadingFullBlog) {
             return <div className="full-blog-container loading">Loading full article...</div>;
@@ -210,9 +237,9 @@ const HomePage = () => {
                 </div>
             );
         }
-
+    
         const publishDate = fullBlogPost.createdAt ? new Date(fullBlogPost.createdAt).toLocaleDateString() : 'N/A';
-
+    
         return (
             <div className="full-blog-container">
                 <Helmet>
@@ -221,7 +248,7 @@ const HomePage = () => {
                 </Helmet>
                 
                 <button onClick={handleGoBack} className="back-button"><FaArrowLeft /> Back to Home</button>
-
+    
                 <article className="blog-article-content">
                     <h1 className="article-title">{fullBlogPost.title}</h1>
                     
@@ -240,11 +267,12 @@ const HomePage = () => {
                         )}
                         <span className="article-date">Published on: {publishDate}</span>
                     </div>
-
+    
                     <hr className="article-separator" />
                     
                     <div className="article-body">
-                        <p>{fullBlogPost.content}</p> 
+                        {/* 🌟 FIX APPLIED HERE: Process the raw content into structured paragraphs */}
+                        {renderContentWithParagraphs(fullBlogPost.content)} 
                     </div>
                 </article>
             </div>
