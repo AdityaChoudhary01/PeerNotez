@@ -10,10 +10,8 @@ import { FaFilter, FaDownload, FaTimes } from 'react-icons/fa';
 // --- Download Link Constant (Kept) ---
 const DOWNLOAD_LINK = 'https://github.com/AdityaChoudhary01/PeerNotez/releases/download/v1.0.3/PeerNotez.apk';
 
-// NOTE: BUTTON_STORAGE_KEY is removed.
-
 const HomePage = () => {
-    // State for main notes grid (unchanged)
+    // State for main notes grid (UNCHANGED)
     const [notes, setNotes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filters, setFilters] = useState({});
@@ -21,11 +19,11 @@ const HomePage = () => {
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
 
-    // State for featured content (unchanged)
+    // State for featured content (UNCHANGED)
     const [featuredNotes, setFeaturedNotes] = useState([]);
     const [loadingFeatured, setLoadingFeatured] = useState(true);
 
-    // State for dynamic content sections (unchanged)
+    // State for dynamic content sections (UNCHANGED)
     const [stats, setStats] = useState({ totalNotes: 0, totalUsers: 0, downloadsThisMonth: 0 });
     const [loadingStats, setLoadingStats] = useState(true);
     const [blogPosts, setBlogPosts] = useState([]);
@@ -33,13 +31,13 @@ const HomePage = () => {
     const [topContributors, setTopContributors] = useState([]);
     const [loadingContributors, setLoadingContributors] = useState(true);
     
-    // --- State for mobile filter bar (unchanged) ---
+    // --- State for mobile filter bar (UNCHANGED) ---
     const [isFilterBarOpen, setIsFilterBarOpen] = useState(false);
 
-    // --- State for Fixed Download Button: ALWAYS TRUE INITIALLY (FIX APPLIED) ---
-    const [showAppButton, setShowAppButton] = useState(true); // Always starts as visible
+    // --- State for Fixed Download Button: Shows on every page load (FIX APPLIED) ---
+    const [showAppButton, setShowAppButton] = useState(true); 
 
-    // --- Data Fetching Hooks (unchanged) ---
+    // --- Data Fetching Hooks (UNCHANGED) ---
     useEffect(() => {
         const fetchNotes = async () => {
             setLoading(true);
@@ -107,7 +105,8 @@ const HomePage = () => {
         const fetchBlogPosts = async () => {
             setLoadingBlog(true);
             try {
-                const { data } = await axios.get('/blogs');
+                // This call relies on the backend route /blogs using .populate('author', 'name avatar')
+                const { data } = await axios.get('/blogs'); 
                 setBlogPosts(data);
             } catch (error) {
                 console.error("Failed to fetch blog posts", error);
@@ -133,13 +132,11 @@ const HomePage = () => {
 
     // Function to handle manual closing (user clicks 'X' or 'Download')
     const handleCloseButton = () => {
-        // FIX: Only sets the state to false. On refresh, the component remounts 
-        // and showAppButton is reset to true.
+        // Hides for current component lifecycle; reappears on refresh
         setShowAppButton(false);
-        // sessionStorage.setItem(BUTTON_STORAGE_KEY, 'true'); <-- REMOVED THIS LINE
     };
 
-    // --- Fixed Download Button Component with Close Button ---
+    // --- Fixed Download Button Component with Close Button (THEMED) ---
     const AppDownloadFixedButton = () => {
         if (!showAppButton) return null;
 
@@ -160,7 +157,7 @@ const HomePage = () => {
                     download 
                     className="fixed-download-button"
                     aria-label="Download PeerNotez App"
-                    onClick={() => setTimeout(handleCloseButton, 1000)} // Hide a moment after clicking download
+                    onClick={() => setTimeout(handleCloseButton, 1000)} 
                 >
                     <FaDownload className="download-icon" /> 
                     <span className="button-text">Get App</span>
@@ -172,7 +169,7 @@ const HomePage = () => {
 
     return (
         <div className="homepage-content">
-            {/* 1. Insert the Fixed Download Button component here */}
+            {/* Fixed Download Button */}
             <AppDownloadFixedButton />
 
             <Helmet>
@@ -185,26 +182,26 @@ const HomePage = () => {
                 <script type="application/ld+json">
                 {`
                 {
-                    "@context": "https://schema.org",
-                    "@type": "WebSite",
-                    "name": "PeerNotez",
-                    "url": "https://peernotez.netlify.app/",
-                    "description": "PeerNotez helps students share and find academic notes globally."
+                  "@context": "https://schema.org",
+                  "@type": "WebSite",
+                  "name": "PeerNotez",
+                  "url": "https://peernotez.netlify.app/",
+                  "description": "PeerNotez helps students share and find academic notes globally."
                 }
                 `}
                 </script>
                 <script type="application/ld+json">
                 {`
                 {
-                    "@context": "https://schema.org",
-                    "@type": "Organization",
-                    "name": "PeerNotez",
-                    "url": "https://peernotez.netlify.app/",
-                    "logo": "https://peernotez.netlify.app/logo192.png",
-                    "sameAs": [
-                        "https://www.instagram.com/aditya_choudhary__021/",
-                        "https://www.linkedin.com/in/aditya-kumar-38093a304/"
-                    ]
+                  "@context": "https://schema.org",
+                  "@type": "Organization",
+                  "name": "PeerNotez",
+                  "url": "https://peernotez.netlify.app/",
+                  "logo": "https://peernotez.netlify.app/logo192.png",
+                  "sameAs": [
+                    "https://www.instagram.com/aditya_choudhary__021/",
+                    "https://www.linkedin.com/in/aditya-kumar-38093a304/"
+                  ]
                 }
                 `}
                 </script>
@@ -366,7 +363,7 @@ const HomePage = () => {
 
             <hr/>
 
-            {/* --- Blog/Resources Section --- */}
+            {/* --- Blog/Resources Section (UPDATED to display author avatar and name) --- */}
             <section className="blog-section">
                 <h2>From Our Blog</h2>
                 {loadingBlog ? (
@@ -375,8 +372,34 @@ const HomePage = () => {
                     <div className="blog-posts-grid">
                         {blogPosts.map(post => (
                             <article key={post._id} className="blog-card">
-                                <h3>{post.title}</h3>
-                                <p>{post.summary}</p>
+                                <h3>
+                                    {/* Link to the full blog post page */}
+                                    <Link to={`/blog/${post.slug}`} className="blog-title-link">
+                                        {post.title}
+                                    </Link>
+                                </h3>
+
+                                {/* Display Author Avatar and Name (requires populated object from backend) */}
+                                {post.author && (
+                                    <div className="blog-author-details">
+                                        {post.author.avatar && (
+                                            <img 
+                                                src={post.author.avatar} 
+                                                alt={`Avatar of ${post.author.name}`} 
+                                                className="blog-author-avatar"
+                                            />
+                                        )}
+                                        {post.author.name && (
+                                            <p className="blog-author-name">
+                                                By <strong>{post.author.name}</strong>
+                                            </p>
+                                        )}
+                                    </div>
+                                )}
+                                
+                                {/* Summary remains the preview text */}
+                                <p className="blog-summary">{post.summary}</p>
+                                
                             </article>
                         ))}
                     </div>
