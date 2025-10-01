@@ -5,13 +5,13 @@ import { Link } from 'react-router-dom';
 import NoteCard from '../components/notes/NoteCard';
 import FilterBar from '../components/common/FilterBar';
 import Pagination from '../components/common/Pagination';
-import { FaFilter, FaDownload, FaTimes } from 'react-icons/fa';
+import { FaFilter, FaDownload, FaTimes, FaArrowLeft } from 'react-icons/fa';
 
-// --- Download Link Constant (Kept) ---
+// --- Download Link Constant ---
 const DOWNLOAD_LINK = 'https://github.com/AdityaChoudhary01/PeerNotez/releases/download/v1.0.3/PeerNotez.apk';
 
 const HomePage = () => {
-    // State for main notes grid (UNCHANGED)
+    // --- State for main notes grid ---
     const [notes, setNotes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filters, setFilters] = useState({});
@@ -19,11 +19,11 @@ const HomePage = () => {
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
 
-    // State for featured content (UNCHANGED)
+    // --- State for featured content ---
     const [featuredNotes, setFeaturedNotes] = useState([]);
     const [loadingFeatured, setLoadingFeatured] = useState(true);
 
-    // State for dynamic content sections (UNCHANGED)
+    // --- State for dynamic content sections ---
     const [stats, setStats] = useState({ totalNotes: 0, totalUsers: 0, downloadsThisMonth: 0 });
     const [loadingStats, setLoadingStats] = useState(true);
     const [blogPosts, setBlogPosts] = useState([]);
@@ -31,13 +31,18 @@ const HomePage = () => {
     const [topContributors, setTopContributors] = useState([]);
     const [loadingContributors, setLoadingContributors] = useState(true);
     
-    // --- State for mobile filter bar (UNCHANGED) ---
+    // --- State for mobile filter bar ---
     const [isFilterBarOpen, setIsFilterBarOpen] = useState(false);
 
-    // --- State for Fixed Download Button: Shows on every page load (FIX APPLIED) ---
+    // --- State for Fixed Download Button: Shows on every page load ---
     const [showAppButton, setShowAppButton] = useState(true); 
 
-    // --- Data Fetching Hooks (UNCHANGED) ---
+    // --- BLOG PAGE STATE ---
+    const [selectedBlogSlug, setSelectedBlogSlug] = useState(null); 
+    const [fullBlogPost, setFullBlogPost] = useState(null); 
+    const [loadingFullBlog, setLoadingFullBlog] = useState(false);
+
+    // --- DATA FETCHING HOOKS ---
     useEffect(() => {
         const fetchNotes = async () => {
             setLoading(true);
@@ -105,7 +110,6 @@ const HomePage = () => {
         const fetchBlogPosts = async () => {
             setLoadingBlog(true);
             try {
-                // This call relies on the backend route /blogs using .populate('author', 'name avatar')
                 const { data } = await axios.get('/blogs'); 
                 setBlogPosts(data);
             } catch (error) {
@@ -117,23 +121,52 @@ const HomePage = () => {
         fetchBlogPosts();
     }, []);
 
+    // --- FETCH FULL BLOG POST BY SLUG ---
+    useEffect(() => {
+        if (!selectedBlogSlug) {
+            setFullBlogPost(null);
+            return;
+        }
+
+        const fetchFullBlogPost = async () => {
+            setLoadingFullBlog(true);
+            try {
+                const { data } = await axios.get(`/blogs/${selectedBlogSlug}`); 
+                setFullBlogPost(data);
+            } catch (error) {
+                console.error(`Failed to fetch blog post: ${selectedBlogSlug}`, error);
+                setFullBlogPost(null);
+            } finally {
+                setLoadingFullBlog(false);
+            }
+        };
+        fetchFullBlogPost();
+    }, [selectedBlogSlug]); 
+
+    // --- UTILITY FUNCTIONS ---
     const handleFilterSubmit = (newFilters) => {
         const activeFilters = Object.fromEntries(
             Object.entries(newFilters).filter(([_, value]) => value !== '')
         );
         setPage(1); 
-        setFilters(activeFilters);
+        setFilters(activeFilters); 
         setIsFilterBarOpen(false);
     };
     
-    const toggleFilterBar = () => {
-        setIsFilterBarOpen(!isFilterBarOpen);
+    const toggleFilterBar = () => { setIsFilterBarOpen(!isFilterBarOpen); };
+
+    const handleCloseButton = () => { setShowAppButton(false); };
+
+    // Function to handle navigation to the full blog post
+    const handleViewBlog = (slug) => {
+        setSelectedBlogSlug(slug);
+        window.scrollTo(0, 0); 
     };
 
-    // Function to handle manual closing (user clicks 'X' or 'Download')
-    const handleCloseButton = () => {
-        // Hides for current component lifecycle; reappears on refresh
-        setShowAppButton(false);
+    // Function to go back to the homepage view
+    const handleGoBack = () => {
+        setSelectedBlogSlug(null);
+        setFullBlogPost(null);
     };
 
     // --- Fixed Download Button Component with Close Button (THEMED) ---
@@ -142,7 +175,6 @@ const HomePage = () => {
 
         return (
             <div className="fixed-download-button-wrapper">
-                {/* Close Button */}
                 <button 
                     className="fixed-download-close-btn" 
                     onClick={handleCloseButton}
@@ -150,8 +182,6 @@ const HomePage = () => {
                 >
                     <FaTimes />
                 </button>
-                
-                {/* Download Link/Button */}
                 <a 
                     href={DOWNLOAD_LINK} 
                     download 
@@ -166,12 +196,75 @@ const HomePage = () => {
         );
     };
 
+    // --- FULL BLOG POST COMPONENT ---
+    const FullBlogContent = () => {
+        if (loadingFullBlog) {
+            return <div className="full-blog-container loading">Loading full article...</div>;
+        }
+        if (!fullBlogPost) {
+            return (
+                <div className="full-blog-container error">
+                    <button onClick={handleGoBack} className="back-button"><FaArrowLeft /> Back to Home</button>
+                    <h1>Article Not Found</h1>
+                    <p>The requested blog post could not be loaded. Please ensure your backend is running and the single blog route (`/blogs/:slug`) is set up correctly.</p>
+                </div>
+            );
+        }
+
+        const publishDate = fullBlogPost.createdAt ? new Date(fullBlogPost.createdAt).toLocaleDateString() : 'N/A';
+
+        return (
+            <div className="full-blog-container">
+                <Helmet>
+                    <title>{fullBlogPost.title} | PeerNotez Blog</title>
+                    <meta name="description" content={fullBlogPost.summary} />
+                </Helmet>
+                
+                <button onClick={handleGoBack} className="back-button"><FaArrowLeft /> Back to Home</button>
+
+                <article className="blog-article-content">
+                    <h1 className="article-title">{fullBlogPost.title}</h1>
+                    
+                    <div className="article-meta">
+                        {fullBlogPost.author && (
+                            <div className="blog-author-details">
+                                {fullBlogPost.author.avatar && (
+                                    <img src={fullBlogPost.author.avatar} alt={fullBlogPost.author.name} className="blog-author-avatar" />
+                                )}
+                                {fullBlogPost.author.name && (
+                                    <p className="blog-author-name">
+                                        By <strong>{fullBlogPost.author.name}</strong>
+                                    </p>
+                                )}
+                            </div>
+                        )}
+                        <span className="article-date">Published on: {publishDate}</span>
+                    </div>
+
+                    <hr className="article-separator" />
+                    
+                    <div className="article-body">
+                        <p>{fullBlogPost.content}</p> 
+                    </div>
+                </article>
+            </div>
+        );
+    };
+
+    // --- MAIN RENDER LOGIC ---
+    if (selectedBlogSlug) {
+        return (
+            <div className="homepage-content">
+                <AppDownloadFixedButton />
+                <FullBlogContent />
+            </div>
+        );
+    }
 
     return (
         <div className="homepage-content">
-            {/* Fixed Download Button */}
             <AppDownloadFixedButton />
-
+            
             <Helmet>
                 <title>PeerNotez | Share and Discover Academic Notes</title>
                 <meta
@@ -182,26 +275,26 @@ const HomePage = () => {
                 <script type="application/ld+json">
                 {`
                 {
-                  "@context": "https://schema.org",
-                  "@type": "WebSite",
-                  "name": "PeerNotez",
-                  "url": "https://peernotez.netlify.app/",
-                  "description": "PeerNotez helps students share and find academic notes globally."
+                    "@context": "https://schema.org",
+                    "@type": "WebSite",
+                    "name": "PeerNotez",
+                    "url": "https://peernotez.netlify.app/",
+                    "description": "PeerNotez helps students share and find academic notes globally."
                 }
                 `}
                 </script>
                 <script type="application/ld+json">
                 {`
                 {
-                  "@context": "https://schema.org",
-                  "@type": "Organization",
-                  "name": "PeerNotez",
-                  "url": "https://peernotez.netlify.app/",
-                  "logo": "https://peernotez.netlify.app/logo192.png",
-                  "sameAs": [
-                    "https://www.instagram.com/aditya_choudhary__021/",
-                    "https://www.linkedin.com/in/aditya-kumar-38093a304/"
-                  ]
+                    "@context": "https://schema.org",
+                    "@type": "Organization",
+                    "name": "PeerNotez",
+                    "url": "https://peernotez.netlify.app/",
+                    "logo": "https://peernotez.netlify.app/logo192.png",
+                    "sameAs": [
+                        "https://www.instagram.com/aditya_choudhary__021/",
+                        "https://www.linkedin.com/in/aditya-kumar-38093a304/"
+                    ]
                 }
                 `}
                 </script>
@@ -211,7 +304,6 @@ const HomePage = () => {
                 <meta property="og:image" content="https://peernotez.netlify.app/logo192.png" />
             </Helmet>
 
-            {/* --- Refined Hero Banner --- */}
             <section className="hero-banner">
                 <div className="hero-content">
                     <h1 className="hero-title">Empower Your Learning with PeerNotez</h1>
@@ -225,7 +317,6 @@ const HomePage = () => {
 
             <hr/>
 
-            {/* --- Key Statistics Section --- */}
             <section className="stats-section">
                 {loadingStats ? (
                     <div>Loading stats...</div>
@@ -249,7 +340,6 @@ const HomePage = () => {
 
             <hr/>
 
-            {/* --- Updated "How It Works" Section --- */}
             <section className="how-it-works-section">
                 <h2 className="section-title">A Seamless Way to Share and Learn</h2>
                 <div className="steps-container">
@@ -273,7 +363,6 @@ const HomePage = () => {
 
             <hr/>
 
-            {/* --- Featured Notes Section --- */}
             <section className="featured-notes-section">
                 <h2>⭐ Editor's Picks</h2>
                 {loadingFeatured ? (
@@ -305,7 +394,6 @@ const HomePage = () => {
                 <h1>Find Notes</h1>
                 <FilterBar
                     onFilterSubmit={handleFilterSubmit}
-                    // Conditionally add the 'open' class for mobile visibility
                     className={isFilterBarOpen ? 'filter-bar open' : 'filter-bar'}
                 />
 
@@ -341,7 +429,6 @@ const HomePage = () => {
 
             <hr/>
 
-            {/* --- Top Contributors Section --- */}
             <section className="top-contributors-section">
                 <h2>Our Top Note-Takers</h2>
                 {loadingContributors ? (
@@ -363,7 +450,6 @@ const HomePage = () => {
 
             <hr/>
 
-            {/* --- Blog/Resources Section (UPDATED to display author avatar and name) --- */}
             <section className="blog-section">
                 <h2>From Our Blog</h2>
                 {loadingBlog ? (
@@ -373,13 +459,13 @@ const HomePage = () => {
                         {blogPosts.map(post => (
                             <article key={post._id} className="blog-card">
                                 <h3>
-                                    {/* Link to the full blog post page */}
-                                    <Link to={`/blog/${post.slug}`} className="blog-title-link">
+                                    <button 
+                                        onClick={() => handleViewBlog(post.slug)} 
+                                        className="blog-title-button-link"
+                                    >
                                         {post.title}
-                                    </Link>
+                                    </button>
                                 </h3>
-
-                                {/* Display Author Avatar and Name (requires populated object from backend) */}
                                 {post.author && (
                                     <div className="blog-author-details">
                                         {post.author.avatar && (
@@ -396,10 +482,13 @@ const HomePage = () => {
                                         )}
                                     </div>
                                 )}
-                                
-                                {/* Summary remains the preview text */}
                                 <p className="blog-summary">{post.summary}</p>
-                                
+                                <button
+                                    onClick={() => handleViewBlog(post.slug)}
+                                    className="read-more-btn"
+                                >
+                                    Read More &rarr;
+                                </button>
                             </article>
                         ))}
                     </div>
