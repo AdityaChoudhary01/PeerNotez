@@ -5188,6 +5188,33 @@ hr {
 
 /*
 |--------------------------------------------------------------------------
+| CSS for READABILITY AND PARAGRAPH GAPS
+|--------------------------------------------------------------------------
+*/
+
+/* Style for the introductory paragraph (the summary) */
+.article-body p:first-of-type {
+    font-size: 1.25rem; 
+    line-height: 1.7;
+    margin-top: 40px;
+    padding-bottom: 15px; 
+    border-bottom: 1px solid var(--border-color); /* Separates lead from body */
+}
+
+/* Style for subsequent paragraphs processed by the function */
+.article-body .article-paragraph { 
+    font-size: 1.1rem;
+    line-height: 1.8; /* Excellent line height for long reads */
+    color: var(--text-color);
+    margin-bottom: 2.5rem; /* 🚨 This creates the large, modern gap between paragraphs */
+    font-weight: 300; 
+}
+
+
+
+
+/*
+|--------------------------------------------------------------------------
 | BLOG GRID LAYOUT AND CARD BASE
 |--------------------------------------------------------------------------
 */
@@ -5347,3 +5374,4 @@ hr {
 .blog-title-button-link:hover {
     color: var(--primary-color); /* Highlight the title text on hover */
 }
+
