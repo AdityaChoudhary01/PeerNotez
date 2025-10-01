@@ -4944,3 +4944,119 @@ hr {
 }
 
 
+
+
+
+/*
+|--------------------------------------------------------------------------
+| FIXED DOWNLOAD BUTTON STYLES (THEME MATCHED)
+|--------------------------------------------------------------------------
+*/
+
+/* Wrapper for positioning the close button relative to the download button */
+.fixed-download-button-wrapper {
+    position: fixed;
+    bottom: 30px; /* Slightly higher placement */
+    right: 30px;
+    z-index: 1000;
+}
+
+/* Close Button Style (Adjusted for dark theme visibility) */
+.fixed-download-close-btn {
+    position: absolute;
+    top: -8px; 
+    right: -8px; 
+    width: 24px;
+    height: 24px;
+    /* Use error color for close action */
+    background-color: var(--error-color); 
+    color: var(--text-color);
+    border: 2px solid var(--background-color); /* Contrast border */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+    transition: background-color 0.2s;
+    padding: 0;
+}
+
+.fixed-download-close-btn:hover {
+    background-color: #d1304b; /* Slightly darker error on hover */
+    transform: scale(1.05);
+}
+
+
+/* Main Download Button Style - TRANSPARENT DARK EFFECT */
+.fixed-download-button {
+    /* Fixed button styling */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 14px 24px; /* Slightly larger padding */
+    
+    /* Aesthetics */
+    /* *** TRANSPARENT EFFECT: Use card background with opacity and blur *** */
+    background-color: rgba(26, 39, 68, 0.7); /* --card-background (opaque version) with 70% opacity */
+    backdrop-filter: blur(10px); /* Enhanced modern blur effect */
+    -webkit-backdrop-filter: blur(10px); 
+    
+    /* Color Scheme */
+    color: var(--text-color); /* Light text for dark button */
+    
+    font-weight: 700;
+    text-decoration: none;
+    border-radius: 50px; /* Pill shape */
+    border: 2px solid var(--primary-color); /* Highlight with primary color border */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 10px rgba(83, 114, 240, 0.5); /* Deep shadow with a primary color glow */
+    transition: all 0.3s ease;
+    cursor: pointer;
+    font-size: 1.1rem;
+}
+
+.fixed-download-button:hover {
+    /* Use the primary color gradient on hover */
+    background: var(--gradient-primary); 
+    color: var(--heading-color); /* White text on bright gradient */
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5), 0 0 15px var(--primary-color);
+    transform: translateY(-2px) scale(1.02); 
+    border-color: var(--text-color); /* Subtle border change on hover */
+}
+
+.fixed-download-button .download-icon {
+    font-size: 1.2rem;
+}
+
+
+/* Responsive adjustment for mobile screens */
+@media (max-width: 500px) {
+    .fixed-download-button-wrapper {
+        bottom: 20px;
+        right: 20px;
+    }
+
+    .fixed-download-button {
+        width: 55px;
+        height: 55px;
+        padding: 0;
+        border-radius: 50%;
+        font-size: 0; /* Hide text */
+        border-width: 1px; /* Smaller border on mobile */
+    }
+    
+    .fixed-download-button .button-text {
+        display: none;
+    }
+    
+    .fixed-download-button .download-icon {
+        font-size: 1.6rem;
+    }
+
+    .fixed-download-close-btn {
+        top: -5px;
+        right: -5px;
+    }
+}
