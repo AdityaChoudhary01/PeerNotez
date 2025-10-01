@@ -8,7 +8,7 @@ import Pagination from '../components/common/Pagination';
 import { FaFilter, FaDownload, FaTimes, FaArrowLeft } from 'react-icons/fa';
 
 // --- Download Link Constant ---
-const DOWNLOAD_LINK = 'https://github.com/AdityaChoudhary01/PeerNotez/releases/download/v1.0.3/PeerNotez.apk';
+const DOWNLOAD_LINK = 'https://github.com/AdityaChoudhary01/public-peernotez/releases/download/v1.0.3/PeerNotez.apk';
 
 const HomePage = () => {
     // --- State for main notes grid ---
