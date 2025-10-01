@@ -5,10 +5,15 @@ import { Link } from 'react-router-dom';
 import NoteCard from '../components/notes/NoteCard';
 import FilterBar from '../components/common/FilterBar';
 import Pagination from '../components/common/Pagination';
-import { FaFilter } from 'react-icons/fa'; // Make sure you have react-icons installed
+import { FaFilter, FaDownload, FaTimes } from 'react-icons/fa';
+
+// --- Download Link Constant (Kept) ---
+const DOWNLOAD_LINK = 'https://github.com/AdityaChoudhary01/PeerNotez/releases/download/v1.0.3/PeerNotez.apk';
+
+// NOTE: BUTTON_STORAGE_KEY is removed.
 
 const HomePage = () => {
-    // State for main notes grid
+    // State for main notes grid (unchanged)
     const [notes, setNotes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filters, setFilters] = useState({});
@@ -16,11 +21,11 @@ const HomePage = () => {
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
 
-    // State for featured content
+    // State for featured content (unchanged)
     const [featuredNotes, setFeaturedNotes] = useState([]);
     const [loadingFeatured, setLoadingFeatured] = useState(true);
 
-    // State for dynamic content sections
+    // State for dynamic content sections (unchanged)
     const [stats, setStats] = useState({ totalNotes: 0, totalUsers: 0, downloadsThisMonth: 0 });
     const [loadingStats, setLoadingStats] = useState(true);
     const [blogPosts, setBlogPosts] = useState([]);
@@ -28,21 +33,18 @@ const HomePage = () => {
     const [topContributors, setTopContributors] = useState([]);
     const [loadingContributors, setLoadingContributors] = useState(true);
     
-    // --- State for mobile filter bar ---
+    // --- State for mobile filter bar (unchanged) ---
     const [isFilterBarOpen, setIsFilterBarOpen] = useState(false);
 
-    // --- Data Fetching Hooks ---
+    // --- State for Fixed Download Button: ALWAYS TRUE INITIALLY (FIX APPLIED) ---
+    const [showAppButton, setShowAppButton] = useState(true); // Always starts as visible
 
-    // Fetch All Notes (for the main grid)
+    // --- Data Fetching Hooks (unchanged) ---
     useEffect(() => {
         const fetchNotes = async () => {
             setLoading(true);
             try {
-                const params = {
-                    ...filters,
-                    sort: sortBy,
-                    page: page,
-                };
+                const params = { ...filters, sort: sortBy, page: page };
                 const { data } = await axios.get('/notes', { params });
                 setNotes(data.notes);
                 setPage(data.page);
@@ -56,7 +58,6 @@ const HomePage = () => {
         fetchNotes();
     }, [filters, sortBy, page]);
 
-    // Fetch Featured Notes
     useEffect(() => {
         const fetchFeaturedNotes = async () => {
             setLoadingFeatured(true);
@@ -72,7 +73,6 @@ const HomePage = () => {
         fetchFeaturedNotes();
     }, []);
 
-    // Fetch Key Statistics
     useEffect(() => {
         const fetchStats = async () => {
             setLoadingStats(true);
@@ -88,7 +88,6 @@ const HomePage = () => {
         fetchStats();
     }, []);
 
-    // Fetch Top Contributors
     useEffect(() => {
         const fetchTopContributors = async () => {
             setLoadingContributors(true);
@@ -104,7 +103,6 @@ const HomePage = () => {
         fetchTopContributors();
     }, []);
 
-    // Fetch Blog Posts
     useEffect(() => {
         const fetchBlogPosts = async () => {
             setLoadingBlog(true);
@@ -124,18 +122,59 @@ const HomePage = () => {
         const activeFilters = Object.fromEntries(
             Object.entries(newFilters).filter(([_, value]) => value !== '')
         );
-        setPage(1); // Reset to page 1 on a new filter
+        setPage(1); 
         setFilters(activeFilters);
-        setIsFilterBarOpen(false); // Close the filter bar after submission
+        setIsFilterBarOpen(false);
     };
     
-    // --- Function to toggle the filter bar on mobile ---
     const toggleFilterBar = () => {
         setIsFilterBarOpen(!isFilterBarOpen);
     };
 
+    // Function to handle manual closing (user clicks 'X' or 'Download')
+    const handleCloseButton = () => {
+        // FIX: Only sets the state to false. On refresh, the component remounts 
+        // and showAppButton is reset to true.
+        setShowAppButton(false);
+        // sessionStorage.setItem(BUTTON_STORAGE_KEY, 'true'); <-- REMOVED THIS LINE
+    };
+
+    // --- Fixed Download Button Component with Close Button ---
+    const AppDownloadFixedButton = () => {
+        if (!showAppButton) return null;
+
+        return (
+            <div className="fixed-download-button-wrapper">
+                {/* Close Button */}
+                <button 
+                    className="fixed-download-close-btn" 
+                    onClick={handleCloseButton}
+                    aria-label="Close download button"
+                >
+                    <FaTimes />
+                </button>
+                
+                {/* Download Link/Button */}
+                <a 
+                    href={DOWNLOAD_LINK} 
+                    download 
+                    className="fixed-download-button"
+                    aria-label="Download PeerNotez App"
+                    onClick={() => setTimeout(handleCloseButton, 1000)} // Hide a moment after clicking download
+                >
+                    <FaDownload className="download-icon" /> 
+                    <span className="button-text">Get App</span>
+                </a>
+            </div>
+        );
+    };
+
+
     return (
         <div className="homepage-content">
+            {/* 1. Insert the Fixed Download Button component here */}
+            <AppDownloadFixedButton />
+
             <Helmet>
                 <title>PeerNotez | Share and Discover Academic Notes</title>
                 <meta
@@ -146,26 +185,26 @@ const HomePage = () => {
                 <script type="application/ld+json">
                 {`
                 {
-                  "@context": "https://schema.org",
-                  "@type": "WebSite",
-                  "name": "PeerNotez",
-                  "url": "https://peernotez.netlify.app/",
-                  "description": "PeerNotez helps students share and find academic notes globally."
+                    "@context": "https://schema.org",
+                    "@type": "WebSite",
+                    "name": "PeerNotez",
+                    "url": "https://peernotez.netlify.app/",
+                    "description": "PeerNotez helps students share and find academic notes globally."
                 }
                 `}
                 </script>
                 <script type="application/ld+json">
                 {`
                 {
-                  "@context": "https://schema.org",
-                  "@type": "Organization",
-                  "name": "PeerNotez",
-                  "url": "https://peernotez.netlify.app/",
-                  "logo": "https://peernotez.netlify.app/logo192.png",
-                  "sameAs": [
-                    "https://www.instagram.com/aditya_choudhary__021/",
-                    "https://www.linkedin.com/in/aditya-kumar-38093a304/"
-                  ]
+                    "@context": "https://schema.org",
+                    "@type": "Organization",
+                    "name": "PeerNotez",
+                    "url": "https://peernotez.netlify.app/",
+                    "logo": "https://peernotez.netlify.app/logo192.png",
+                    "sameAs": [
+                        "https://www.instagram.com/aditya_choudhary__021/",
+                        "https://www.linkedin.com/in/aditya-kumar-38093a304/"
+                    ]
                 }
                 `}
                 </script>
