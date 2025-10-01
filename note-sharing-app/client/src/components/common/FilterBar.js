@@ -1,34 +1,48 @@
 import React, { useState } from 'react';
 
+// The FilterBar no longer manages its own open/close state,
+// as this is managed by the parent (HomePage) component.
 const FilterBar = ({ onFilterSubmit, className }) => {
-    // Define the initial state for the filters
-    const initialState = {
+    const [filters, setFilters] = useState({
         title: '',
         university: '',
         course: '',
         subject: '',
         year: ''
-    };
+    });
 
-    const [filters, setFilters] = useState(initialState);
+    // Removed: const [isFilterOpen, setIsFilterOpen] = useState(false);
 
     const handleChange = (e) => {
         setFilters({ ...filters, [e.target.name]: e.target.value });
     };
 
+    const handleClear = () => {
+        setFilters({
+            title: '',
+            university: '',
+            course: '',
+            subject: '',
+            year: ''
+        });
+        onFilterSubmit({}); 
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
         onFilterSubmit(filters);
-    };
-
-    // New function to clear the filters
-    const handleClear = () => {
-        setFilters(initialState); // Reset the local state to initial values
-        onFilterSubmit({}); // Notify the parent component to clear all filters
+        // Note: The parent component (HomePage) is responsible for closing the bar after submission 
+        // if it detects a mobile view and needs to hide it.
     };
 
     return (
-        <form onSubmit={handleSubmit} className={className}>
+        // The className prop passed from HomePage now controls visibility
+        <form 
+            onSubmit={handleSubmit} 
+            className={className || "filter-bar"} // Use the external className
+        >
+            {/* REMOVED: The redundant filter-toggle-container and its button */}
+            
             <div className="filter-inputs">
                 <input name="title" value={filters.title} onChange={handleChange} placeholder="Title" />
                 <input name="university" value={filters.university} onChange={handleChange} placeholder="University" />
@@ -37,14 +51,8 @@ const FilterBar = ({ onFilterSubmit, className }) => {
                 <input type="number" name="year" value={filters.year} onChange={handleChange} placeholder="Year" />
             </div>
             <div className="filter-buttons">
-                {/* New button to clear filters */}
-                <button type="button" onClick={handleClear} className="clear-btn">
-                    Clear Filters
-                </button>
-                {/* Submit button to apply filters */}
-                <button type="submit" className="apply-btn">
-                    Apply Filters
-                </button>
+                <button type="button" onClick={handleClear} className="clear-btn">Clear Filters</button>
+                <button type="submit" className="apply-btn">Apply Filters</button>
             </div>
         </form>
     );
