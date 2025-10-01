@@ -5311,6 +5311,7 @@ hr {
     background: var(--gradient-primary-hover); 
     transform: translateY(-3px); 
     box-shadow: 0 6px 15px rgba(83, 114, 240, 0.6);
+    cursor: pointer;
 }
 
 
@@ -5374,4 +5375,5 @@ hr {
 .blog-title-button-link:hover {
     color: var(--primary-color); /* Highlight the title text on hover */
 }
+
 
