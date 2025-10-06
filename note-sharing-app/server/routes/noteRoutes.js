@@ -375,21 +375,28 @@ router.post('/:id/reviews', protect, async (req, res) => {
   }
 });
 
-// @route   PUT /api/notes/:id/download
-// @desc    Increment the download count for a note
+// In noteRoutes.js:
+
+// @route PUT /api/notes/:id/download
+// @desc Increment the download count for a note and RETURN THE UPDATED NOTE
 router.put('/:id/download', async (req, res) => {
-  try {
-    const note = await Note.findById(req.params.id);
-    if (note) {
-      await Note.findByIdAndUpdate(req.params.id, { $inc: { downloadCount: 1 } });
-      res.json({ message: 'Download count updated' });
-    } else {
-      res.status(404).json({ message: 'Note not found' });
-    }
-  } catch (error) {
-    console.error('Error updating download count (noteRoutes):', error);
-    res.status(500).json({ message: 'Server Error occurred while updating download count.' });
-  }
+  try {
+    const updatedNote = await Note.findByIdAndUpdate(
+      req.params.id, 
+      { $inc: { downloadCount: 1 } },
+      { new: true } // <-- CRITICAL: Tells Mongoose to return the new document
+    );
+
+    if (updatedNote) {
+      // Return the entire updated note object
+      res.json(updatedNote); 
+    } else {
+      res.status(404).json({ message: 'Note not found' });
+    }
+  } catch (error) {
+    console.error('Error updating download count (noteRoutes):', error);
+    res.status(500).json({ message: 'Server Error occurred while updating download count.' });
+  }
 });
 
 // @route   PUT /api/notes/:id
