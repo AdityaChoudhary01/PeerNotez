@@ -4565,7 +4565,7 @@ hr {
 
 @media (max-width: 768px) {
     .admin-dashboard-container {
-        padding: 1.5rem 1rem;
+        padding: 1.5rem 0rem;
     }
 
     .admin-header {
@@ -5436,6 +5436,7 @@ hr {
 .blog-title-button-link:hover {
     color: var(--primary-color); /* Highlight the title text on hover */
 }
+
 
 
 
