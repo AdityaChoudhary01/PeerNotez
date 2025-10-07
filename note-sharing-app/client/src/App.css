@@ -3830,7 +3830,7 @@ hr {
 /* For smaller phones (e.g., screens less than 480px) */
 @media (max-width: 480px) {
     .donate-page-wrapper {
-        padding: 2rem 1rem;
+        padding: 2rem 0.2rem;
     }
 
     .hero-title {
@@ -3896,7 +3896,7 @@ hr {
 /* For smaller phones (less than 576px) */
 @media (max-width: 575.98px) {
     .supporters-page-wrapper {
-        padding: 2rem 1rem;
+        padding: 2rem 0.2rem;
     }
     
     .page-header {
@@ -4147,10 +4147,10 @@ hr {
     .login-content-wrapper {
         flex-direction: column;
         max-width: 500px;
-        margin: 2rem 1rem;
+        margin: 2rem 0.1rem;
     }
     .login-form-section {
-        padding: 2rem;
+        padding: 1.3rem;
     }
     .login-image-section {
         height: 250px;
@@ -4296,10 +4296,10 @@ hr {
     .signup-content-wrapper {
         flex-direction: column;
         max-width: 500px;
-        margin: 2rem 1rem;
+        margin: 2rem 0.1rem;
     }
     .signup-form-section {
-        padding: 2rem;
+        padding: 1.3rem;
     }
     .signup-image-section {
         height: 250px;
@@ -5436,6 +5436,7 @@ hr {
 .blog-title-button-link:hover {
     color: var(--primary-color); /* Highlight the title text on hover */
 }
+
 
 
 
