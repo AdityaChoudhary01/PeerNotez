@@ -4674,7 +4674,7 @@ hr {
 .note-view-page-wrapper {
     max-width: 1400px; /* Use the widest max-width as the base */
     margin: 0 auto;
-    padding: 3rem 0.2rem;
+    padding: 3rem 1.5rem;
     line-height: 1.6;
 }
 
@@ -5436,6 +5436,7 @@ hr {
 .blog-title-button-link:hover {
     color: var(--primary-color); /* Highlight the title text on hover */
 }
+
 
 
 
