@@ -4681,7 +4681,7 @@ hr {
 /* --- Responsive Container Logic --- */
 /* Mobile-first styles (default) */
 .note-view-page-wrapper {
-    padding: 1.5rem 0.5rem; /* Default padding for small screens */
+    padding: 1.5rem 0.1rem; /* Default padding for small screens */
 }
 .note-details-card {
     background: transparent; /* Remove outer box on small devices */
@@ -5436,6 +5436,7 @@ hr {
 .blog-title-button-link:hover {
     color: var(--primary-color); /* Highlight the title text on hover */
 }
+
 
 
 
