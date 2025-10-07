@@ -3367,8 +3367,16 @@ hr {
 
 /* --- Responsive Layout --- */
 @media (max-width: 768px) {
+
+     .contact-page-wrapper {
+        padding: 2rem 0.2rem;
+    }
+    .contact-form-section {
+        padding: 0.3rem;
+    }
     .contact-main {
         flex-direction: column;
+        
     }
 
     .contact-info,
@@ -5415,6 +5423,7 @@ hr {
 .blog-title-button-link:hover {
     color: var(--primary-color); /* Highlight the title text on hover */
 }
+
 
 
 
