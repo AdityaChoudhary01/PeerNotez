@@ -2774,14 +2774,15 @@ input[type="number"] {
     text-decoration: none;
 }
 /* =================================== */
-/* === RESPONSIVE ABOUT PAGE STYLES === */
+/* === COMPLETE, HIGHLY RESPONSIVE ABOUT PAGE STYLES === */
 /* =================================== */
 
+/* Main page wrapper with new, subtle background */
 .about-page-wrapper {
     /* Use max-width for fluidity, but set a sensible upper limit */
     max-width: 1200px;
     margin: 0 auto; /* Center the container on larger screens */
-    /* ENHANCEMENT: Slightly tighter padding on small screens for better use of space */
+    /* ENHANCEMENT: Slightly tighter padding on all but desktop screens */
     padding: 2rem 1rem; 
     line-height: 1.6;
     animation: fadeIn 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -2789,7 +2790,7 @@ input[type="number"] {
     z-index: 1;
 }
 
-/* Background elements (kept as is, they are subtle and responsive) */
+/* Abstract background elements (kept as is) */
 .about-page-wrapper::before,
 .about-page-wrapper::after {
     content: '';
@@ -2814,13 +2815,12 @@ input[type="number"] {
 
 .about-header {
     text-align: center;
-    /* ENHANCEMENT: Slightly less margin on small screens */
     margin-bottom: 3rem; 
     animation: slideInDown 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .about-header h1 {
-    /* Excellent use of clamp() for responsive font size */
+    /* Responsive font size */
     font-size: clamp(2.5rem, 6vw, 4rem); 
     font-weight: 800;
     color: transparent;
@@ -2828,7 +2828,7 @@ input[type="number"] {
     -webkit-background-clip: text;
     background-clip: text;
     text-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-    background-size: 200% auto; /* For the textShine animation to work well */
+    background-size: 200% auto;
     animation: textShine 5s infinite;
 }
 
@@ -2838,7 +2838,7 @@ input[type="number"] {
 }
 
 .about-header .subtitle {
-    /* Excellent use of clamp() */
+    /* Responsive font size */
     font-size: clamp(1rem, 2vw, 1.4rem); 
     color: var(--subtle-text-color);
     margin-top: -0.5rem;
@@ -2847,10 +2847,10 @@ input[type="number"] {
 }
 
 .about-section {
-    /* Consistent padding */
     padding: 3rem 0;
 }
 
+/* Subtle separator with a gradient */
 hr {
     border: none;
     height: 1px;
@@ -2859,11 +2859,11 @@ hr {
 }
 
 .section-heading {
-    /* Excellent use of clamp() */
+    /* Responsive font size */
     font-size: clamp(2rem, 5vw, 2.8rem); 
     font-weight: 700;
     color: var(--heading-color);
-    /* ENHANCEMENT: Smaller border on mobile for better fit */
+    /* Smaller border on mobile for better fit */
     border-left: 4px solid var(--primary-color); 
     padding-left: 1.2rem;
     margin-bottom: 2.5rem;
@@ -2873,7 +2873,6 @@ hr {
 }
 
 .section-heading::after {
-    /* ... (decorative element, kept as is) ... */
     content: '';
     position: absolute;
     bottom: -10px;
@@ -2892,7 +2891,7 @@ hr {
 
 .section-content {
     background: var(--card-background);
-    /* ENHANCEMENT: Reduced padding on mobile */
+    /* Reduced padding on mobile */
     padding: 1.5rem; 
     border-radius: 12px;
     border: 1px solid var(--border-color);
@@ -2906,14 +2905,14 @@ hr {
 }
 
 .about-section p, .about-section li {
-    /* Excellent use of clamp() */
+    /* Responsive font size */
     font-size: clamp(0.9rem, 2vw, 1.1rem); 
     color: var(--text-color);
     line-height: 1.8;
 }
 
 .about-section h3 {
-    /* Excellent use of clamp() */
+    /* Responsive font size */
     font-size: clamp(1.4rem, 3vw, 1.6rem); 
     font-weight: 600;
     color: var(--heading-color);
@@ -2924,14 +2923,13 @@ hr {
 /* --- Timeline Section --- */
 .timeline-list {
     position: relative;
-    /* ENHANCEMENT: Reduced padding for better horizontal fit on mobile */
+    /* Reduced padding for better horizontal fit on mobile */
     padding-left: 1.5rem; 
     margin-top: 2rem;
     border-left: 2px dashed var(--border-color);
 }
 
 .timeline-list li {
-    /* ENHANCEMENT: Reduced inner padding for mobile */
     padding-left: 1.5rem; 
     margin-bottom: 3rem;
     position: relative;
@@ -2940,13 +2938,12 @@ hr {
 .timeline-list li::before {
     content: '🚀';
     position: absolute;
-    /* Adjusted left position to align with the new border-left position */
-    left: -16px; 
+    left: -16px;
     top: 0;
     font-size: clamp(1.2rem, 2.5vw, 1.6rem);
     color: var(--primary-color);
     background-color: var(--background-color);
-    padding: 6px; /* Slightly smaller padding */
+    padding: 6px; 
     border-radius: 50%;
     border: 3px solid var(--primary-color);
     z-index: 2;
@@ -2978,22 +2975,23 @@ hr {
 }
 
 .stats-container {
-    /* Excellent use of fluid grid */
+    /* Flexible grid with a low minimum width to prevent overflow in desktop mode */
     display: grid;
-    /* Allows for a single column on small screens, and two or more on larger ones */
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); 
-    gap: 1.5rem; /* Slightly reduced gap for small screens */
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); 
+    gap: 1.5rem; 
     margin-top: 2rem;
     justify-content: center;
 }
 
 .stat-card {
     background: var(--gradient-card-background);
-    padding: 2rem 1rem; /* Slightly reduced padding */
+    padding: 2rem 1rem;
     border-radius: 12px;
     border: 1px solid var(--border-color);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     text-align: center;
+    max-width: 100%; /* Ensures it respects container width */
+    box-sizing: border-box; /* Includes padding/border in the width calculation */
     transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.3s ease;
 }
 
@@ -3003,7 +3001,7 @@ hr {
 }
 
 .stat-card h3 {
-    /* Excellent use of clamp() */
+    /* Responsive font size */
     font-size: clamp(2rem, 5vw, 3rem); 
     font-weight: 800;
     color: transparent;
@@ -3018,7 +3016,7 @@ hr {
 }
 
 .stat-card p {
-    /* Excellent use of clamp() */
+    /* Responsive font size */
     font-size: clamp(1rem, 2.5vw, 1.2rem); 
     color: var(--subtle-text-color);
     margin: 0;
@@ -3043,12 +3041,11 @@ hr {
     display: inline-block;
     background: var(--gradient-primary);
     color: var(--heading-color);
-    /* ENHANCEMENT: Adjusted padding for better fit on all devices */
     padding: 0.8rem 2.5rem; 
     border-radius: 50px;
     text-decoration: none;
     font-weight: bold;
-    /* Excellent use of clamp() */
+    /* Responsive font size */
     font-size: clamp(1rem, 2.5vw, 1.2rem); 
     margin-top: 2rem;
     transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -3058,7 +3055,6 @@ hr {
 }
 
 .call-to-action-link::after {
-    /* ... (decorative element, kept as is) ... */
     content: '';
     position: absolute;
     top: 0;
@@ -3078,16 +3074,38 @@ hr {
     box-shadow: 0 12px 25px rgba(0, 0, 0, 0.4);
 }
 
-/* --- Media Queries for Device Optimization --- */
-/* A media query for very small screens (<= 480px) */
+/* --- Animations (Kept as is) --- */
+@keyframes slideInDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes headingSlideIn {
+    from { opacity: 0; transform: translateX(-50px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+/* ----------------------------------- */
+/* === MEDIA QUERIES FOR OPTIMIZATION === */
+/* ----------------------------------- */
+
+/* Medium Screens (Tablets, landscape phones) */
+@media (max-width: 768px) {
+    .stats-container {
+        /* Allow for two wider columns, but ensures they stack if needed */
+        grid-template-columns: repeat(auto-fit, minmax(40%, 1fr));
+    }
+}
+
+/* Small Screens (Phones in portrait) */
 @media (max-width: 480px) {
     .about-page-wrapper {
-        /* Tighter padding on the sides for tiny screens */
+        /* Tighter padding on the sides for tiny screens, prevents horizontal scroll */
         padding: 1.5rem 0.5rem; 
+        overflow-x: hidden; 
     }
 
     .about-header {
-        /* Less space above/below content on small screens */
         margin-bottom: 2rem;
     }
     
@@ -3102,14 +3120,21 @@ hr {
     }
 
     .timeline-list li::before {
-        /* Slightly smaller circle on the timeline for mobile */
+        /* Smaller timeline circle */
         font-size: 1.2rem;
         padding: 4px;
         left: -12px;
     }
+    
+    .stats-container {
+        /* **CRITICAL FIX:** Forces a single column on the smallest screens, 
+           preventing any overflow issue in high-resolution desktop mode */
+        grid-template-columns: 1fr; 
+        gap: 1rem;
+    }
 }
 
-/* A media query for large screens (>= 1200px) */
+/* Large Screens (Desktop monitors) */
 @media (min-width: 1200px) {
     .about-page-wrapper {
         /* Restore original, more generous padding for desktop */
@@ -3121,18 +3146,6 @@ hr {
         padding: 3rem; 
     }
 }
-
-/* --- Animations (Kept as is) --- */
-@keyframes slideInDown {
-    from { opacity: 0; transform: translateY(-20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes headingSlideIn {
-    from { opacity: 0; transform: translateX(-50px); }
-    to { opacity: 1; transform: translateX(0); }
-}
-
 
 /* =================================== */
 /* === ENHANCED CONTACT PAGE STYLES === */
@@ -5423,6 +5436,7 @@ hr {
 .blog-title-button-link:hover {
     color: var(--primary-color); /* Highlight the title text on hover */
 }
+
 
 
 
