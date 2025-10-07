@@ -2777,19 +2777,19 @@ input[type="number"] {
 /* === RESPONSIVE ABOUT PAGE STYLES === */
 /* =================================== */
 
-/* Main page wrapper with new, subtle background */
 .about-page-wrapper {
     /* Use max-width for fluidity, but set a sensible upper limit */
     max-width: 1200px;
     margin: 0 auto; /* Center the container on larger screens */
-    padding: 2rem 1.5rem; /* Consistent padding on all devices */
+    /* ENHANCEMENT: Slightly tighter padding on small screens for better use of space */
+    padding: 2rem 1rem; 
     line-height: 1.6;
     animation: fadeIn 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     position: relative;
     z-index: 1;
 }
 
-/* Abstract background elements for visual depth (non-conflicting, they are fine) */
+/* Background elements (kept as is, they are subtle and responsive) */
 .about-page-wrapper::before,
 .about-page-wrapper::after {
     content: '';
@@ -2808,28 +2808,27 @@ input[type="number"] {
 }
 
 @keyframes backgroundShift {
-    from {
-        background-position: 0% 0%, 100% 100%;
-    }
-    to {
-        background-position: 100% 100%, 0% 0%;
-    }
+    from { background-position: 0% 0%, 100% 100%; }
+    to { background-position: 100% 100%, 0% 0%; }
 }
 
 .about-header {
     text-align: center;
-    margin-bottom: 4rem;
+    /* ENHANCEMENT: Slightly less margin on small screens */
+    margin-bottom: 3rem; 
     animation: slideInDown 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .about-header h1 {
-    font-size: clamp(2.5rem, 6vw, 4rem); /* Responsive font size */
+    /* Excellent use of clamp() for responsive font size */
+    font-size: clamp(2.5rem, 6vw, 4rem); 
     font-weight: 800;
     color: transparent;
     background: linear-gradient(45deg, var(--primary-color), var(--heading-color), var(--primary-color));
     -webkit-background-clip: text;
     background-clip: text;
     text-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    background-size: 200% auto; /* For the textShine animation to work well */
     animation: textShine 5s infinite;
 }
 
@@ -2839,7 +2838,8 @@ input[type="number"] {
 }
 
 .about-header .subtitle {
-    font-size: clamp(1rem, 2vw, 1.4rem); /* Responsive font size */
+    /* Excellent use of clamp() */
+    font-size: clamp(1rem, 2vw, 1.4rem); 
     color: var(--subtle-text-color);
     margin-top: -0.5rem;
     font-weight: 300;
@@ -2847,10 +2847,10 @@ input[type="number"] {
 }
 
 .about-section {
+    /* Consistent padding */
     padding: 3rem 0;
 }
 
-/* Subtle separator with a gradient */
 hr {
     border: none;
     height: 1px;
@@ -2859,11 +2859,13 @@ hr {
 }
 
 .section-heading {
-    font-size: clamp(2rem, 5vw, 2.8rem); /* Responsive font size */
+    /* Excellent use of clamp() */
+    font-size: clamp(2rem, 5vw, 2.8rem); 
     font-weight: 700;
     color: var(--heading-color);
-    border-left: 6px solid var(--primary-color);
-    padding-left: 1.5rem;
+    /* ENHANCEMENT: Smaller border on mobile for better fit */
+    border-left: 4px solid var(--primary-color); 
+    padding-left: 1.2rem;
     margin-bottom: 2.5rem;
     position: relative;
     overflow: hidden;
@@ -2871,6 +2873,7 @@ hr {
 }
 
 .section-heading::after {
+    /* ... (decorative element, kept as is) ... */
     content: '';
     position: absolute;
     bottom: -10px;
@@ -2889,7 +2892,8 @@ hr {
 
 .section-content {
     background: var(--card-background);
-    padding: 2.5rem;
+    /* ENHANCEMENT: Reduced padding on mobile */
+    padding: 1.5rem; 
     border-radius: 12px;
     border: 1px solid var(--border-color);
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
@@ -2902,13 +2906,15 @@ hr {
 }
 
 .about-section p, .about-section li {
-    font-size: clamp(0.9rem, 2vw, 1.1rem); /* Responsive font size */
+    /* Excellent use of clamp() */
+    font-size: clamp(0.9rem, 2vw, 1.1rem); 
     color: var(--text-color);
     line-height: 1.8;
 }
 
 .about-section h3 {
-    font-size: clamp(1.4rem, 3vw, 1.6rem); /* Responsive font size */
+    /* Excellent use of clamp() */
+    font-size: clamp(1.4rem, 3vw, 1.6rem); 
     font-weight: 600;
     color: var(--heading-color);
     margin-top: 2rem;
@@ -2918,31 +2924,29 @@ hr {
 /* --- Timeline Section --- */
 .timeline-list {
     position: relative;
-    padding-left: 3rem;
+    /* ENHANCEMENT: Reduced padding for better horizontal fit on mobile */
+    padding-left: 1.5rem; 
     margin-top: 2rem;
     border-left: 2px dashed var(--border-color);
 }
 
 .timeline-list li {
-    background: transparent;
-    box-shadow: none;
-    border: none;
-    border-radius: 0;
-    padding: 0;
+    /* ENHANCEMENT: Reduced inner padding for mobile */
+    padding-left: 1.5rem; 
     margin-bottom: 3rem;
-    padding-left: 2rem;
     position: relative;
 }
 
 .timeline-list li::before {
     content: '🚀';
     position: absolute;
-    left: -18px;
+    /* Adjusted left position to align with the new border-left position */
+    left: -16px; 
     top: 0;
-    font-size: clamp(1.4rem, 3vw, 1.8rem);
+    font-size: clamp(1.2rem, 2.5vw, 1.6rem);
     color: var(--primary-color);
     background-color: var(--background-color);
-    padding: 8px;
+    padding: 6px; /* Slightly smaller padding */
     border-radius: 50%;
     border: 3px solid var(--primary-color);
     z-index: 2;
@@ -2974,17 +2978,18 @@ hr {
 }
 
 .stats-container {
-    /* Use a fluid grid for better responsiveness */
+    /* Excellent use of fluid grid */
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 2rem;
+    /* Allows for a single column on small screens, and two or more on larger ones */
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); 
+    gap: 1.5rem; /* Slightly reduced gap for small screens */
     margin-top: 2rem;
     justify-content: center;
 }
 
 .stat-card {
     background: var(--gradient-card-background);
-    padding: 2.5rem 1.5rem;
+    padding: 2rem 1rem; /* Slightly reduced padding */
     border-radius: 12px;
     border: 1px solid var(--border-color);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
@@ -2998,7 +3003,8 @@ hr {
 }
 
 .stat-card h3 {
-    font-size: clamp(2rem, 5vw, 3rem);
+    /* Excellent use of clamp() */
+    font-size: clamp(2rem, 5vw, 3rem); 
     font-weight: 800;
     color: transparent;
     background: linear-gradient(45deg, var(--warning-color), #ffeb3b);
@@ -3012,7 +3018,8 @@ hr {
 }
 
 .stat-card p {
-    font-size: clamp(1rem, 2.5vw, 1.2rem);
+    /* Excellent use of clamp() */
+    font-size: clamp(1rem, 2.5vw, 1.2rem); 
     color: var(--subtle-text-color);
     margin: 0;
 }
@@ -3036,11 +3043,13 @@ hr {
     display: inline-block;
     background: var(--gradient-primary);
     color: var(--heading-color);
-    padding: 1rem 3rem;
+    /* ENHANCEMENT: Adjusted padding for better fit on all devices */
+    padding: 0.8rem 2.5rem; 
     border-radius: 50px;
     text-decoration: none;
     font-weight: bold;
-    font-size: clamp(1rem, 2.5vw, 1.2rem);
+    /* Excellent use of clamp() */
+    font-size: clamp(1rem, 2.5vw, 1.2rem); 
     margin-top: 2rem;
     transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
@@ -3049,6 +3058,7 @@ hr {
 }
 
 .call-to-action-link::after {
+    /* ... (decorative element, kept as is) ... */
     content: '';
     position: absolute;
     top: 0;
@@ -3068,30 +3078,60 @@ hr {
     box-shadow: 0 12px 25px rgba(0, 0, 0, 0.4);
 }
 
-/* --- Animations for a smooth, modern feel --- */
+/* --- Media Queries for Device Optimization --- */
+/* A media query for very small screens (<= 480px) */
+@media (max-width: 480px) {
+    .about-page-wrapper {
+        /* Tighter padding on the sides for tiny screens */
+        padding: 1.5rem 0.5rem; 
+    }
+
+    .about-header {
+        /* Less space above/below content on small screens */
+        margin-bottom: 2rem;
+    }
+    
+    .section-content {
+        /* Minimal padding for small screens to maximize content area */
+        padding: 1rem; 
+    }
+
+    .timeline-list {
+        /* Even less side padding for the timeline to fit better */
+        padding-left: 1rem; 
+    }
+
+    .timeline-list li::before {
+        /* Slightly smaller circle on the timeline for mobile */
+        font-size: 1.2rem;
+        padding: 4px;
+        left: -12px;
+    }
+}
+
+/* A media query for large screens (>= 1200px) */
+@media (min-width: 1200px) {
+    .about-page-wrapper {
+        /* Restore original, more generous padding for desktop */
+        padding: 3rem; 
+    }
+    
+    .section-content {
+        /* Restore original, more generous padding for desktop */
+        padding: 3rem; 
+    }
+}
+
+/* --- Animations (Kept as is) --- */
 @keyframes slideInDown {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes headingSlideIn {
-    from {
-        opacity: 0;
-        transform: translateX(-50px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
+    from { opacity: 0; transform: translateX(-50px); }
+    to { opacity: 1; transform: translateX(0); }
 }
-
-
 
 
 /* =================================== */
@@ -5375,5 +5415,6 @@ hr {
 .blog-title-button-link:hover {
     color: var(--primary-color); /* Highlight the title text on hover */
 }
+
 
 
