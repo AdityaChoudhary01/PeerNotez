@@ -112,11 +112,13 @@ router.get('/', async (req, res) => {
       });
     }
 
-    if (title && title.trim() !== '' && title.trim() !== '0') {
-      andConditions.push({ title: { $regex: title.trim(), 'options': 'i' } });
+   if (title && title.trim() !== '' && title.trim() !== '0') {
+      // CORRECTED: using $options
+      andConditions.push({ title: { $regex: title.trim(), $options: 'i' } });
     }
     if (university && university.trim() !== '' && university.trim() !== '0') {
-      andConditions.push({ university: { $regex: university.trim(), 'options': 'i' } });
+      // CORRECTED: using $options
+      andConditions.push({ university: { $regex: university.trim(), $options: 'i' } });
     }
     if (course && course.trim() !== '' && course.trim() !== '0') {
       andConditions.push({ course: { $regex: course.trim(), $options: 'i' } });
