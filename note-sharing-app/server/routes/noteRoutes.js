@@ -317,6 +317,7 @@ router.post('/upload', protect, uploadToMemory.single('file'), async (req, res) 
     });
 
     const savedNote = await newNote.save();
+     await indexingService.urlUpdated(savedNote._id.toString(), 'note');
     console.log('Note saved to DB successfully!');
     res.status(201).json(savedNote);
 
@@ -421,6 +422,7 @@ router.put('/:id', protect, async (req, res) => {
     if (year !== undefined) updateFields.year = year;
 
     const updatedNote = await Note.findByIdAndUpdate(req.params.id, updateFields, { new: true });
+    await indexingService.urlUpdated(updatedNote._id.toString(), 'note');
     res.json(updatedNote);
   } catch (error) {
     console.error('Error updating note (noteRoutes):', error);
@@ -478,7 +480,7 @@ router.delete('/:id', protect, async (req, res) => {
     } else {
       console.warn(`File deletion failed: Could not determine storage service for note ID ${note._id}. FilePath: ${note.filePath}`);
     }
-
+await indexingService.urlDeleted(note._id.toString(), 'note');
     await note.deleteOne();
     res.json({ message: 'Note removed successfully' });
   } catch (error) {
