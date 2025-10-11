@@ -3580,11 +3580,13 @@ hr {
     padding: 1.2rem 3rem; /* Larger button */
     font-size: 1.3rem;
     border-radius: 12px;
-    box-shadow: 0 6px 20px rgba(255, 196, 0, 0.4);
+   background: linear-gradient(45deg, #ffdd00, #ffc400);
     width: 100%; /* Make button full width of card */
     max-width: 300px;
-    background-color:var(--warning-color) ;
+    font-weight: bold;
     text-decoration: none;
+    color: #000000;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .bmac-button.large-button:hover {
@@ -5472,6 +5474,7 @@ hr {
 .blog-title-button-link:hover {
     color: var(--primary-color); /* Highlight the title text on hover */
 }
+
 
 
 
