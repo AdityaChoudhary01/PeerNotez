@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 
 const DonatePage = () => {
-    const bmacProfileUrl = "https://cdn.buymeacoffee.com/uploads/profile_pictures/2025/07/ZzlkIXLPpwCOJfAo.jpg@300w_0e.webp";
+    const bmacProfileUrl = "https://cdn.buymeacoffee.com/uploads/profile_pictures/2025/10/y9sYfqwudI0b0PV0.jpg@300w_0e.webp";
     const bmacLink = "https://coff.ee/adityachoudhary";
     const hasSupporters = true;
 
@@ -106,4 +106,5 @@ const DonatePage = () => {
 };
 
 export default DonatePage;    
+
 
