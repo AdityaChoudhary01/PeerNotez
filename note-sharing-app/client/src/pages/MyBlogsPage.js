@@ -5,7 +5,7 @@ import useAuth from '../hooks/useAuth';
 import BlogCard from '../components/blog/BlogCard';
 import PostBlogPage from './PostBlogPage';
 import Pagination from '../components/common/Pagination';
-import { FaBookOpen } from 'react-icons/fa';
+import { FaBookOpen, FaUpload, FaHome } from 'react-icons/fa'; // Added FaHome, FaUpload
 import { Link } from 'react-router-dom';
 
 const MyBlogsPage = () => {
@@ -34,7 +34,7 @@ const MyBlogsPage = () => {
         } finally {
             setLoading(false);
         }
-    }, [token, authLoading, currentPage]);
+    }, [token, authLoading, currentPage]); // Dependency array optimized
 
     useEffect(() => {
         fetchMyBlogs();
@@ -65,7 +65,6 @@ const MyBlogsPage = () => {
         return (
             <div className="modal-overlay">
                 <div className="modal-content" style={{maxWidth: '1000px', padding: 0}}>
-                    {/* The PostBlogPage component contains the edit form */}
                     <PostBlogPage 
                         existingBlog={editingBlog} 
                         onBlogUpdated={handleBlogUpdated} 
@@ -79,7 +78,11 @@ const MyBlogsPage = () => {
     return (
         <div className="content-page my-blogs-page">
             <Helmet>
+                {/* SEO: Prevent Search Engines from Indexing this Private Page */}
+                
+                {/* SEO: Optimized Title with Total Count */}
                 <title>{`My Blogs (${totalBlogs ?? 0}) | PeerNotez`}</title>
+                <meta name="description" content="Manage, edit, and view all the blog posts you have published on the PeerNotez platform." />
             </Helmet>
 
             <header className="profile-header">
@@ -118,8 +121,24 @@ const MyBlogsPage = () => {
                     )}
                 </>
             ) : (
-                <p>You have not published any blog posts yet. <Link to="/blogs/post" style={{color: 'var(--primary-color)'}}>Start writing!</Link></p>
+                <p>
+                    You have not published any blog posts yet. 
+                    <Link to="/blogs/post" style={{color: 'var(--primary-color)', marginLeft: '0.5rem'}}>Start writing!</Link>
+                </p>
             )}
+
+            {/* SEO: Internal Linking to key site areas for UX and navigation */}
+            <div style={{marginTop: '3rem', paddingTop: '2rem', borderTop: '1px solid var(--border-color)', textAlign: 'center'}}>
+                <h3>Quick Navigation</h3>
+                <div style={{display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap'}}>
+                    <Link to="/" className="nav-button" style={{borderColor: 'var(--success-color)', color: 'var(--success-color)'}}>
+                        <FaHome style={{marginRight: '0.5rem'}} /> Go to Homepage
+                    </Link>
+                    <Link to="/upload" className="nav-button signup-btn">
+                        <FaUpload style={{marginRight: '0.5rem'}} /> Upload Notes
+                    </Link>
+                </div>
+            </div>
         </div>
     );
 };
