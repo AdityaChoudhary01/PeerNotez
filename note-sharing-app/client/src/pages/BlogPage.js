@@ -106,7 +106,7 @@ const FullBlogContent = ({ blog, onRefetch }) => {
                     <Link to="/search" className="hero-cta-button primary">
                         <FaSearch style={{marginRight: '0.5rem'}} /> Find More Notes
                     </Link>
-                    <Link to="/upload" className="hero-cta-button secondary">
+                    <Link to="/blogs/post" className="hero-cta-button secondary">
                         <FaFeatherAlt style={{marginRight: '0.5rem'}} /> Write Your Own Blog
                     </Link>
                 </div>
