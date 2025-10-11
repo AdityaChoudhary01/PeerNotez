@@ -1,0 +1,5 @@
+[[redirects]]
+  from = "/sitemap-dynamic.xml"
+  to = "https://peernotez.onrender.com/sitemap-dynamic.xml"
+  status = 200
+  force = true # Critical: Ensures the redirect happens even if a file exists
