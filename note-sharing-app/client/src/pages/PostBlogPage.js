@@ -47,6 +47,7 @@ const PostBlogPage = ({ existingBlog = null, onBlogUpdated = () => {}, onClose =
                 onBlogUpdated(data); 
                 onClose(); // Close the modal upon update
             } else {
+                // Navigate to the newly created public URL (which *is* SEO optimized)
                 navigate(`/blogs/${data.slug}`);
             }
         } catch (err) {
