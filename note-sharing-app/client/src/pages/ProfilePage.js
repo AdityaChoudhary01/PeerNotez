@@ -3,7 +3,8 @@ import axios from 'axios';
 import useAuth from '../hooks/useAuth';
 import NoteCard from '../components/notes/NoteCard';
 import Pagination from '../components/common/Pagination';
-import EditNoteModal from '../components/notes/EditNoteModal'; // <-- Import the new modal
+import EditNoteModal from '../components/notes/EditNoteModal'; 
+import { Link } from 'react-router-dom'; // Import Link
 
 const ProfilePage = () => {
   // State
@@ -21,6 +22,9 @@ const ProfilePage = () => {
   const [currentPageSaved, setCurrentPageSaved] = useState(1);
   const [totalPagesSaved, setTotalPagesSaved] = useState(0);
   const [totalNotesSaved, setTotalNotesSaved] = useState(0);
+  
+  // New state for My Blogs
+  const [totalMyBlogs, setTotalMyBlogs] = useState(0);
 
   // Refetch state
   const [refetchIndex, setRefetchIndex] = useState(0);
@@ -33,6 +37,23 @@ const ProfilePage = () => {
   const [editingNote, setEditingNote] = useState(null);
 
   const { user, token, loading: authLoading, updateUser } = useAuth();
+
+  // Fetch only the total count for blogs on load (no need to fetch full data here)
+  useEffect(() => {
+    if (!token || authLoading) return;
+    const fetchBlogCount = async () => {
+      try {
+        const config = { headers: { Authorization: `Bearer ${token}` } };
+        // Fetch only one to get the total count from the pagination metadata
+        const { data } = await axios.get('/blogs/my-blogs?page=1&limit=1', config); 
+        setTotalMyBlogs(data.totalBlogs || 0);
+      } catch (error) {
+         console.error('Failed to fetch blog count:', error);
+      }
+    };
+    fetchBlogCount();
+  }, [token, authLoading, refetchIndex]);
+
 
   // Reset page for the *new* tab when tab changes
   useEffect(() => {
@@ -47,7 +68,7 @@ const ProfilePage = () => {
 
   // Fetch notes (uploads or saved) based on active tab and pagination
   useEffect(() => {
-    if (authLoading || !token) return; // wait for auth
+    if (authLoading || !token || activeTab === 'blogs') return; // Skip if on blogs tab
 
     const fetchData = async () => {
       setLoadingNotes(true);
@@ -83,9 +104,9 @@ const ProfilePage = () => {
     };
 
     fetchData();
-  }, [token, authLoading, activeTab, currentPageUploads, currentPageSaved, refetchIndex]); // Add new pagination states to deps
-
-  // Update newName when user changes
+  }, [token, authLoading, activeTab, currentPageUploads, currentPageSaved, refetchIndex]); 
+  
+  // ... (Update newName when user changes)
   useEffect(() => {
     if (user) {
       setNewName(user.name);
@@ -198,44 +219,53 @@ const ProfilePage = () => {
         </div>
       </div>
 
-      {/* Tabs - Corrected to show individual counts */}
+      {/* Tabs - Now includes a link for My Blogs */}
       <div className="profile-tabs">
         <button onClick={() => setActiveTab('uploads')} className={activeTab === 'uploads' ? 'active' : ''}>
-          My Uploads ({totalNotesUploads}) {/* Corrected to show totalNotesUploads */}
+          My Uploads ({totalNotesUploads}) 
         </button>
         <button onClick={() => setActiveTab('saved')} className={activeTab === 'saved' ? 'active' : ''}>
-          Saved Notes ({totalNotesSaved}) {/* Corrected to show totalNotesSaved */}
+          Saved Notes ({totalNotesSaved}) 
         </button>
+        {/* NEW: Blog Tab Link */}
+        <Link to="/blogs/my-blogs" className={`profile-tabs button ${activeTab === 'blogs' ? 'active' : ''}`}>
+             My Blogs ({totalMyBlogs}) 
+        </Link>
       </div>
 
-      {/* Notes Section */}
-      {loadingNotes ? (
-        <div>Loading notes...</div>
-      ) : (
-        <div>
-          <h2>{activeTab === 'uploads' ? 'My Uploaded Notes' : 'My Saved Notes'}</h2>
-          {displayNotes.length > 0 ? (
-            <>
-              <div className="notes-grid">
-                {displayNotes.map(note => (
-                  <NoteCard
-                    key={note._id}
-                    note={note}
-                    showActions={activeTab === 'uploads'} // Only show actions for uploaded notes
-                    onDelete={activeTab === 'uploads' ? handleDeleteNote : undefined}
-                    onEdit={activeTab === 'uploads' ? handleEditClick : undefined}
-                  />
-                ))}
-              </div>
-              {currentTotalPages > 1 && (
-                <Pagination page={currentPageState} totalPages={currentTotalPages} onPageChange={setCurrentPageState} />
-              )}
-            </>
+      {/* Notes Section - Only render if not on the 'blogs' link */}
+      {activeTab !== 'blogs' && (
+        <>
+          {loadingNotes ? (
+            <div>Loading notes...</div>
           ) : (
-            <p>{emptyMessage}</p>
+            <div>
+              <h2>{activeTab === 'uploads' ? 'My Uploaded Notes' : 'My Saved Notes'}</h2>
+              {displayNotes.length > 0 ? (
+                <>
+                  <div className="notes-grid">
+                    {displayNotes.map(note => (
+                      <NoteCard
+                        key={note._id}
+                        note={note}
+                        showActions={activeTab === 'uploads'} // Only show actions for uploaded notes
+                        onDelete={activeTab === 'uploads' ? handleDeleteNote : undefined}
+                        onEdit={activeTab === 'uploads' ? handleEditClick : undefined}
+                      />
+                    ))}
+                  </div>
+                  {currentTotalPages > 1 && (
+                    <Pagination page={currentPageState} totalPages={currentTotalPages} onPageChange={setCurrentPageState} />
+                  )}
+                </>
+              ) : (
+                <p>{emptyMessage}</p>
+              )}
+            </div>
           )}
-        </div>
+        </>
       )}
+
 
       {/* --- Render the Edit Modal conditionally --- */}
       {editingNote && (
