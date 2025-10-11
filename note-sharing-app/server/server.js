@@ -17,7 +17,7 @@ const noteRoutes = require('./routes/noteRoutes');
 const contactRoutes = require('./routes/contactRoutes');
 const userRoutes = require('./routes/userRoutes');
 const blogRoutes = require('./routes/blogRoutes');
-
+const sitemapRoutes = require('./routes/sitemapRoutes');
 // --- App Initialization ---
 const app = express();
 
@@ -77,7 +77,7 @@ app.use('/api/notes', noteRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/blogs', blogRoutes);
-
+app.use('/', sitemapRoutes);
 // --- Health Check Endpoint ---
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'UP', timestamp: new Date().toISOString() });
@@ -100,5 +100,6 @@ app.use((err, req, res, next) => {
 
 // --- Server Startup ---
 app.listen(PORT, () => console.log(`🚀 Server is running on port ${PORT}`));
+
 
 
