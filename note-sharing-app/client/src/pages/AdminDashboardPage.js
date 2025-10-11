@@ -4,13 +4,16 @@ import useAuth from '../hooks/useAuth';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import Pagination from '../components/common/Pagination';
+import { FaFeatherAlt, FaUsers, FaFileAlt } from 'react-icons/fa';
 
 const AdminDashboardPage = () => {
+    // FIX 1: State Declaration (Added blogs and setBlogs)
     const [users, setUsers] = useState([]);
     const [notes, setNotes] = useState([]);
+    const [blogs, setBlogs] = useState([]); 
     const [activeTab, setActiveTab] = useState('users');
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
+    const [error, setError] = useState(''); 
     const { token, user: adminUser } = useAuth();
     const cloudName = process.env.REACT_APP_CLOUDINARY_CLOUD_NAME;
 
@@ -29,10 +32,9 @@ const AdminDashboardPage = () => {
 
         const fetchUsers = async () => {
             setLoading(true);
-            setNotes([]); // Reset notes to prevent rendering errors
             try {
                 const { data } = await axios.get('https://peernotez.onrender.com/api/users', config);
-                setUsers(data || []); // Safeguard against non-array response
+                setUsers(data);
             } catch (error) {
                 console.error("Failed to fetch users", error);
                 setError('Failed to fetch user data. Please try again later.');
@@ -44,7 +46,6 @@ const AdminDashboardPage = () => {
 
         const fetchNotes = async () => {
             setLoading(true);
-            setUsers([]); // Reset users to prevent rendering errors
             try {
                 const { data } = await axios.get(`https://peernotez.onrender.com/api/notes?page=${currentPage}&limit=10`, config);
                 setNotes(data.notes || []);
@@ -59,11 +60,29 @@ const AdminDashboardPage = () => {
             }
         };
 
+        const fetchBlogs = async () => {
+             setLoading(true);
+             try {
+                 const { data } = await axios.get(`https://peernotez.onrender.com/api/blogs?page=${currentPage}&limit=10`, config); 
+                 setBlogs(data.blogs || []);
+                 setTotalPages(data.totalPages || 0);
+             } catch (error) {
+                 console.error("Failed to fetch blogs", error);
+                 setError('Failed to fetch blog data. Please try again later.');
+                 setBlogs([]);
+                 setTotalPages(0);
+             } finally {
+                 setLoading(false);
+             }
+        };
+
         if (token) {
             if (activeTab === 'users') {
                 fetchUsers();
-            } else {
+            } else if (activeTab === 'notes') {
                 fetchNotes();
+            } else if (activeTab === 'blogs') { 
+                 fetchBlogs();
             }
         }
     }, [activeTab, token, currentPage, refetchIndex]);
@@ -113,25 +132,54 @@ const AdminDashboardPage = () => {
         }
     };
     
-    const handleToggleFeatured = async (noteId, isCurrentlyFeatured) => {
-        if (isCurrentlyFeatured && !window.confirm('Are you sure you want to un-feature this note?')) {
+    const handleToggleFeatured = async (id, isCurrentlyFeatured, type) => {
+        const typePlural = type === 'note' ? 'note' : 'blog';
+        if (isCurrentlyFeatured && !window.confirm(`Are you sure you want to un-feature this ${typePlural}?`)) {
             return;
-        } else if (!isCurrentlyFeatured && !window.confirm('Are you sure you want to feature this note? Only a few featured notes will be shown on the homepage.')) {
+        } else if (!isCurrentlyFeatured && !window.confirm(`Are you sure you want to feature this ${typePlural}?`)) {
             return;
         }
         
         try {
             const config = { headers: { Authorization: `Bearer ${token}` } };
-            const { data } = await axios.put(`https://peernotez.onrender.com/api/notes/${noteId}/toggle-featured`, {}, config);
+            const endpoint = type === 'note' ? 
+                             `https://peernotez.onrender.com/api/notes/${id}/toggle-featured` : 
+                             `https://peernotez.onrender.com/api/blogs/${id}/toggle-featured`;
             
-            setNotes(notes.map(note => 
-                note._id === noteId ? { ...note, isFeatured: data.isFeatured } : note
-            ));
+            const { data } = await axios.put(endpoint, {}, config);
+            
+            if (type === 'note') {
+                setNotes(notes.map(item => 
+                    item._id === id ? { ...item, isFeatured: data.isFeatured } : item
+                ));
+            } else {
+                setBlogs(blogs.map(item => 
+                    item._id === id ? { ...item, isFeatured: data.isFeatured } : item
+                ));
+            }
             
             alert(data.message);
         } catch (error) {
-            setError('Failed to toggle featured status.');
-            console.error('Failed to toggle featured status', error);
+            setError(`Failed to toggle featured status for ${typePlural}.`);
+            console.error(`Failed to toggle ${typePlural} featured status`, error);
+        }
+    };
+
+    const handleDeleteBlog = async (blogId) => {
+        if (window.confirm('Are you sure you want to delete this blog post? This action cannot be undone.')) {
+            const config = { headers: { Authorization: `Bearer ${token}` } };
+            try {
+                await axios.delete(`https://peernotez.onrender.com/api/blogs/${blogId}`, config);
+                if (blogs.length === 1 && currentPage > 1) {
+                    setCurrentPage(prev => prev - 1);
+                } else {
+                    setRefetchIndex(prev => prev + 1);
+                }
+                alert('Blog post deleted successfully.');
+            } catch(error) {
+                setError('Failed to delete blog post.');
+                console.error("Failed to delete blog post", error);
+            }
         }
     };
 
@@ -165,7 +213,7 @@ const AdminDashboardPage = () => {
                 </div>
                 <div className="admin-item-actions">
                     <button
-                        onClick={() => handleToggleFeatured(note._id, note.isFeatured)}
+                        onClick={() => handleToggleFeatured(note._id, note.isFeatured, 'note')}
                         className={`admin-action-btn feature-btn ${note.isFeatured ? 'unfeature' : 'feature'}`}
                     >
                         <i className={`fas ${note.isFeatured ? 'fa-star-half' : 'fa-star'}`}></i>
@@ -181,6 +229,39 @@ const AdminDashboardPage = () => {
             </div>
         );
     };
+
+    // FIX 2: Define renderBlogItem function
+    const renderBlogItem = (blog) => {
+        return (
+            <div key={blog._id} className="admin-list-item">
+                <div className="admin-avatar-container">
+                    <img src={blog.author?.avatar || 'https://via.placeholder.com/50'} alt={`${blog.author?.name} avatar`} className="admin-avatar" />
+                </div>
+                <div className="admin-item-info">
+                    <strong className="admin-item-title">{blog.title}</strong>
+                    <span className="admin-item-meta">Written by: {blog.author?.name || 'N/A'}</span>
+                    <span className="admin-item-meta">Views: {blog.downloadCount.toLocaleString()}</span>
+                    {blog.isFeatured && <span className="admin-featured-badge">Featured</span>}
+                </div>
+                <div className="admin-item-actions">
+                    <button
+                        onClick={() => handleToggleFeatured(blog._id, blog.isFeatured, 'blog')}
+                        className={`admin-action-btn feature-btn ${blog.isFeatured ? 'unfeature' : 'feature'}`}
+                    >
+                        <i className={`fas ${blog.isFeatured ? 'fa-star-half' : 'fa-star'}`}></i>
+                        {blog.isFeatured ? ' Un-feature' : ' Feature'}
+                    </button>
+                    <Link to={`/blogs/${blog.slug}`} target="_blank" rel="noopener noreferrer" className="admin-action-btn view-btn">
+                        <i className="fas fa-eye"></i> View
+                    </Link>
+                    <button onClick={() => handleDeleteBlog(blog._id)} className="admin-action-btn delete-btn">
+                        <i className="fas fa-trash-alt"></i> Delete
+                    </button>
+                </div>
+            </div>
+        );
+    };
+
 
     return (
         <div className="admin-dashboard-container">
@@ -201,13 +282,19 @@ const AdminDashboardPage = () => {
                     onClick={() => setActiveTab('users')} 
                     className={`admin-tab-btn ${activeTab === 'users' ? 'active' : ''}`}
                 >
-                    <i className="fas fa-users"></i> Manage Users
+                    <FaUsers /> Manage Users
                 </button>
                 <button 
                     onClick={() => setActiveTab('notes')} 
                     className={`admin-tab-btn ${activeTab === 'notes' ? 'active' : ''}`}
                 >
-                    <i className="fas fa-file-alt"></i> Manage Notes
+                    <FaFileAlt /> Manage Notes
+                </button>
+                <button 
+                    onClick={() => setActiveTab('blogs')} 
+                    className={`admin-tab-btn ${activeTab === 'blogs' ? 'active' : ''}`}
+                >
+                    <FaFeatherAlt /> Manage Blogs
                 </button>
             </div>
             
@@ -250,11 +337,23 @@ const AdminDashboardPage = () => {
                             </div>
                         ))}
                     </div>
-                ) : (
+                ) : activeTab === 'notes' ? (
                     <div className="admin-list-container">
                         <h3 className="admin-section-heading">All Notes ({notes.length})</h3>
                         {notes.length > 0 ? notes.map(note => renderNoteItem(note)) : (
                             <p className="admin-no-results">No notes found.</p>
+                        )}
+                        <Pagination 
+                            page={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={setCurrentPage}
+                        />
+                    </div>
+                ) : (
+                     <div className="admin-list-container">
+                        <h3 className="admin-section-heading">All Blog Posts ({blogs.length})</h3>
+                        {blogs.length > 0 ? blogs.map(blog => renderBlogItem(blog)) : (
+                            <p className="admin-no-results">No blog posts found.</p>
                         )}
                         <Pagination 
                             page={currentPage}
@@ -269,4 +368,3 @@ const AdminDashboardPage = () => {
 };
 
 export default AdminDashboardPage;
-
