@@ -4,30 +4,53 @@
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
             http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+
 <url>
   <loc>https://peernotez.netlify.app/</loc>
-  <lastmod>2025-08-03T08:47:27+00:00</lastmod>
+  <lastmod>2025-10-11T15:20:00+00:00</lastmod>
+  <priority>1.0</priority>
 </url>
 <url>
   <loc>https://peernotez.netlify.app/about</loc>
-  <lastmod>2025-08-03T08:47:27+00:00</lastmod>
+  <lastmod>2025-10-11T15:20:00+00:00</lastmod>
+  <priority>0.8</priority>
 </url>
 <url>
   <loc>https://peernotez.netlify.app/contact</loc>
-  <lastmod>2025-08-03T08:47:27+00:00</lastmod>
+  <lastmod>2025-10-11T15:20:00+00:00</lastmod>
+  <priority>0.7</priority>
 </url>
 <url>
   <loc>https://peernotez.netlify.app/donate</loc>
-  <lastmod>2025-08-03T08:47:27+00:00</lastmod>
+  <lastmod>2025-10-11T15:20:00+00:00</lastmod>
+  <priority>0.7</priority>
 </url>
 <url>
+  <loc>https://peernotez.netlify.app/search</loc>
+  <lastmod>2025-10-11T15:20:00+00:00</lastmod>
+  <priority>0.9</priority>
+</url>
+<url>
+  <loc>https://peernotez.netlify.app/supporters</loc>
+  <lastmod>2025-10-11T15:20:00+00:00</lastmod>
+  <priority>0.6</priority>
+</url>
+
+<url>
   <loc>https://peernotez.netlify.app/login</loc>
-  <lastmod>2025-08-03T08:47:27+00:00</lastmod>
+  <lastmod>2025-10-11T15:20:00+00:00</lastmod>
+  <priority>0.5</priority>
 </url>
 <url>
   <loc>https://peernotez.netlify.app/signup</loc>
-  <lastmod>2025-08-03T08:47:27+00:00</lastmod>
+  <lastmod>2025-10-11T15:20:00+00:00</lastmod>
+  <priority>0.5</priority>
+</url>
+
+<url>
+  <loc>https://peernotez.netlify.app/blogs</loc>
+  <lastmod>2025-10-11T15:20:00+00:00</lastmod>
+  <priority>0.9</priority>
 </url>
 
 </urlset>
-
