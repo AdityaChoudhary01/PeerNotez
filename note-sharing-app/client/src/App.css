@@ -3400,19 +3400,23 @@ hr {
 
 
 
-
 /* =================================== */
-/* === SUPER MODERN DONATE & SUPPORTERS PAGE STYLES === */
+/* === SUPER MODERN DONATE PAGE STYLES === */
 /* =================================== */
 
-/* --- Page Wrappers --- */
-.donate-page-wrapper,
-.supporters-page-wrapper {
+.donate-page-wrapper {
     max-width: 1200px;
     margin: 0 auto;
     padding: 3rem 1.5rem;
     line-height: 1.6;
-    overflow-x: hidden; /* Added to prevent horizontal scroll */
+}
+
+/* New Divider Style */
+.divider {
+    border: 0;
+    height: 1px;
+    background-image: linear-gradient(to right, rgba(0, 0, 0, 0), var(--border-color), rgba(0, 0, 0, 0));
+    margin: 4rem 0;
 }
 
 /* --- Hero Section --- */
@@ -3422,62 +3426,65 @@ hr {
 }
 
 .hero-title {
-    font-size: clamp(3rem, 7vw, 5rem);
-    font-weight: 800;
+    font-size: clamp(3rem, 7vw, 5.5rem); /* Increased size */
+    font-weight: 900; /* Bolder */
     color: var(--heading-color);
-    line-height: 1.2;
+    line-height: 1.1; /* Tighter line height */
     margin-bottom: 1rem;
-    text-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+    text-shadow: 0 5px 25px rgba(93, 80, 254, 0.5); /* Primary color shadow */
 }
 
 .hero-subtitle {
-    font-size: clamp(1rem, 2.5vw, 1.4rem);
+    font-size: clamp(1.1rem, 2.5vw, 1.6rem);
     color: var(--subtle-text-color);
-    max-width: 700px;
+    max-width: 800px; /* Wider subtitle */
     margin: 0 auto;
 }
 
 /* --- Section Headings --- */
 .section-heading {
-    font-size: clamp(2rem, 4vw, 3rem);
-    font-weight: 700;
+    font-size: clamp(2rem, 4vw, 3.5rem); /* Increased size */
+    font-weight: 800;
     color: var(--primary-color);
-    text-align: center; /* Corrected centering method */
+    text-align: center;
     margin-bottom: 3rem;
-    display: block; /* Ensures it takes up full width for centering */
+    text-transform: uppercase;
 }
 
 /* --- Impact Section (Grid of Cards) --- */
 .impact-cards-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Wider columns */
+    gap: 2.5rem; /* Larger gap */
 }
 
 .impact-card {
     background: var(--card-background);
-    padding: 2.5rem 1.5rem;
-    border-radius: 12px;
-    border: 1px solid var(--border-color);
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+    padding: 2.5rem 2rem;
+    border-radius: 16px; /* Slightly larger radius */
+    border: 2px solid var(--border-color); /* Thicker border */
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3); /* Stronger shadow */
     text-align: center;
-    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease; /* Bouncier transition */
 }
 
 .impact-card:hover {
-    transform: translateY(-8px) scale(1.02);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    transform: translateY(-10px) scale(1.03);
+    box-shadow: 0 15px 40px rgba(93, 80, 254, 0.2); /* Primary shadow on hover */
     border-color: var(--primary-color);
 }
 
 .impact-icon {
-    font-size: 3rem;
-    color: var(--warning-color);
+    font-size: 3.5rem; /* Larger icon */
+    color: var(--primary-color); /* Used primary color for coherence */
     margin-bottom: 1rem;
+}
+.impact-card:nth-child(4) .impact-icon {
+    color: var(--success-color); /* Special color for Ad-Free */
 }
 
 .impact-card h3 {
-    font-size: 1.5rem;
+    font-size: 1.6rem;
     color: var(--heading-color);
     margin: 0 0 0.5rem 0;
     border: none;
@@ -3491,121 +3498,102 @@ hr {
 
 .methods-cards-container {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
+    justify-content: center; /* Center the container */
     gap: 3rem;
     margin-top: 3rem;
 }
 
+/* New style for single method focus */
+.methods-cards-container.single-method-focus {
+    width: 100%;
+    /* No flex-wrap needed as there's only one card */
+}
+
 .method-card {
     background: var(--card-background);
-    padding: 3rem 2rem;
-    border-radius: 16px;
+    padding: 4rem 3rem; /* Increased padding */
+    border-radius: 20px; /* Larger radius */
     border: 1px solid var(--border-color);
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
     display: flex;
     flex-direction: column;
     align-items: center;
-    max-width: 450px;
+    max-width: 500px; /* Wider card */
     width: 100%;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
 }
 
-.method-card:hover {
-    transform: translateY(-8px) scale(1.02);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+/* Focused Card Style */
+.method-card.focused-card {
+    border: 3px solid var(--warning-color); /* Strong border for focus */
+    box-shadow: 0 0 50px rgba(255, 221, 0, 0.25); /* Glow effect */
+}
+
+.method-card.focused-card:hover {
+    transform: translateY(-15px) scale(1.04);
+    box-shadow: 0 18px 50px rgba(255, 221, 0, 0.4);
 }
 
 .card-header {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
 }
 
 .card-header .icon {
-    font-size: 2.5rem;
-    color: var(--primary-color);
+    font-size: 3rem; /* Larger icon */
+    color: var(--warning-color); /* BMAC color */
 }
 
 .card-header h3 {
-    font-size: 2rem;
-    color: var(--heading-color);
-    margin: 0;
-    border: none;
-}
-
-.card-description {
-    font-size: 1.1rem;
-    color: var(--subtle-text-color);
-    margin-bottom: 2rem;
-    text-align: center;
-}
-
-.qr-code-wrapper {
-    background-color: white;
-    padding: 1.5rem;
-    border-radius: 12px;
-    width: fit-content;
-    margin-bottom: 1.5rem;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-}
-
-.qr-code-img {
-    width: 180px;
-    height: auto;
-    display: block;
-}
-
-.upi-id-label {
-    font-size: 1.1rem;
-    color: var(--text-color);
-}
-
-/* --- Buy Me a Coffee Card --- */
-.bmac-profile {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 1.5rem;
-}
-
-.bmac-profile-img {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 3px solid var(--warning-color);
-    margin-bottom: 0.5rem;
-}
-
-.profile-name {
-    font-size: 1.2rem;
-    font-weight: bold;
+    font-size: 2.2rem;
     color: var(--warning-color);
 }
 
-.profile-tagline {
-    font-size: 0.95rem;
+.card-description {
+    font-size: 1.2rem; /* Larger description text */
     color: var(--subtle-text-color);
+    margin-bottom: 3rem; /* More space */
 }
 
-.bmac-button {
-    display: inline-block;
-    padding: 0.9rem 2.5rem;
-    background: linear-gradient(45deg, #ffdd00, #ffc400);
-    color: #000000;
+/* --- Buy Me a Coffee Card --- */
+.bmac-profile.large-profile {
+    margin-bottom: 2.5rem;
+}
+
+.bmac-profile-img {
+    width: 100px; /* Larger profile image */
+    height: 100px;
+    border: 4px solid var(--warning-color); /* Thicker border */
+    box-shadow: 0 0 15px rgba(255, 221, 0, 0.5);
+}
+
+.profile-name {
+    font-size: 1.4rem;
+    font-weight: 800;
+}
+
+.profile-tagline {
     font-size: 1.1rem;
-    font-weight: bold;
-    text-decoration: none;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
-.bmac-button:hover {
-    transform: translateY(-3px) scale(1.03);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+.bmac-button.large-button {
+    padding: 1.2rem 3rem; /* Larger button */
+    font-size: 1.3rem;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(255, 196, 0, 0.4);
+    width: 100%; /* Make button full width of card */
+    max-width: 300px;
+}
+
+.bmac-button.large-button:hover {
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 10px 30px rgba(255, 196, 0, 0.5);
+}
+
+.extra-info {
+    margin-top: 2rem;
+    font-style: italic;
+    color: var(--subtle-text-color);
+    font-size: 0.95rem;
 }
 
 /* --- Community Section --- */
@@ -3615,30 +3603,75 @@ hr {
 }
 
 .community-cta-text {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     color: var(--text-color);
-    max-width: 600px;
-    margin: 0 auto 2rem auto;
+    max-width: 700px;
+    margin: 0 auto 2.5rem auto;
 }
 
 .main-cta-button {
-    display: inline-block;
     background: var(--gradient-primary);
-    color: var(--heading-color);
-    padding: 1rem 3rem;
+    color: #ffffff;
+    padding: 1.2rem 3.5rem;
     border-radius: 50px;
-    text-decoration: none;
-    font-weight: bold;
-    font-size: 1.2rem;
-    transition: all 0.3s ease-in-out;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    font-size: 1.3rem;
+    box-shadow: 0 8px 30px rgba(93, 80, 254, 0.4); /* Stronger primary shadow */
 }
 
-.main-cta-button:hover {
-    background: var(--gradient-primary-hover);
-    transform: translateY(-5px) scale(1.02);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+.main-cta-button.disabled {
+    background: #444;
+    color: #999;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
 }
+
+/* =================================== */
+/* === RESPONSIVE DESIGN BREAKPOINTS === */
+/* =================================== */
+
+@media (max-width: 768px) {
+    .donate-page-wrapper {
+        padding: 2rem 1rem;
+    }
+    
+    .methods-cards-container {
+        flex-direction: column;
+        align-items: center;
+        gap: 2rem;
+    }
+    
+    .method-card {
+        padding: 3rem 1.5rem;
+        max-width: 90%;
+    }
+
+    .hero-title {
+        font-size: clamp(2.5rem, 10vw, 4.5rem);
+    }
+}
+
+@media (max-width: 480px) {
+    .method-card {
+        padding: 2rem 1rem;
+    }
+    .card-header h3 {
+        font-size: 1.8rem;
+    }
+    .bmac-button.large-button {
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+        max-width: 250px;
+    }
+    .main-cta-button {
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+    }
+}
+
+
+
+
 
 /* --- Supporters Page Styles --- */
 .supporters-page-wrapper {
@@ -5436,6 +5469,7 @@ hr {
 .blog-title-button-link:hover {
     color: var(--primary-color); /* Highlight the title text on hover */
 }
+
 
 
 
