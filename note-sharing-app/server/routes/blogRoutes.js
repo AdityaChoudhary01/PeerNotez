@@ -3,7 +3,7 @@ const router = express.Router();
 const Blog = require('../models/Blog'); 
 const { protect } = require('../middleware/authMiddleware');
 const { admin } = require('../middleware/adminMiddleware');
-
+const indexingService = require('../utils/indexingService');
 // Utility function for updating review stats
 const updateBlogReviewStats = (blog) => {
     blog.numReviews = blog.reviews.length;
@@ -166,6 +166,8 @@ router.post('/', protect, async (req, res) => {
         });
 
         const savedBlog = await newBlog.save();
+        // NEW: Indexing API call for creation/update
+        await indexingService.urlUpdated(savedBlog.slug, 'blog'); // Use slug and type 'blog'
         res.status(201).json(savedBlog);
 
     } catch (error) {
@@ -196,6 +198,8 @@ router.put('/:id', protect, async (req, res) => {
         if (slug) blog.slug = slug;
 
         const updatedBlog = await blog.save();
+        // NEW: Indexing API call for update
+        await indexingService.urlUpdated(updatedBlog.slug, 'blog');
         res.json(updatedBlog);
 
     } catch (error) {
@@ -240,7 +244,7 @@ router.delete('/:id', protect, async (req, res) => {
         if (blog.author.toString() !== req.user.id && req.user.role !== 'admin') {
             return res.status(401).json({ message: 'Not authorized to delete this blog' });
         }
-
+        await indexingService.urlDeleted(blog.slug, 'blog');
         await blog.deleteOne();
         res.json({ message: 'Blog removed successfully' });
 
