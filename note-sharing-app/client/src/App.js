@@ -18,6 +18,9 @@ import AdminRoute from './utils/AdminRoute';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 // --- ADDED IMPORT FOR SUPPORTERS PAGE ---
 import SupportersPage from './pages/SupportersPage'; 
+import BlogPage from './pages/BlogPage';
+import PostBlogPage from './pages/PostBlogPage';
+import MyBlogsPage from './pages/MyBlogsPage';
 import './App.css';
 
 function App() {
@@ -36,6 +39,12 @@ function App() {
               <Route path="/contact" element={<ContactPage />} /> 
               <Route path="/about" element={<AboutPage />} />
               <Route path="/donate" element={<DonatePage />} />
+
+
+              <Route path="/blogs" element={<BlogPage />} />
+              <Route path="/blogs/post" element={<PrivateRoute><PostBlogPage /></PrivateRoute>} />
+              <Route path="/blogs/my-blogs" element={<PrivateRoute><MyBlogsPage /></PrivateRoute>} />
+              <Route path="/blogs/:slug" element={<BlogPage />} />
               {/* --- ADDED ROUTE FOR SUPPORTERS PAGE --- */}
               <Route path="/supporters" element={<SupportersPage />} />
               <Route path="/profile" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
@@ -51,3 +60,4 @@ function App() {
 }
 
 export default App;
+
