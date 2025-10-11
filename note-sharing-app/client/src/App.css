@@ -3584,6 +3584,7 @@ hr {
     width: 100%; /* Make button full width of card */
     max-width: 300px;
     background-color:var(--warning-color) ;
+    text-decoration: none;
 }
 
 .bmac-button.large-button:hover {
@@ -5471,6 +5472,7 @@ hr {
 .blog-title-button-link:hover {
     color: var(--primary-color); /* Highlight the title text on hover */
 }
+
 
 
 
