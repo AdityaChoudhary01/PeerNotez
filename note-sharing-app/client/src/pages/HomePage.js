@@ -3,12 +3,13 @@ import axios from 'axios';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 import NoteCard from '../components/notes/NoteCard';
+import BlogCard from '../components/blog/BlogCard'; // <--- NEW IMPORT ADDED
 import FilterBar from '../components/common/FilterBar';
 import Pagination from '../components/common/Pagination';
-import { FaFilter, FaDownload, FaTimes, FaArrowLeft } from 'react-icons/fa';
+import { FaFilter, FaDownload, FaTimes, FaFeatherAlt } from 'react-icons/fa';
 
 // --- Download Link Constant ---
-const DOWNLOAD_LINK = 'https://github.com/AdityaChoudhary01/public-peernotez/releases/download/v1.0.3/PeerNotez.apk';
+const DOWNLOAD_LINK = 'https://github.com/AdityaChoudhary01/PeerNotez/releases/download/v1.0.3/PeerNotez.apk';
 
 const HomePage = () => {
     // --- State for main notes grid ---
@@ -23,11 +24,14 @@ const HomePage = () => {
     const [featuredNotes, setFeaturedNotes] = useState([]);
     const [loadingFeatured, setLoadingFeatured] = useState(true);
 
+    // --- NEW STATE FOR FEATURED BLOGS ---
+    const [featuredBlogs, setFeaturedBlogs] = useState([]);
+    const [loadingFeaturedBlogs, setLoadingFeaturedBlogs] = useState(true);
+    // ------------------------------------
+
     // --- State for dynamic content sections ---
     const [stats, setStats] = useState({ totalNotes: 0, totalUsers: 0, downloadsThisMonth: 0 });
     const [loadingStats, setLoadingStats] = useState(true);
-    const [blogPosts, setBlogPosts] = useState([]);
-    const [loadingBlog, setLoadingBlog] = useState(true);
     const [topContributors, setTopContributors] = useState([]);
     const [loadingContributors, setLoadingContributors] = useState(true);
     
@@ -37,10 +41,6 @@ const HomePage = () => {
     // --- State for Fixed Download Button: Shows on every page load ---
     const [showAppButton, setShowAppButton] = useState(true); 
 
-    // --- BLOG PAGE STATE ---
-    const [selectedBlogSlug, setSelectedBlogSlug] = useState(null); 
-    const [fullBlogPost, setFullBlogPost] = useState(null); 
-    const [loadingFullBlog, setLoadingFullBlog] = useState(false);
 
     // --- DATA FETCHING HOOKS ---
     useEffect(() => {
@@ -76,6 +76,25 @@ const HomePage = () => {
         fetchFeaturedNotes();
     }, []);
 
+    // --- NEW EFFECT: Fetch Featured Blogs ---
+    useEffect(() => {
+        const fetchFeaturedBlogs = async () => {
+            setLoadingFeaturedBlogs(true);
+            try {
+                // Assuming backend returns { blogs: [...] }
+                const { data } = await axios.get('/blogs', { params: { isFeatured: true, limit: 3 } });
+                setFeaturedBlogs(data.blogs || []);
+            } catch (error) {
+                console.error("Failed to fetch featured blogs", error);
+                setFeaturedBlogs([]);
+            } finally {
+                setLoadingFeaturedBlogs(false);
+            }
+        };
+        fetchFeaturedBlogs();
+    }, []);
+    // ----------------------------------------
+
     useEffect(() => {
         const fetchStats = async () => {
             setLoadingStats(true);
@@ -106,47 +125,6 @@ const HomePage = () => {
         fetchTopContributors();
     }, []);
 
-    useEffect(() => {
-        const fetchBlogPosts = async () => {
-            setLoadingBlog(true);
-            try {
-                const { data } = await axios.get('/blogs'); 
-                setBlogPosts(data);
-            } catch (error) {
-                console.error("Failed to fetch blog posts", error);
-            } finally {
-                setLoadingBlog(false);
-            }
-        };
-        fetchBlogPosts();
-    }, []);
-
-    // --- FETCH FULL BLOG POST BY SLUG ---
-    useEffect(() => {
-        if (!selectedBlogSlug) {
-            setFullBlogPost(null);
-            return;
-        }
-
-        const fetchFullBlogPost = async () => {
-            setLoadingFullBlog(true);
-            try {
-                const { data } = await axios.get(`/blogs/${selectedBlogSlug}`); 
-                setFullBlogPost(data);
-            } catch (error) {
-                console.error(`Failed to fetch blog post: ${selectedBlogSlug}`, error);
-                setFullBlogPost(null);
-            } finally {
-                setLoadingFullBlog(false);
-            }
-        };
-        fetchFullBlogPost();
-    }, [selectedBlogSlug]); 
-
-
-
-
-   
     // --- UTILITY FUNCTIONS ---
     const handleFilterSubmit = (newFilters) => {
         const activeFilters = Object.fromEntries(
@@ -161,19 +139,7 @@ const HomePage = () => {
 
     const handleCloseButton = () => { setShowAppButton(false); };
 
-    // Function to handle navigation to the full blog post
-    const handleViewBlog = (slug) => {
-        setSelectedBlogSlug(slug);
-        window.scrollTo(0, 0); 
-    };
-
-    // Function to go back to the homepage view
-    const handleGoBack = () => {
-        setSelectedBlogSlug(null);
-        setFullBlogPost(null);
-    };
-
-    // --- Fixed Download Button Component with Close Button (THEMED) ---
+    // --- Fixed Download Button Component ---
     const AppDownloadFixedButton = () => {
         if (!showAppButton) return null;
 
@@ -200,94 +166,7 @@ const HomePage = () => {
         );
     };
 
-    // Utility function to convert line breaks in the raw text into separate <p> tags.
-    // This ensures natural paragraph breaks and allows CSS to control the gap between them.
-    const renderContentWithParagraphs = (rawContent) => {
-        if (!rawContent) return null;
-        
-        // Split the content by double line breaks ('\n\n'), which typically denotes a paragraph break.
-        const contentBlocks = rawContent.split('\n\n'); 
-        
-        // Wrap each block in a <p> tag with a specific class for styling the gap.
-        return contentBlocks.map((block, index) => {
-            const trimmedBlock = block.trim();
-            // Skip rendering empty blocks that might result from extra newlines
-            if (trimmedBlock === '') return null; 
-    
-            return (
-                <p key={index} className="article-paragraph">
-                    {trimmedBlock}
-                </p>
-            );
-        });
-    };
-    
-    
-    // --- FULL BLOG POST COMPONENT (UPDATED) ---
-    const FullBlogContent = () => {
-        if (loadingFullBlog) {
-            return <div className="full-blog-container loading">Loading full article...</div>;
-        }
-        if (!fullBlogPost) {
-            return (
-                <div className="full-blog-container error">
-                    <button onClick={handleGoBack} className="back-button"><FaArrowLeft /> Back to Home</button>
-                    <h1>Article Not Found</h1>
-                    <p>The requested blog post could not be loaded. Please ensure your backend is running and the single blog route (`/blogs/:slug`) is set up correctly.</p>
-                </div>
-            );
-        }
-    
-        const publishDate = fullBlogPost.createdAt ? new Date(fullBlogPost.createdAt).toLocaleDateString() : 'N/A';
-    
-        return (
-            <div className="full-blog-container">
-                <Helmet>
-                    <title>{fullBlogPost.title} | PeerNotez Blog</title>
-                    <meta name="description" content={fullBlogPost.summary} />
-                </Helmet>
-                
-                <button onClick={handleGoBack} className="back-button"><FaArrowLeft /> Back to Home</button>
-    
-                <article className="blog-article-content">
-                    <h1 className="article-title">{fullBlogPost.title}</h1>
-                    
-                    <div className="article-meta">
-                        {fullBlogPost.author && (
-                            <div className="blog-author-details">
-                                {fullBlogPost.author.avatar && (
-                                    <img src={fullBlogPost.author.avatar} alt={fullBlogPost.author.name} className="blog-author-avatar" />
-                                )}
-                                {fullBlogPost.author.name && (
-                                    <p className="blog-author-name">
-                                        By <strong>{fullBlogPost.author.name}</strong>
-                                    </p>
-                                )}
-                            </div>
-                        )}
-                        <span className="article-date">Published on: {publishDate}</span>
-                    </div>
-    
-                    <hr className="article-separator" />
-                    
-                    <div className="article-body">
-                        {/* 🌟 FIX APPLIED HERE: Process the raw content into structured paragraphs */}
-                        {renderContentWithParagraphs(fullBlogPost.content)} 
-                    </div>
-                </article>
-            </div>
-        );
-    };
-
     // --- MAIN RENDER LOGIC ---
-    if (selectedBlogSlug) {
-        return (
-            <div className="homepage-content">
-                <AppDownloadFixedButton />
-                <FullBlogContent />
-            </div>
-        );
-    }
 
     return (
         <div className="homepage-content">
@@ -405,8 +284,33 @@ const HomePage = () => {
             </section>
 
             <hr/>
+            
+            {/* ------------------------------------------------------------------- */}
+            {/* NEW SECTION: FEATURED BLOGS (Corrected Rendering Logic) */}
+            <section className="featured-blog-section">
+                <h2><FaFeatherAlt /> Featured Insights</h2>
+                {loadingFeaturedBlogs ? (
+                    <div>Loading featured blog posts...</div>
+                ) : featuredBlogs.length > 0 ? (
+                    // RENDER BLOGS USING BlogCard and blog-posts-grid
+                    <div className="blog-posts-grid"> 
+                        {featuredBlogs.map(blog => <BlogCard key={blog._id} blog={blog} />)}
+                    </div>
+                ) : (
+                    // Fallback when no featured data is found
+                    <p style={{textAlign: 'center'}}>No featured blog posts to show yet.</p>
+                )}
+                <div style={{textAlign: 'center', marginTop: '2rem'}}>
+                    <Link to="/blogs" className="hero-cta-button secondary" style={{maxWidth: '300px', margin: '0 auto'}}>
+                        View All Blogs &rarr;
+                    </Link>
+                </div>
+            </section>
+            {/* ------------------------------------------------------------------- */}
 
-            {/* --- Filter Bar Toggle Button for Mobile --- */}
+            <hr/>
+
+            {/* Filter Bar Toggle Button for Mobile */}
             <div className="filter-toggle-container">
                 <button 
                     className="filter-toggle-btn" 
@@ -417,7 +321,7 @@ const HomePage = () => {
                 </button>
             </div>
 
-            {/* --- Main Notes Section with Filter and Sort --- */}
+            {/* Main Notes Section with Filter and Sort */}
             <section className="all-notes-section">
                 <h1>Find Notes</h1>
                 <FilterBar
@@ -478,52 +382,9 @@ const HomePage = () => {
 
             <hr/>
 
-            <section className="blog-section">
-                <h2>From Our Blog</h2>
-                {loadingBlog ? (
-                    <div>Loading articles...</div>
-                ) : blogPosts.length > 0 ? (
-                    <div className="blog-posts-grid">
-                        {blogPosts.map(post => (
-                            <article key={post._id} className="blog-card">
-                                <h3>
-                                    <button 
-                                        onClick={() => handleViewBlog(post.slug)} 
-                                        className="blog-title-button-link"
-                                    >
-                                        {post.title}
-                                    </button>
-                                </h3>
-                                {post.author && (
-                                    <div className="blog-author-details">
-                                        {post.author.avatar && (
-                                            <img 
-                                                src={post.author.avatar} 
-                                                alt={`Avatar of ${post.author.name}`} 
-                                                className="blog-author-avatar"
-                                            />
-                                        )}
-                                        {post.author.name && (
-                                            <p className="blog-author-name">
-                                                By <strong>{post.author.name}</strong>
-                                            </p>
-                                        )}
-                                    </div>
-                                )}
-                                <p className="blog-summary">{post.summary}</p>
-                                <button
-                                    onClick={() => handleViewBlog(post.slug)}
-                                    className="read-more-btn"
-                                >
-                                    Read More &rarr;
-                                </button>
-                            </article>
-                        ))}
-                    </div>
-                ) : (
-                    <p>No blog posts available at the moment.</p>
-                )}
-            </section>
+            {/* REMOVED original simplified blog section, replaced by Featured Blogs above */}
+            {/* <section className="blog-section"> ... </section> */}
+
         </div>
     );
 };
