@@ -5861,9 +5861,7 @@ hr {
     
     /* Ensure the wrapper respects small screens */
     .blog-page-wrapper {
-        padding: 1.5rem 0.2rem;
-        margin-left:2px;
-        margin-right:2px
+        padding: 1.5rem 0rem;
     }
 
    
@@ -6201,6 +6199,7 @@ hr {
     gap: 2rem;
     margin-bottom: 2rem;
 }
+
 
 
 
