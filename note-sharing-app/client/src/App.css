@@ -5862,6 +5862,8 @@ hr {
     /* Ensure the wrapper respects small screens */
     .blog-page-wrapper {
         padding: 1.5rem 0.2rem;
+        margin-left:2px;
+        margin-right:2px
     }
 
    
@@ -5902,7 +5904,7 @@ hr {
 
     /* --- Single Blog View --- */
     .full-blog-container {
-        margin: 1rem 0.5rem; /* Tighten margins even more */
+        margin: 1rem 0.1rem; /* Tighten margins even more */
         padding: 1.5rem; /* Tighten padding */
     }
 
@@ -6199,6 +6201,7 @@ hr {
     gap: 2rem;
     margin-bottom: 2rem;
 }
+
 
 
 
