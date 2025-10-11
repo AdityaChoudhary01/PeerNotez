@@ -3,7 +3,7 @@ const router = express.Router();
 const Blog = require('../models/Blog'); 
 const Note = require('../models/Note'); 
 
-const BASE_URL = 'https://peernotez.onrender.com'; // Use your Render URL
+const BASE_URL = 'https://peernotez.netlify.app'; // CRITICAL FIX: Set to your public domain
 
 // Function to safely extract or provide a date string
 const getSafeLastMod = (doc) => {
