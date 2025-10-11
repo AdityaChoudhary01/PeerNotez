@@ -1,23 +1,24 @@
 const { google } = require('googleapis');
 
-// CHANGE 1: Use a variable to hold the JSON content string
+// Use a variable to hold the JSON content string from Render environment
 const KEY_CONTENT = process.env.GOOGLE_SERVICE_ACCOUNT_KEY_CONTENT; 
-// You can remove the KEY_FILE_PATH variable if you use this method exclusively.
 
-// Base URL for your site, must be correct for canonical URLs
+// Base URL for your Netlify site (public domain)
 const BASE_URL = 'https://peernotez.netlify.app';
 
 // Function to get the JWT client authenticated for the Indexing API scope
 const getAuthClient = async () => {
     // Check if the content is available
     if (!KEY_CONTENT) {
+        // Warning will be logged, but we avoid crashing by letting the function exit gracefully
         console.error("Authentication failed: GOOGLE_SERVICE_ACCOUNT_KEY_CONTENT not found.");
         throw new Error("Missing Google Service Account key content.");
     }
     
-    // CHANGE 2: Use the 'credentials' property and parse the JSON string
+    // Auth client uses the raw JSON object from the environment variable
     const auth = new google.auth.GoogleAuth({
-        credentials: JSON.parse(KEY_CONTENT), // This parses the string back into a JS object
+        // Uses the key content string parsed into a JavaScript object
+        credentials: JSON.parse(KEY_CONTENT), 
         scopes: ['https://www.googleapis.com/auth/indexing'],
     });
     return auth.getClient();
@@ -43,17 +44,22 @@ const sendIndexingRequest = async (slugOrId, type, contentType) => {
         const authClient = await getAuthClient();
         const client = google.indexing({ version: 'v3', auth: authClient });
         
-        const request = {
+        const requestBody = { 
             url: url,
-            type: type, 
+            type: type, // 'URL_UPDATED' or 'URL_DELETED'
         };
 
-        const response = await client.urlNotifications.publish({ request });
+        // CRITICAL FIX: The Indexing API expects the body via the 'resource' parameter, 
+        // not wrapped in 'request'. This fixes the 400 Invalid JSON Payload error.
+        const response = await client.urlNotifications.publish({ 
+            resource: requestBody 
+        });
         
         console.log(`Indexing API successful: ${type} for ${url}. Status: ${response.status}`);
         return response.data;
 
     } catch (error) {
+        // Log the error detail for debugging Render/Service Account setup issues.
         console.error(`Indexing API FAILED for ${url} (${type}):`, error.response ? error.response.data : error.message);
     }
 };
