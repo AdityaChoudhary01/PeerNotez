@@ -8,7 +8,7 @@ const { protect } = require('../middleware/authMiddleware');
 const { admin } = require('../middleware/adminMiddleware');
 const path = require('path');
 const { Readable } = require('stream');
-const indexingService = require('../services/indexingService');
+const indexingService = require('../utils/indexingService');
 
 // -------------------------------------------------------------------------
 // Multer setup to store files in memory temporarily
