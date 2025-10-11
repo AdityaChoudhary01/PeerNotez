@@ -3,3 +3,20 @@
   to = "https://peernotez.onrender.com/sitemap-dynamic.xml"
   status = 200
   force = true # Critical: Ensures the redirect happens even if a file exists
+# =======================================================
+# 2. STATIC SITEMAP/ROBOTS (Optional, but kept for legacy)
+# =======================================================
+# If you have a static sitemap.xml file, you can keep it simple:
+[[redirects]]
+  from = "/sitemap.xml"
+  to = "/sitemap.xml"
+  status = 200
+
+# =======================================================
+# 3. SINGLE PAGE APPLICATION (SPA) FALLBACK (MUST BE LAST)
+# =======================================================
+# This catches all other routes and directs them to React's index.html
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
