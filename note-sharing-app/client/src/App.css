@@ -5625,6 +5625,169 @@ hr {
     max-width: 100%;
 }
 
+
+
+
+/*
+|--------------------------------------------------------------------------
+| FULL ARTICLE VIEW (SINGLE POST) - HIGHLY RESPONSIVE
+|--------------------------------------------------------------------------
+*/
+
+.full-blog-container {
+    /* Fluid padding for small screens, constrained width for reading flow */
+    padding: 1.5rem 1rem; 
+    max-width: 900px; 
+    margin: 2rem auto;
+    background: var(--card-background);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+.back-button {
+    /* Ensures button is visible and clickable on all screens */
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    transition: transform 0.2s ease;
+}
+
+.article-title {
+    /* Fluid font size for title impact */
+    font-size: clamp(2rem, 8vw, 3.5rem); 
+    font-weight: 800;
+    line-height: 1.15;
+    margin-bottom: 1rem;
+    color: var(--heading-color);
+}
+
+/* --- ARTICLE METADATA --- */
+.article-meta {
+    /* Mobile-first: Stack all items vertically for narrow screens */
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; 
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding: 10px 0;
+    border-top: 1px dashed var(--border-color);
+    border-bottom: 1px dashed var(--border-color);
+    color: var(--subtle-text-color);
+}
+
+.blog-author-details {
+    /* Ensures author details stay on one line */
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+.blog-meta-rating {
+    /* Takes its own line when stacked */
+    margin-left: 0;
+    margin-right: 0;
+}
+.article-date {
+    /* Takes its own line when stacked */
+    margin-top: 0.5rem;
+}
+
+.article-separator {
+    border: none;
+    height: 1px;
+    background: var(--border-color-light);
+    margin: 2rem 0;
+}
+
+/* --- ARTICLE CONTENT (READABILITY) --- */
+.markdown-content {
+    /* Fluid base font size for comfortable reading */
+    font-size: clamp(1rem, 2vw, 1.15rem); 
+    line-height: 1.8;
+    color: var(--text-color);
+    word-break: break-word; /* Prevents overflow with very long words */
+}
+
+/* Lead Paragraph Enhancement */
+.markdown-content p:first-of-type {
+    font-size: clamp(1.1rem, 3vw, 1.4rem); /* Larger and fluid lead-in text */
+    font-weight: 300; 
+    line-height: 1.6;
+    margin-top: 1.5rem;
+    margin-bottom: 1.75rem;
+    border-bottom: 1px solid var(--border-color-light);
+    padding-bottom: 1rem;
+}
+
+/* Headings */
+.markdown-content h1, 
+.markdown-content h2, 
+.markdown-content h3 {
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+}
+
+/* Code Blocks */
+.markdown-content pre {
+    padding: 1rem;
+    margin: 1.5rem 0;
+    /* Essential for mobile: Allows internal scrolling or wrapping */
+    overflow-x: auto;
+    white-space: pre-wrap; 
+    word-break: break-word;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| MEDIA QUERIES (STABILITY)
+|--------------------------------------------------------------------------
+*/
+
+/* --- Tablet and Medium Screens (min-width: 600px) --- */
+@media (min-width: 600px) {
+    .full-blog-container {
+        padding: 2.5rem 2rem;
+    }
+    
+    .article-title {
+        font-size: clamp(3rem, 5vw, 3.5rem);
+    }
+
+    .article-meta {
+        /* Switch back to horizontal layout on tablets/desktop */
+        flex-direction: row; 
+        justify-content: space-between;
+        align-items: center;
+        gap: 1.5rem;
+    }
+    .blog-meta-rating {
+        /* Allow rating to take space, using margin-left: auto for centering help */
+        margin-left: 0;
+        margin-right: auto; 
+    }
+    .article-date {
+        /* Date aligned right on desktop/tablet */
+        margin-top: 0;
+    }
+}
+
+/* --- Desktop and Large Screens (min-width: 900px) --- */
+@media (min-width: 900px) {
+    .full-blog-container {
+        padding: 3.5rem 3rem;
+    }
+    .blog-meta-rating {
+        /* Space rating out from the date and author */
+        margin-left: 2rem;
+        margin-right: 2rem;
+    }
+}
+
 /* ==================================== */
 /* RESPONSIVENESS START        */
 /* ==================================== */
@@ -6030,4 +6193,5 @@ hr {
     gap: 2rem;
     margin-bottom: 2rem;
 }
+
 
