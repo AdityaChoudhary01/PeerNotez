@@ -1300,8 +1300,28 @@ input[type="number"] {
     margin-bottom: 1rem;
 }
 
-/* --- ENHANCED PROFILE PAGE HEADER (Admin Dashboard, Profile Edit) --- */
+/*
+|--------------------------------------------------------------------------
+| GLOBAL PAGE WRAPPER
+|--------------------------------------------------------------------------
+*/
+
+.content-page {
+    /* Base container for pages like Profile or MyBlogs */
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem; 
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| PROFILE HEADER (Avatar & Info Block)
+|--------------------------------------------------------------------------
+*/
+
 .profile-header {
+    /* Default: Stacked (Mobile-First) */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1310,34 +1330,35 @@ input[type="number"] {
     background-color: var(--card-background);
     padding: 2rem;
     border-radius: 12px;
-    animation: fadeUp 0.5s ease-in-out;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     max-width: 900px;
     width: 100%;
     margin: 2rem auto;
 }
 
-@media screen and (min-width: 768px) {
-    .profile-header {
-        flex-direction: row;
-        text-align: left;
-        gap: 2rem;
-    }
+.profile-info {
+    /* Ensures info block grows but respects text alignment */
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
 }
 
-@media screen and (max-width: 600px) {
-    .profile-header {
-        padding: 1.5rem;
-        gap: 1rem;
-        margin: 1.5rem auto;
-    }
-    .profile-info h1 {
-        font-size: 1.8rem;
-    }
-    .profile-info p {
-        font-size: 1rem;
-    }
+.profile-info h1 {
+    margin: 0;
+    font-size: 2.2rem;
+    padding-bottom: 0;
+    margin-bottom: 0;
 }
 
+.profile-info p {
+    margin: 0.5rem 0 0 0;
+    color: var(--subtle-text-color);
+    font-size: 1.1rem;
+}
+
+/* --- Avatar & Upload Styling --- */
 .avatar-container {
     position: relative;
     cursor: pointer;
@@ -1353,165 +1374,39 @@ input[type="number"] {
     height: 100%;
     border-radius: 50%;
     object-fit: cover;
-    display: block;
     border: 3px solid var(--primary-color);
     transition: filter 0.3s ease;
 }
 
 .avatar-upload-label {
+    /* Upload overlay for hover effect */
     position: absolute;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: rgba(0, 0, 0, 0.6);
-    color: white;
-    font-size: 1rem;
-    font-weight: bold;
-    cursor: pointer;
-    border-radius: 50%;
+    /* ... (rest of the overlay styling) ... */
     opacity: 0;
     transition: opacity 0.3s ease;
 }
 
-.avatar-container:hover .avatar-upload-label {
-    opacity: 1;
-}
+.avatar-container:hover .avatar-upload-label { opacity: 1; }
+.avatar-container:hover .profile-avatar { filter: brightness(0.5); }
 
-.avatar-container:hover .profile-avatar {
-    filter: brightness(0.5);
-}
 
-.profile-info h1 {
-    margin: 0;
-    border: none;
-    font-size: 2.2rem;
-    padding-bottom: 0;
-    margin-bottom: 0;
-}
+/*
+|--------------------------------------------------------------------------
+| NAME DISPLAY AND EDITING (Consolidated and Cleaned)
+|--------------------------------------------------------------------------
+*/
 
-.profile-info p {
-    margin: 0.5rem 0 0 0;
-    color: var(--subtle-text-color);
-    font-size: 1.1rem;
-}
-
-/* --- PROFILE TABS (Admin Dashboard) --- */
-.profile-tabs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    border-bottom: 1px solid var(--border-color);
-    margin-bottom: 2rem;
-    justify-content: flex-start;
-    padding-bottom: 5px;
-    width: 100%;
-    max-width: 800px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.profile-tabs button {
-    padding: 0.8rem 1.5rem;
-    border: none;
-    background-color: transparent;
-    color: var(--subtle-text-color);
-    cursor: pointer;
-    font-size: 1.1rem;
-    border-bottom: 3px solid transparent;
-    transition: all 0.2s ease;
-    flex-shrink: 0;
-    white-space: nowrap;
-}
-
-.profile-tabs button.active {
-    color: var(--heading-color);
-    border-bottom-color: var(--primary-color);
-}
-
-@media (max-width: 600px) {
-    .profile-tabs {
-        gap: 0.25rem;
-        margin-bottom: 1.5rem;
-        justify-content: center;
-    }
-    .profile-tabs button {
-        font-size: 1rem;
-        padding: 0.6rem 1rem;
-    }
-}
-
-/* --- SAVE BUTTON (General) --- */
-.save-btn {
-    background-color: #3e5670;
-    color: white;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-}
-
-.save-btn:hover {
-    background-color: #4f6d8a;
-}
-
-.save-btn.saved {
-    background-color: var(--success-color);
-}
-
-.save-btn.saved:hover {
-    background-color: #16a085;
-}
-
-/* --- NAVBAR AVATAR --- */
-.navbar-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid var(--primary-color);
-    cursor: pointer;
-    transition: transform 0.2s ease;
-    flex-shrink: 0;
-}
-
-.navbar-avatar:hover {
-    transform: scale(1.1);
-}
-
-/* --- PROFILE NAME EDITING --- */
 .name-display,
 .name-edit-form {
+    /* Aligns name and edit button/form fields */
     display: flex;
     align-items: center;
     gap: 1rem;
     flex-wrap: wrap;
-    justify-content: flex-start;
-}
-
-@media (max-width: 600px) {
-    .name-display,
-    .name-edit-form {
-        justify-content: center;
-        text-align: center;
-    }
-}
-
-.edit-name-btn {
-    background: none;
-    border: 1px solid #3e5670;
-    color: var(--subtle-text-color);
-    padding: 0.3rem 0.8rem;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    flex-shrink: 0;
-}
-
-.edit-name-btn:hover {
-    background-color: #3e5670;
-    color: white;
+    justify-content: center; /* Center align on mobile */
+    width: 100%;
 }
 
 .name-edit-input {
@@ -1527,6 +1422,22 @@ input[type="number"] {
     min-width: 150px;
     max-width: 100%;
     box-sizing: border-box;
+}
+
+/* --- Action Buttons (Edit/Save/Cancel) --- */
+.edit-name-btn {
+    background: none;
+    border: 1px solid var(--border-color); /* Use general border color variable */
+    color: var(--subtle-text-color);
+    padding: 0.3rem 0.8rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+.edit-name-btn:hover {
+    background-color: var(--border-color);
+    color: var(--heading-color);
 }
 
 .name-edit-form .save-btn,
@@ -1545,54 +1456,149 @@ input[type="number"] {
 }
 
 .name-edit-form .cancel-btn {
-    background-color: #2c3e50;
+    background-color: #2c3e50; /* Specific dark color for cancel */
     color: white;
 }
 
-@media (max-width: 768px) {
-    .name-edit-input {
-        font-size: 1.3rem;
-        padding: 0.5rem 0.8rem;
-    }
 
-    .edit-name-btn,
-    .name-edit-form .save-btn,
-    .name-edit-form .cancel-btn {
-        padding: 0.4rem 0.7rem;
-        font-size: 0.9rem;
+/*
+|--------------------------------------------------------------------------
+| PROFILE TABS & NAVBAR AVATAR
+|--------------------------------------------------------------------------
+*/
+
+.profile-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 2rem;
+    justify-content: center;
+    padding-bottom: 5px;
+    width: 100%;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.profile-tabs button,
+.profile-tabs a {
+    padding: 0.8rem 1.5rem;
+    border: none;
+    background-color: transparent;
+    color: var(--subtle-text-color);
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    white-space: nowrap;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+}
+
+.profile-tabs a:hover,
+.profile-tabs button:hover {
+    color: var(--heading-color);
+}
+
+.profile-tabs button.active,
+.profile-tabs a.active {
+    color: var(--heading-color);
+    border-bottom-color: var(--primary-color);
+}
+
+.navbar-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--primary-color);
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| RESPONSIVE MEDIA QUERIES
+|--------------------------------------------------------------------------
+*/
+
+/* --- Tablet and Medium Screens (768px +) --- */
+@media screen and (min-width: 768px) {
+    .profile-header {
+        /* Switch to horizontal layout */
+        flex-direction: row;
+        text-align: left;
+        gap: 2rem;
+    }
+    
+    .profile-info {
+        /* Align user info left */
+        align-items: flex-start;
     }
 
     .name-display,
     .name-edit-form {
-        gap: 0.8rem;
+        /* Align name editing elements left on wide screens */
+        justify-content: flex-start;
+    }
+
+    .name-edit-input {
+        font-size: 1.5rem;
+        padding: 0.6rem 1rem;
     }
 }
 
+/* --- Small Phones (Max-width 480px) --- */
 @media (max-width: 480px) {
-    .name-edit-input {
-        font-size: 1rem;
-        padding: 0.4rem 0.6rem;
-        width: 100%;
-        margin-bottom: 0.5rem;
-        min-width: unset;
+    .profile-header {
+        padding: 1.5rem;
+        gap: 1rem;
+        margin: 1.5rem auto;
     }
 
-    .edit-name-btn {
-        width: 100%;
-        text-align: center;
+    .profile-info h1 {
+        font-size: 1.8rem;
+    }
+
+    .profile-tabs {
+        gap: 0.25rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .profile-tabs button,
+    .profile-tabs a {
+        font-size: 0.9rem;
         padding: 0.6rem 0.8rem;
     }
-
+    
+    /* Full width name editing/saving on small phones */
     .name-edit-form {
         flex-direction: column;
         align-items: stretch;
         gap: 0.5rem;
     }
 
+    .name-edit-input {
+        width: 100%;
+        font-size: 1.2rem;
+        padding: 0.5rem 0.8rem;
+        margin-bottom: 0.5rem;
+        min-width: unset;
+    }
+
     .name-edit-form .save-btn,
     .name-edit-form .cancel-btn {
         width: 100%;
         padding: 0.6rem 1rem;
+    }
+
+    .edit-name-btn {
+        width: 100%;
+        text-align: center;
+        padding: 0.6rem 0.8rem;
     }
 }
 
@@ -6193,5 +6199,6 @@ hr {
     gap: 2rem;
     margin-bottom: 2rem;
 }
+
 
 
