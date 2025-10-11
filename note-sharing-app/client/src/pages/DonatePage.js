@@ -3,9 +3,6 @@ import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 
 const DonatePage = () => {
-    // ❌ UPI details REMOVED from constants
-    // const upiQRCodeUrl = '...'; 
-
     const bmacProfileUrl = "https://cdn.buymeacoffee.com/uploads/profile_pictures/2025/07/ZzlkIXLPpwCOJfAo.jpg@300w_0e.webp";
     const bmacLink = "https://coff.ee/adityachoudhary";
     const hasSupporters = true;
@@ -109,3 +106,4 @@ const DonatePage = () => {
 };
 
 export default DonatePage;    
+
