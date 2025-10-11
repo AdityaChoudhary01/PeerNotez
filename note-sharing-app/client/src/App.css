@@ -5165,152 +5165,6 @@ hr {
 
 
 
-/*
-|--------------------------------------------------------------------------
-| ULTRA-MODERN FULL ARTICLE CONTAINER AND HEADER
-|--------------------------------------------------------------------------
-*/
-
-/* General Container for the Full Blog Post */
-.full-blog-container {
-    padding: 60px 5% 100px; /* Increased padding */
-    max-width: 1200px; /* Wider content area */
-    margin: 0 auto;
-}
-
-.back-button {
-    /* Subtle button for navigation */
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: none;
-    border: none;
-    color: var(--subtle-text-color);
-    font-size: 1em; /* Reduced size to be subtle */
-    font-weight: 500;
-    margin-bottom: 40px; /* Increased separation */
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border-bottom: 1px solid transparent; /* Prepare for hover effect */
-}
-
-.back-button:hover {
-    color: var(--primary-color);
-    border-bottom-color: var(--primary-color); /* Underline effect on hover */
-}
-
-.article-title {
-    /* Title Enhancement: Bigger and bolder for impact */
-    font-size: 3.5rem; /* Significant size increase */
-    font-weight: 800; /* Extra bold */
-    color: var(--heading-color);
-    line-height: 1.15;
-    margin-bottom: 1rem;
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.1); /* Subtle text glow */
-}
-
-.article-separator {
-    /* Enhancing the Horizontal Line */
-    border: none;
-    height: 1px; /* Thinner line for a sleek look */
-    /* Use transparent gradient for fading effect */
-    background: linear-gradient(90deg, var(--primary-color) 0%, rgba(255, 255, 255, 0) 100%);
-    margin: 15px 0 35px 0;
-    width: 60%; /* Shorter width for focus */
-    opacity: 0.7;
-}
-
-/* ARTICLE METADATA AND AUTHOR DETAILS */
-.article-meta {
-    display: flex;
-    flex-direction: row; /* **NEW: Inline meta data for modern look** */
-    align-items: center;
-    gap: 30px; /* Space between date and author block */
-    margin-bottom: 30px;
-    padding: 10px 0;
-    border-top: 1px dashed var(--border-color); /* Subtle separators */
-    border-bottom: 1px dashed var(--border-color);
-}
-
-.blog-author-details {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    transition: all 0.3s ease-out;
-}
-
-.blog-author-avatar {
-    width: 44px; /* Larger avatar */
-    height: 44px;
-    border-radius: 50%; 
-    object-fit: cover;
-    /* Clean, high-contrast border */
-    border: 3px solid var(--heading-color); 
-    box-shadow: 0 0 10px var(--primary-color); /* Stronger glow */
-}
-
-.blog-author-name {
-    font-size: 1.1em; 
-    font-weight: 700; 
-    color: var(--primary-color); /* Highlight name with primary color */
-}
-
-.article-date {
-    font-size: 1em;
-    font-weight: 500;
-    color: var(--subtle-text-color); 
-    padding-left: 0; /* No manual padding needed due to inline meta */
-}
-
-/* SUMMARY / INTRODUCTORY TEXT ENHANCEMENT */
-.article-body p:first-of-type {
-    font-size: 1.4rem; /* **Significantly larger lead text** */
-    font-weight: 300; /* Lighter weight for sleekness */
-    color: var(--text-color);
-    line-height: 1.6;
-    margin-top: 30px;
-    /* Remove vertical line, use italic/large font for lead-in */
-    padding-left: 0;
-    border-left: none; 
-    opacity: 1;
-}
-
-/* Standard paragraph styles (Content Readability) */
-.article-body p {
-    font-size: 1.05rem; /* Slightly reduced standard size */
-    line-height: 1.8; /* Increased line-height for better long-form reading */
-    color: var(--text-color);
-    margin-bottom: 1.8rem;
-}
-
-
-
-/*
-|--------------------------------------------------------------------------
-| CSS for READABILITY AND PARAGRAPH GAPS
-|--------------------------------------------------------------------------
-*/
-
-/* Style for the introductory paragraph (the summary) */
-.article-body p:first-of-type {
-    font-size: 1.25rem; 
-    line-height: 1.7;
-    margin-top: 40px;
-    padding-bottom: 15px; 
-    border-bottom: 1px solid var(--border-color); /* Separates lead from body */
-}
-
-/* Style for subsequent paragraphs processed by the function */
-.article-body .article-paragraph { 
-    font-size: 1.1rem;
-    line-height: 1.8; /* Excellent line height for long reads */
-    color: var(--text-color);
-    margin-bottom: 2.5rem; /* 🚨 This creates the large, modern gap between paragraphs */
-    font-weight: 300; 
-}
-
-
-
 
 /*
 |--------------------------------------------------------------------------
@@ -5392,10 +5246,19 @@ hr {
     box-shadow: 0 0 8px rgba(83, 114, 240, 0.3); 
 }
 
-/* Read More Button (Button looks solid, themed, and action-oriented) */
+/*
+|--------------------------------------------------------------------------
+| READ MORE BUTTON FIX FOR VISIBILITY
+|--------------------------------------------------------------------------
+*/
+
 .read-more-btn {
     background: var(--gradient-primary); /* Use the vibrant gradient */
-    color: var(--heading-color); 
+    
+    /* *** CRITICAL FIX: Force a dark color for high contrast *** */
+    /* If your gradient is light, this dark gray text will be visible. */
+    color: #1a1a1a !important; 
+    
     border: none; 
     padding: 12px 15px;
     letter-spacing: 1px;
@@ -5404,6 +5267,10 @@ hr {
     margin-bottom: 0;
     border-radius: 8px; /* Consistent rounding */
     transition: all 0.3s ease;
+    
+    /* Ensure it's not hidden by any other property */
+    opacity: 1 !important;
+    visibility: visible !important;
 }
 
 .read-more-btn:hover {
@@ -5412,8 +5279,6 @@ hr {
     box-shadow: 0 6px 15px rgba(83, 114, 240, 0.6);
     cursor: pointer;
 }
-
-
 
 
 /*
@@ -5479,12 +5344,689 @@ hr {
 
 
 
+/* ... (existing styles) ... */
+
+/*
+|--------------------------------------------------------------------------
+| NEW BLOG PAGE STYLES (ENHANCED & FORMS FIXED)
+|--------------------------------------------------------------------------
+*/
+/* --- Global Layout --- */
+.blog-page-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem;
+    line-height: 1.6;
+}
+
+/* --- Header Section --- */
+.blog-header {
+    text-align: center;
+    margin-bottom: 4rem;
+}
+
+.blog-header .header-title {
+    /* clamp(min, preferred, max) is already responsive, good! */
+    font-size: clamp(3rem, 5vw, 4.5rem);
+    color: var(--warning-color);
+    border: none;
+    padding-bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.25rem;
+    font-weight: 800;
+}
+
+.blog-header .header-subtitle {
+    font-size: clamp(1.1rem, 2vw, 1.4rem);
+    color: var(--subtle-text-color);
+    margin-top: 0.5rem;
+}
+
+.blog-post-btn {
+    margin-top: 1.75rem;
+    padding: 0.8rem 2.2rem;
+    font-size: 1.05rem;
+    background: var(--warning-color);
+    color: var(--background-color-dark);
+    font-weight: 700;
+    border: none;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.blog-post-btn:hover {
+    background: #ffc400;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(255, 196, 0, 0.5);
+}
+
+/* --- Blog Controls (Search/Sort) --- */
+.blog-controls-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-bottom: 3.5rem;
+    padding: 1.5rem 2rem;
+    background: var(--card-background);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.blog-search-form {
+    display: flex;
+    flex-grow: 1;
+    max-width: 550px;
+}
+
+.blog-search-input {
+    flex-grow: 1;
+    padding: 0.9rem 1.2rem;
+    border-radius: 8px 0 0 8px;
+    border: 1px solid var(--border-color);
+    background-color: var(--input-background);
+    color: var(--heading-color);
+    font-size: 1rem;
+}
+
+.blog-search-button {
+    padding: 0.9rem 1.2rem;
+    border: none;
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 0 8px 8px 0;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.blog-search-button:hover {
+    background-color: #5B52D9;
+    transform: scale(1.05);
+}
+
+.sort-container label {
+    margin-right: 0.5rem;
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+.sort-container select {
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background-color: var(--input-background);
+    color: var(--heading-color);
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1em;
+}
+
+/* --- Blog List Grid and Card --- */
+.blog-posts-grid {
+    display: grid;
+    /* auto-fill with a minmax(300px, 1fr) is already responsive, good! */
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.blog-card-list {
+    background: var(--card-background);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 1.5rem;
+    transition: box-shadow 0.3s ease;
+}
+.blog-card-list:hover {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+}
+
+.blog-card-list h3 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--heading-color);
+    line-height: 1.4;
+}
+.blog-card-list h3::after {
+    display: none;
+}
+
+.blog-summary {
+    font-size: 1rem;
+    color: var(--subtle-text-color);
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+    flex-grow: 1;
+}
+
+.blog-meta-list {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid var(--border-color-light);
+    padding-top: 1rem;
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.blog-author-name {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.blog-author-name strong {
+    color: var(--text-color);
+}
+
+.blog-meta-list .meta-icon {
+    color: var(--primary-color);
+}
+
+.blog-rating-views {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+}
+.blog-rating-display {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--subtle-text-color);
+}
+
+/* --- Single Blog View --- */
+.full-blog-container {
+    max-width: 900px;
+    margin: 3rem auto;
+    padding: 3.5rem 3rem;
+    background: var(--card-background);
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.35);
+}
+
+.back-button {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    transition: transform 0.2s ease;
+}
+.back-button:hover {
+    transform: translateX(-5px);
+}
+
+.article-title {
+    font-size: clamp(2.5rem, 4vw, 3.5rem);
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    line-height: 1.2;
+    color: var(--heading-color);
+}
+
+.article-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 2rem;
+    color: var(--subtle-text-color);
+    font-size: 0.95rem;
+}
+
+.blog-author-details {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.blog-author-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--primary-color);
+}
+
+.blog-meta-rating {
+    margin-left: auto;
+    margin-right: 2rem;
+}
+.blog-meta-rating span {
+    margin-left: 0.25rem;
+}
+.article-date {
+    white-space: nowrap;
+}
+
+.article-separator {
+    border: 0;
+    height: 1px;
+    background: var(--border-color-light);
+    margin: 2.5rem 0;
+}
+
+.blog-reviews-section {
+    max-width: 100%;
+}
+
+/* ==================================== */
+/* RESPONSIVENESS START        */
+/* ==================================== */
+
+/* Media Query for Tablets and smaller (max-width: 768px) */
+@media (max-width: 768px) {
+    /* Adjust global padding for smaller screens */
+    .blog-page-wrapper {
+        padding: 2rem 1rem; /* Reduce top/bottom padding and side padding */
+    }
+
+    /* --- Blog Controls (Search/Sort) --- */
+    .blog-controls-section {
+        flex-direction: column; /* Stack search and sort vertically */
+        align-items: stretch; /* Stretch items to full width */
+        padding: 1.5rem; /* Slightly reduce padding */
+    }
+
+    .blog-search-form {
+        max-width: 100%; /* Allow search bar to take full width */
+    }
+
+    .sort-container {
+        width: 100%; /* Ensure sort control takes full width */
+        display: flex; /* Use flex to align label and select */
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .sort-container select {
+        flex-grow: 1; /* Allow select to fill available space */
+        max-width: 60%; /* Limit select width slightly */
+    }
+
+    /* --- Single Blog View --- */
+    .full-blog-container {
+        margin: 2rem 1rem; /* Adjust margin for viewport boundaries */
+        padding: 2rem 1.5rem; /* Reduce inner padding */
+        border-radius: 10px; /* Make border radius slightly smaller */
+    }
+
+    .article-meta {
+        flex-direction: column; /* Stack meta items vertically */
+        align-items: flex-start; /* Align meta items to the left */
+        gap: 1rem; /* Add spacing between stacked items */
+    }
+
+    .blog-meta-rating {
+        margin-left: 0; /* Reset margin */
+        margin-right: 0; /* Reset margin */
+    }
+
+    .article-date {
+        align-self: flex-end; /* Push date to the right for balance */
+    }
+}
+
+/* Media Query for Mobile Phones (max-width: 480px) */
+@media (max-width: 480px) {
+    /* --- Header Section --- */
+    /* Header title's clamp is already good, but remove gap if it causes layout issues */
+    .blog-header .header-title {
+        gap: 0.75rem; /* Slightly reduce gap */
+    }
+    
+    /* Ensure the wrapper respects small screens */
+    .blog-page-wrapper {
+        padding: 1.5rem 0.75rem;
+    }
+
+   
+
+    .sort-container {
+        flex-direction: column; /* Stack label and select vertically */
+        align-items: flex-start;
+    }
+    
+    .sort-container label {
+        margin-bottom: 0.5rem;
+    }
+
+    .sort-container select {
+        max-width: 100%; /* Allow select to take full width */
+        padding: 0.75rem; /* Slight padding adjustment */
+    }
+
+    /* --- Blog List Grid and Card --- */
+    /* grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); is good for grid, but reduce gap */
+    .blog-posts-grid {
+        gap: 1.5rem;
+    }
+    
+    .blog-card-list {
+        padding: 1rem; /* Reduce card padding */
+    }
+
+    .blog-meta-list {
+        flex-direction: column; /* Stack meta items vertically for very small screens */
+        align-items: flex-start;
+    }
+    
+    .blog-rating-views {
+        align-items: flex-start; /* Align rating/views to the left */
+        margin-top: 1rem;
+    }
+
+    /* --- Single Blog View --- */
+    .full-blog-container {
+        margin: 1rem 0.5rem; /* Tighten margins even more */
+        padding: 1.5rem; /* Tighten padding */
+    }
+
+    .article-meta {
+        gap: 0.75rem; /* Tighten gap between stacked meta items */
+    }
+
+    .article-date {
+        align-self: flex-start; /* Align date to the left for better flow in a stack */
+    }
+}
+/* --- Markdown Specific Styling (Readability Focused) --- */
+.markdown-content {
+    font-size: 1.15rem;
+    line-height: 1.8;
+    color: var(--text-color);
+}
+
+.markdown-content h1, 
+.markdown-content h2, 
+.markdown-content h3 {
+    color: var(--heading-color);
+    margin-top: 2.5rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color-light);
+    padding-bottom: 0.75rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.markdown-content p {
+    margin-bottom: 1.75rem;
+}
+
+.markdown-content a {
+    color: var(--primary-color);
+    text-decoration: none;
+    border-bottom: 2px solid rgba(var(--primary-color-rgb), 0.3);
+    transition: color 0.2s, border-color 0.2s;
+}
+.markdown-content a:hover {
+    color: var(--primary-color-dark);
+    border-bottom: 2px solid var(--primary-color);
+}
+
+.markdown-content ul, .markdown-content ol {
+    padding-left: 2rem;
+    margin-bottom: 1.75rem;
+}
+.markdown-content li {
+    margin-bottom: 0.5rem;
+}
+
+.markdown-content pre {
+    background-color: var(--code-background, #1e1e1e);
+    padding: 1.25rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 2rem 0;
+    border: 1px solid var(--border-color);
+}
+
+.markdown-content code {
+    font-family: 'Fira Code', 'Consolas', monospace;
+    font-size: 0.95rem;
+    color: var(--code-text-color, #dcdcaa);
+}
+
+.markdown-content blockquote {
+    border-left: 6px solid var(--warning-color);
+    padding: 1rem 1.5rem;
+    margin: 2rem 0;
+    font-style: italic;
+    background: var(--input-background);
+    border-radius: 4px;
+    color: var(--text-color);
+    font-size: 1.05rem;
+}
+
+.markdown-content blockquote code {
+    color: var(--primary-color);
+}
+
+/*
+|--------------------------------------------------------------------------
+| NEW POST & FORM STYLES (FIXED)
+|--------------------------------------------------------------------------
+*/
+
+/* --- General Form Styling for Text Inputs and Textareas --- */
+.blog-post-form .form-group {
+    margin-bottom: 1.5rem;
+}
+
+.blog-post-form label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--heading-color);
+}
+
+/* TARGETS ALL TEXT INPUTS AND TEXTAREAS IN THE FORM */
+.blog-post-form input[type="text"],
+.blog-post-form textarea {
+    /* Base Input Styles */
+    width: 100%;
+    padding: 0.9rem 1.2rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background-color: var(--input-background);
+    color: var(--heading-color);
+    font-size: 1rem;
+    box-sizing: border-box; /* Essential: padding doesn't increase element width */
+    transition: border-color 0.2s;
+}
+
+.blog-post-form textarea {
+    /* Textarea Specific Styles */
+    min-height: 150px; /* Base height for summary */
+    font-family: inherit;
+    resize: vertical;
+}
+
+/* Larger min-height for the main content field (if separate class exists) */
+.blog-post-form .content-textarea {
+     min-height: 350px;
+}
+
+.blog-post-form input[type="text"]:focus,
+.blog-post-form textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 1px var(--primary-color);
+}
+
+/* New Post Page */
+.blog-post-form {
+    max-width: 900px;
+    margin: 2rem auto;
+}
+
+.blog-submit-btn {
+    background: var(--warning-color);
+    color: #000;
+    font-weight: 700;
+    transition: all 0.3s ease;
+}
+.blog-submit-btn:hover {
+    background: #ffc400;
+}
+
+.blog-preview-container {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.markdown-preview-box {
+    background: var(--input-background);
+    min-height: 300px;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px dashed var(--border-color);
+}
+
+/* My Blogs Page */
+.my-blogs-page .profile-header {
+    margin-bottom: 2rem;
+}
+.my-blogs-page .blog-posts-grid {
+    gap: 1.5rem;
+}
+
+/* --- Loading State --- */
+.blog-page-wrapper.loading-state,
+.loading-message {
+    text-align: center;
+    padding: 5rem 0;
+    font-size: 1.5rem;
+    color: var(--primary-color);
+}
+.loading-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 900px) {
+    .full-blog-container {
+        margin: 1.5rem auto;
+        padding: 2.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .blog-controls-section {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 1.5rem;
+    }
+    .blog-search-form {
+        max-width: none;
+    }
+    .full-blog-container {
+        padding: 1.5rem;
+    }
+    .article-title {
+        font-size: clamp(2rem, 8vw, 2.5rem);
+    }
+    .article-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    .blog-meta-rating {
+        margin-left: 0;
+        margin-right: 0;
+    }
+}
 
 
 
 
 
 
+/*
+|--------------------------------------------------------------------------
+| MODAL STYLES (REQUIRED FOR EDIT FORM SCROLLING)
+|--------------------------------------------------------------------------
+*/
+
+/* 1. Modal Overlay (Locks the modal to the viewport) */
+.modal-overlay {
+    position: fixed; 
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.8); /* Dim background */
+    display: flex;
+    justify-content: center;
+    align-items: center; /* Center vertically */
+    z-index: 1000; 
+    
+    /* Crucial: Allows the entire modal container to scroll if its content is huge */
+    overflow-y: auto; 
+    padding: 20px; 
+    box-sizing: border-box; 
+}
+
+/* 2. Modal Content (The container holding the form) */
+.modal-content {
+    background: var(--card-background, #fff);
+    border-radius: 12px;
+    
+    /* Constraint: Limits the height to prevent overflow outside the viewport */
+    max-height: 95vh; 
+    
+    /* Crucial: Allows the content *inside* the modal to scroll */
+    overflow-y: auto; 
+    
+    z-index: 1001;
+    margin: auto; 
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+}
+
+/* 3. Form Content (PostBlogPage components) */
+/* If the content field is still too tall, you may need a max-height here: */
+.blog-post-form .content-textarea {
+    /* Use a relative height constraint to ensure it fits within the modal's max-height */
+    max-height: 50vh; 
+    overflow-y: auto; 
+}
 
 
 
+/* --- NEW FEATURED BLOG SECTION STYLES --- */
+.featured-blog-section {
+    padding: 3rem 0;
+    text-align: center; /* Center the title and button */
+}
+
+.featured-blog-section h2 {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    color: var(--heading-color);
+}
+
+/* Reusing the existing blog-posts-grid for layout */
+.blog-posts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
