@@ -149,7 +149,6 @@ const BlogPage = () => {
     }, [page, searchTerm, sortBy]);
     
     // Fetch single blog post by slug
-    // We intentionally keep fetchSingleBlog dependent only on slug to satisfy the linter when used in useCallback in useEffect.
     const fetchSingleBlog = useCallback(async () => {
         if (!slug) return;
         setLoadingSingle(true);
@@ -218,4 +217,81 @@ const BlogPage = () => {
                 </div>
             );
         }
-        return <FullBlogContent blog={singleBlog} onRefetch={handleRefetch}
+        return <FullBlogContent blog={singleBlog} onRefetch={handleRefetch} />;
+    }
+
+    // List View Render
+    return (
+        <div className="blog-page-wrapper">
+            <Helmet>
+                <title>PeerNotez Blog | Insights on Education and Tech</title>
+                <meta name="description" content="Explore articles on study hacks, developer insights, community stories, and open education written by the PeerNotez community." />
+                <meta name="keywords" content="PeerNotez, blog, education, study tips, student community, tech blog, free learning" />
+                <link rel="canonical" href="https://peernotez.netlify.app/blogs" />
+                
+                {/* Schema Markup for WebPage */}
+                <script type="application/ld+json">
+                    {JSON.stringify(webpageSchema)}
+                </script>
+            </Helmet>
+
+            <header className="page-header blog-header">
+                <h1 className="header-title"><FaFeatherAlt /> The PeerNotez Blog</h1>
+                <p className="header-subtitle">Deep dive into study hacks, developer insights, and community stories.</p>
+                <Link to="/blogs/post" className="main-cta-button blog-post-btn">Write a New Post</Link>
+            </header>
+
+            <section className="blog-controls-section">
+                <form onSubmit={handleSearchSubmit} className="blog-search-form">
+                    <input
+                        type="text"
+                        placeholder="Search articles by title or summary..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="blog-search-input"
+                    />
+                    <button type="submit" className="blog-search-button"><FaSearch /></button>
+                </form>
+
+                <div className="sort-container">
+                    <label htmlFor="blog-sort-select">Sort by:</label>
+                    <select 
+                        id="blog-sort-select" 
+                        value={sortBy} 
+                        onChange={(e) => {
+                            setSortBy(e.target.value);
+                            setPage(1);
+                            fetchBlogs();
+                        }}
+                    >
+                        <option value="createdAt">Most Recent</option>
+                        <option value="highestRated">Highest Rated</option>
+                        <option value="mostViewed">Most Viewed</option>
+                    </select>
+                </div>
+            </section>
+
+
+            <section className="blog-posts-list">
+                {loading ? (
+                    <div>Loading blog posts...</div>
+                ) : blogs.length > 0 ? (
+                    <>
+                        <div className="blog-posts-grid">
+                            {blogs.map(blog => <BlogCard key={blog._id} blog={blog} />)}
+                        </div>
+                        <Pagination 
+                            page={page} 
+                            totalPages={totalPages} 
+                            onPageChange={setPage} 
+                        />
+                    </>
+                ) : (
+                    <p style={{textAlign: 'center', marginTop: '2rem'}}>No blog posts found matching your criteria.</p>
+                )}
+            </section>
+        </div>
+    );
+};
+
+export default BlogPage;
