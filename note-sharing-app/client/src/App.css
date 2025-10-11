@@ -5361,7 +5361,7 @@ hr {
 .blog-page-wrapper {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 3rem 1.5rem;
+    padding: 3rem 0.2rem;
     line-height: 1.6;
 }
 
@@ -6199,6 +6199,7 @@ hr {
     gap: 2rem;
     margin-bottom: 2rem;
 }
+
 
 
 
