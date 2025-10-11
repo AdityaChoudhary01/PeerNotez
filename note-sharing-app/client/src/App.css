@@ -5504,7 +5504,7 @@ hr {
 .blog-summary {
     font-size: 1rem;
     color: var(--subtle-text-color);
-    margin-top: 0.5rem;
+    margin-top: 1rem;
     margin-bottom: 1rem;
     flex-grow: 1;
 }
@@ -6030,3 +6030,4 @@ hr {
     gap: 2rem;
     margin-bottom: 2rem;
 }
+
