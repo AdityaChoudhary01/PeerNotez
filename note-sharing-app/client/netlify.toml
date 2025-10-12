@@ -1,6 +1,9 @@
-[build]
-  command = "npm run build"
-  publish = "note-sharing-app/client/build"
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+
 
 [[redirects]]
   from = "/sitemap-dynamic.xml"
@@ -16,11 +19,3 @@
   to = "/sitemap.xml"
   status = 200
 
-# =======================================================
-# 3. SINGLE PAGE APPLICATION (SPA) FALLBACK (MUST BE LAST)
-# =======================================================
-# This catches all other routes and directs them to React's index.html
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
