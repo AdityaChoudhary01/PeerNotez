@@ -64,4 +64,4 @@
   from = "/*"
   to = "/index.html"
   status = 200
-  force = true
+  # removed force = true to avoid overriding existing files
