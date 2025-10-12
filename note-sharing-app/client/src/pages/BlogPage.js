@@ -8,14 +8,15 @@ import BlogCard from '../components/blog/BlogCard';
 import BlogReviews from '../components/blog/BlogReviews';
 import Pagination from '../components/common/Pagination';
 import StarRating from '../components/common/StarRating';
+import AuthorInfoBlock from '../components/common/AuthorInfoBlock'; // NEW IMPORT
 
 // --- FULL BLOG POST COMPONENT ---
 const FullBlogContent = ({ blog, onRefetch }) => {
     const formattedDate = new Date(blog.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     const authorName = blog.author?.name || 'PeerNotez Contributor';
-    const canonicalUrl = `https://peernotez.netlify.app/blogs/${blog.slug}`; // Assuming your deployment URL
+    const canonicalUrl = `https://peernotez.netlify.app/blogs/${blog.slug}`;
 
-    // Schema.org Article Markup for rich snippets
+    // Schema.org Article Markup (Retained for SEO)
     const articleSchema = {
         "@context": "https://schema.org",
         "@type": "BlogPosting",
@@ -25,7 +26,7 @@ const FullBlogContent = ({ blog, onRefetch }) => {
         },
         "headline": blog.title,
         "description": blog.summary,
-        "image": "https://peernotez.netlify.app/logo512.png", // High-quality image for social sharing
+        "image": "https://peernotez.netlify.app/logo512.png",
         "datePublished": blog.createdAt,
         "dateModified": blog.updatedAt || blog.createdAt,
         "author": {
@@ -42,7 +43,6 @@ const FullBlogContent = ({ blog, onRefetch }) => {
         }
     };
 
-
     return (
         <div className="full-blog-container">
             <Helmet>
@@ -50,18 +50,6 @@ const FullBlogContent = ({ blog, onRefetch }) => {
                 <meta name="description" content={blog.summary} />
                 <meta name="keywords" content={`PeerNotez, blog, ${blog.title}, ${blog.author?.name}, study tips, education, academic notes, student guide`} />
                 <link rel="canonical" href={canonicalUrl} />
-
-                {/* Open Graph / Social Media Meta Tags */}
-                <meta property="og:type" content="article" />
-                <meta property="og:title" content={blog.title} />
-                <meta property="og:description" content={blog.summary} />
-                <meta property="og:url" content={canonicalUrl} />
-                <meta property="og:image" content="https://peernotez.netlify.app/logo512.png" />
-                
-                {/* Twitter Card Meta Tags */}
-                <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:title" content={blog.title} />
-                <meta name="twitter:description" content={blog.summary} />
 
                 {/* Schema Markup */}
                 <script type="application/ld+json">
@@ -74,8 +62,13 @@ const FullBlogContent = ({ blog, onRefetch }) => {
             <article className="blog-article-content">
                 <h1 className="article-title">{blog.title}</h1>
                 
+                {/* NEW: AuthorInfoBlock Integration */}
+                <AuthorInfoBlock author={blog.author} contentId={blog._id} contentType="blog" />
+
                 <div className="article-meta">
+                    {/* The author details here can be simplified or removed since AuthorInfoBlock is used */}
                     <div className="blog-author-details">
+                        {/* We keep the avatar/name display in the meta for context, but rely on the new block for follow logic */}
                         <img 
                             src={blog.author?.avatar || 'https://via.placeholder.com/44'} 
                             alt={`Avatar of ${authorName}`} 
@@ -98,20 +91,19 @@ const FullBlogContent = ({ blog, onRefetch }) => {
                     <ReactMarkdown>{blog.content}</ReactMarkdown>
                 </div>
             </article>
-            
-            {/* SEO: Internal Link Section - Highlighting conversion to other pages */}
+
+            {/* SEO: Internal Link Section (Retained) */}
             <section className="blog-internal-links note-feedback-section">
                 <h2>Continue Your Learning Journey</h2>
                 <div className="cta-buttons-container" style={{display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center'}}>
                     <Link to="/search" className="hero-cta-button primary">
                         <FaSearch style={{marginRight: '0.5rem'}} /> Find More Notes
                     </Link>
-                    <Link to="/blogs/post" className="hero-cta-button secondary">
+                    <Link to="/upload" className="hero-cta-button secondary">
                         <FaFeatherAlt style={{marginRight: '0.5rem'}} /> Write Your Own Blog
                     </Link>
                 </div>
             </section>
-
 
             <div className="note-feedback-section blog-reviews-section">
                 <BlogReviews blogId={blog._id} reviews={blog.reviews || []} onReviewAdded={onRefetch} />
@@ -161,12 +153,11 @@ const BlogPage = () => {
         } finally {
             setLoadingSingle(false);
         }
-    }, [slug]);
+    }, [slug]); 
 
     useEffect(() => {
         if (slug) {
-            // Include refetchIndex here to trigger reload when a review is added
-            fetchSingleBlog(refetchIndex); 
+            fetchSingleBlog();
         } else {
             setSingleBlog(null);
             fetchBlogs();
@@ -181,7 +172,7 @@ const BlogPage = () => {
         fetchBlogs();
     };
     
-    // Schema.org WebPage Markup for the listing page
+    // Schema.org WebPage Markup (Retained)
     const webpageSchema = {
         "@context": "https://schema.org",
         "@type": "WebPage",
