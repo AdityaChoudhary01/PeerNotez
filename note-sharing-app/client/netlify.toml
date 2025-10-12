@@ -1,3 +1,15 @@
+
+# =======================================================
+# CRITICAL: API PROXY REDIRECT
+# =======================================================
+[[redirects]]
+  # This routes all API calls to your backend URL defined in Netlify's ENV.
+  to = "${REACT_APP_API_URL}/:splat"
+  status = 200
+  force = true # Ensures the redirect happens
+
+
+
 [[redirects]]
   from = "/sitemap-dynamic.xml"
   to = "https://peernotez.onrender.com/sitemap-dynamic.xml"
