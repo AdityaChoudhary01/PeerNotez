@@ -1,3 +1,5 @@
+// note-sharing-app/client/src/context/AuthContext.js
+
 import React, { createContext, useState, useEffect } from 'react';
 import axios from 'axios';
 
@@ -10,14 +12,10 @@ export const AuthProvider = ({ children }) => {
   // FIX 1: Add isAuthenticated state, initialize based on token presence
   const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('token')); 
 
-  // 💡 CRITICAL FIX: Base URL Configuration
-  // 1. If running on Netlify (production build with REACT_APP_API_URL set), use the relative path '/api'.
-  //    This path is intercepted by the netlify.toml proxy.
-  // 2. Otherwise (local development or fallback), use the full Render URL.
+  // 💡 CRITICAL CHANGE: Base URL Configuration
   axios.defaults.baseURL = process.env.NODE_ENV === 'production' 
-      ? '/api' 
-      : process.env.REACT_APP_API_URL || 'https://peernotez.onrender.com/api';
-
+    ? '/api' 
+    : process.env.REACT_APP_API_URL || 'https://peernotez.onrender.com/api';
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
