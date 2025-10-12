@@ -2,8 +2,10 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const reviewSchema = new Schema({
   user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-  rating: { type: Number, required: true, min: 1, max: 5 },
-  comment: { type: String, required: true }
+  // 👇 CHANGE REQUIRED TO FALSE
+  rating: { type: Number, required: false, min: 1, max: 5 }, 
+  comment: { type: String, required: true },
+  parentReviewId: { type: Schema.Types.ObjectId, default: null } 
 }, {
   timestamps: true
 });
@@ -20,8 +22,7 @@ const NoteSchema = new Schema({
   fileSize: { type: Number, required: true },
   cloudinaryId: { type: String, required: true },
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  // KEEP this field for your existing frontend UI compatibility
-  uploadDate: { type: Date, default: Date.now }, 
+  uploadDate: { type: Date, default: Date.now },
   reviews: [reviewSchema],
   rating: {
     type: Number,
@@ -38,15 +39,12 @@ const NoteSchema = new Schema({
     required: true,
     default: 0
   },
+  // --- ADD THIS NEW FIELD ---
   isFeatured: {
     type: Boolean,
     required: true,
     default: false
   }
-}, {
-  // CRITICAL FIX: Add timestamps to automatically manage createdAt and updatedAt
-  timestamps: true 
 });
 
 module.exports = mongoose.model('Note', NoteSchema);
-
