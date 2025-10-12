@@ -35,6 +35,11 @@
     X-Robots-Tag = "all"
     Access-Control-Allow-Origin = "*"
     Cache-Control = "no-cache"
+    
+[[headers]]
+  for = "/service-worker.js"
+  [headers.values]
+    Cache-Control = "no-store, must-revalidate"
 
 # =======================================================
 # 2. Redirects
