@@ -20,9 +20,7 @@ const CommentThread = ({ comment, postId, onReviewAdded, user, token, level = 0 
         try {
             const config = { headers: { Authorization: `Bearer ${token}` } };
             
-            // FIX APPLIED HERE: The 'rating' field is REMOVED from the payload 
-            // for replies. This requires the Mongoose schema on the server
-            // to have 'required: false' for the rating field.
+            // The 'rating' field is REMOVED from the payload for replies
             await axios.post(`/blogs/${postId}/reviews`, { 
                 comment: replyComment, 
                 parentReviewId: comment._id,
@@ -57,6 +55,7 @@ const CommentThread = ({ comment, postId, onReviewAdded, user, token, level = 0 
                 <p>{comment.comment}</p>
                 
                 {user && level < 3 && ( // Limit nesting to 3 levels
+                    // USES THE CORRECT 'reply-btn' CLASS HERE
                     <button className="reply-btn" onClick={() => setIsReplying(prev => !prev)}>
                         <FaReply /> {isReplying ? 'Cancel Reply' : 'Reply'}
                     </button>
@@ -72,9 +71,12 @@ const CommentThread = ({ comment, postId, onReviewAdded, user, token, level = 0 
                             placeholder="Type your reply..."
                             required
                         />
-                        <button type="submit" disabled={loading} className="action-button download-btn" style={{padding: '0.4rem 1rem', fontSize: '0.9rem'}}>
-                            {loading ? 'Sending...' : 'Post Reply'}
-                        </button>
+                        {/* USES THE CORRECT 'reply-submit-btn' CLASS HERE */}
+                        <div className="reply-actions"> 
+                            <button type="submit" disabled={loading} className="reply-submit-btn">
+                                {loading ? 'Sending...' : 'Post Reply'}
+                            </button>
+                        </div>
                     </form>
             )}
 
@@ -96,6 +98,8 @@ const CommentThread = ({ comment, postId, onReviewAdded, user, token, level = 0 
     );
 };
 // --- End Recursive Component ---
+
+// ... (BlogReviews component remains unchanged) ...
 
 const BlogReviews = ({ blogId, reviews, onReviewAdded }) => {
     const [rating, setRating] = useState(0);
