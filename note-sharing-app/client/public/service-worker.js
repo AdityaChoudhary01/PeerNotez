@@ -7,12 +7,15 @@ const urlsToCache = [
   "/favicon.ico"
 ];
 
+// Install SW and cache static assets
 self.addEventListener("install", event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
   );
+  self.skipWaiting(); // activate new SW immediately
 });
 
+// Activate SW and remove old caches
 self.addEventListener("activate", event => {
   const cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
@@ -26,11 +29,13 @@ self.addEventListener("activate", event => {
       )
     )
   );
+  self.clients.claim(); // claim clients immediately
 });
 
+// Fetch event
 self.addEventListener("fetch", event => {
   if (event.request.mode === "navigate" || event.request.url.endsWith("/index.html")) {
-    // Network-first for index.html to avoid stale JS
+    // Network-first for index.html to always get latest JS
     event.respondWith(
       fetch(event.request)
         .then(response => {
