@@ -1,13 +1,4 @@
 [[redirects]]
-  # This captures the relative '/api' path from your frontend code
-  from = "/api/*"
-  # IMPORTANT: Use your hardcoded Render URL (or ENV var if you prefer that method)
-  to = "https://peernotez.onrender.com/api/:splat" 
-  status = 200
-  force = true
-
-
-[[redirects]]
   from = "/sitemap-dynamic.xml"
   to = "https://peernotez.onrender.com/sitemap-dynamic.xml"
   status = 200
