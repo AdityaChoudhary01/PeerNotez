@@ -88,5 +88,4 @@ const AuthorInfoBlock = ({ author, contentId, contentType }) => {
         </div>
     );
 };
-
-export default AuthorInfoBlock;AuthorInfoBlock.js
+export default AuthorInfoBlock.js
