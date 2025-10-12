@@ -1,3 +1,7 @@
+[build]
+  command = "npm run build"
+  publish = "note-sharing-app/client/build"
+
 [[redirects]]
   from = "/sitemap-dynamic.xml"
   to = "https://peernotez.onrender.com/sitemap-dynamic.xml"
