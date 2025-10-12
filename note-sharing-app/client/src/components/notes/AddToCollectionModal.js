@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useCallback } from 'react'; // Added useCallback
 import axios from 'axios';
 import { FaPlus, FaCheck, FaTimes, FaSpinner } from 'react-icons/fa';
-
 const AddToCollectionModal = ({ noteId, token, onClose }) => {
     const [collections, setCollections] = useState([]);
     const [selectedCollections, setSelectedCollections] = useState({});
