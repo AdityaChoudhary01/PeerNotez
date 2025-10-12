@@ -12,6 +12,7 @@ export const AuthProvider = ({ children }) => {
 
   // ✅ Use the environment variable properly (single line, no commas/newlines)
   const baseURL = process.env.REACT_APP_API_URL || "https://peernotez.onrender.com/api";
+  console.log("Axios baseURL: ", baseURL); 
 
   // ✅ Set axios base URL once (global)
   axios.defaults.baseURL = baseURL;
@@ -82,8 +83,6 @@ export const AuthProvider = ({ children }) => {
     updateUser(updatedUser);
   };
 
-  // ✅ Debug log for deployment (can remove later)
-  console.log("AuthContext baseURL:", baseURL);
 
   return (
     <AuthContext.Provider
@@ -106,3 +105,4 @@ export const AuthProvider = ({ children }) => {
 };
 
 export default AuthContext;
+
