@@ -1037,8 +1037,6 @@ input[type="number"] {
 }
 
 
-
-
 /* --- Footer - Modern & Minimalist --- */
 .footer {
     background-color: var(--card-background);
@@ -1756,7 +1754,6 @@ input[type="number"] {
         grid-template-columns: 1fr;
     }
 }
-
 
 /* --- STAR RATING --- */
 .star-rating {
@@ -3726,6 +3723,7 @@ hr {
     border: 4px solid var(--warning-color); /* Thicker border */
     box-shadow: 0 0 15px rgba(255, 221, 0, 0.5);
     border-radius: 50px;
+    margin-left: 35%;
 }
 
 .profile-name {
@@ -4864,9 +4862,6 @@ hr {
 
 
 
-
-
-
 /* =================================== */
 /* === VIEW NOTE PAGE STYLES (MODERN & RESPONSIVE) === */
 /* =================================== */
@@ -5670,7 +5665,7 @@ hr {
 .blog-summary {
     font-size: 1rem;
     color: var(--subtle-text-color);
-    margin-top: 1rem;
+    margin-top: 0.5rem;
     margin-bottom: 1rem;
     flex-grow: 1;
 }
@@ -5953,7 +5948,6 @@ hr {
         margin-right: 2rem;
     }
 }
-
 /* ==================================== */
 /* RESPONSIVENESS START        */
 /* ==================================== */
@@ -6062,7 +6056,7 @@ hr {
 
     /* --- Single Blog View --- */
     .full-blog-container {
-        margin: 1rem 0.1rem; /* Tighten margins even more */
+        margin: 1rem 0.5rem; /* Tighten margins even more */
         padding: 1.5rem; /* Tighten padding */
     }
 
@@ -6359,8 +6353,6 @@ hr {
     gap: 2rem;
     margin-bottom: 2rem;
 }
-
-
 
 
 
@@ -7312,13 +7304,3 @@ hr {
         justify-content: center;
     }
 }
-
-
-
-
-
-
-
-
-
-
