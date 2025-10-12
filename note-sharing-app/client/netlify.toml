@@ -28,6 +28,12 @@
     Cache-Control = "public, max-age=31536000, immutable"
 
 [[headers]]
+  # Service worker should never be cached to ensure updates
+  for = "/service-worker.js"
+  [headers.values]
+    Cache-Control = "no-store, must-revalidate"
+
+[[headers]]
   # Static sitemap headers
   for = "/sitemap.xml"
   [headers.values]
@@ -35,12 +41,6 @@
     X-Robots-Tag = "all"
     Access-Control-Allow-Origin = "*"
     Cache-Control = "no-cache"
-
-[[headers]]
-  # Service worker should never be cached
-  for = "/service-worker.js"
-  [headers.values]
-    Cache-Control = "no-store, must-revalidate"
 
 # =======================================================
 # 2. Redirects
