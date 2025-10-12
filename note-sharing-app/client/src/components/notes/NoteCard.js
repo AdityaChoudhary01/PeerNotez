@@ -11,15 +11,28 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
 
   let thumbnailUrl = '';
   
+  // File type checks for specific icons
   const isWordDoc = note.fileType === 'application/msword' || note.fileType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
   const isExcelDoc = note.fileType === 'application/vnd.ms-excel' || note.fileType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
   const isPptDoc = note.fileType === 'application/vnd.ms-powerpoint' || note.fileType === 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
 
-  if (note.fileType.startsWith('image/')) {
-    thumbnailUrl = `https://res.cloudinary.com/${cloudName}/image/upload/w_400,h_300,c_fill,f_auto,q_auto/${note.cloudinaryId}.jpg`;
-  } else if (note.fileType === 'application/pdf') {
-    thumbnailUrl = `https://res.cloudinary.com/${cloudName}/image/upload/w_400,h_300,c_pad,pg_1,f_jpg,q_auto/${note.cloudinaryId}.jpg`;
-  } else if (isWordDoc) {
+  // ===============================================
+  // 🛑 UPDATED THUMBNAIL LOGIC 🛑
+  // ===============================================
+
+  // Priority 1: Use Cloudinary for Image/PDF previews if cloudinaryId is present
+  if (note.cloudinaryId && (note.fileType.startsWith('image/') || note.fileType === 'application/pdf')) {
+    // Check if it's a PDF (which needs pg_1 parameter)
+    if (note.fileType === 'application/pdf') {
+      // PDF thumbnail generation (use c_pad for best fit, and pg_1 for the first page)
+      thumbnailUrl = `https://res.cloudinary.com/${cloudName}/image/upload/w_400,h_300,c_pad,pg_1,f_jpg,q_auto/${note.cloudinaryId}.jpg`;
+    } else {
+      // Image thumbnail generation (use c_fill for standard image crop)
+      thumbnailUrl = `https://res.cloudinary.com/${cloudName}/image/upload/w_400,h_300,c_fill,f_auto,q_auto/${note.cloudinaryId}.jpg`;
+    }
+  } 
+  // Priority 2: Use specific static icons for common non-visual document types
+  else if (isWordDoc) {
     thumbnailUrl = '/images/icons/word-icon.png';
   } else if (isExcelDoc) {
     thumbnailUrl = '/images/icons/excel-icon.png';
@@ -27,11 +40,16 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
     thumbnailUrl = '/images/icons/ppt-icon.png';
   } else if (note.fileType === 'text/plain') {
     thumbnailUrl = '/images/icons/text-icon.png';
-  } else {
-    // Generic fallback for any other raw file
+  }
+  // Priority 3: Generic fallback for everything else (e.g., if cloudinaryId is missing 
+  // or the fileType is an unhandled binary/archive type)
+  else {
+    // This will catch the case where cloudinaryId is present for a file type 
+    // that Cloudinary can't preview (which is unlikely) OR if the cloudinaryId is genuinely missing.
     thumbnailUrl = '/images/icons/document-icon.png';
   }
 
+  // ===============================================
 
   const handleSaveToggle = async (e) => {
     e.stopPropagation();
@@ -62,7 +80,13 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
   return (
     <div className="project-card">
       <Link to={`/view/${note._id}`} className="card-thumbnail-link">
-        <img src={thumbnailUrl} alt={`Preview of ${note.title}`} className="card-thumbnail" />
+        <img 
+          src={thumbnailUrl} 
+          alt={`Preview of ${note.title}`} 
+          className="card-thumbnail" 
+          // Optional: Add a style to ensure generic icons aren't stretched
+          style={!note.cloudinaryId ? { objectFit: 'contain', padding: '10%' } : {}}
+        />
       </Link>
 
       <div className="card-content">
