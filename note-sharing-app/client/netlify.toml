@@ -1,14 +1,10 @@
 [[redirects]]
-  # 💡 FIX: CRITICAL. You must specify the 'from' path.
-  # This intercepts all requests that start with /api/
-  from = "/api/*" 
-  
-  # The 'to' field uses your full ENV variable URL and appends the rest of the path.
-  # Example: /api/notes/123 -> https://peernotez.onrender.com/api/notes/123
-  to = "${REACT_APP_API_URL}/:splat" 
-  
+  # This captures the relative '/api' path from your frontend code
+  from = "/api/*"
+  # IMPORTANT: Use your hardcoded Render URL (or ENV var if you prefer that method)
+  to = "https://peernotez.onrender.com/api/:splat" 
   status = 200
-  force = true 
+  force = true
 
 
 [[redirects]]
