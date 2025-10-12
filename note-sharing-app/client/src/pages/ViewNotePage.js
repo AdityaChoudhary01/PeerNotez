@@ -22,11 +22,10 @@ const ViewNotePage = () => {
     const [note, setNote] = useState(null);
     const [error, setError] = useState('');
     const [isSaving, setIsSaving] = useState(false);
-    const [isModalOpen, setIsModalOpen] = useState(false); 
+    const [isModalOpen, setIsModalOpen] = useState(false); // State for Collection Modal
     const [refetchIndex, setRefetchIndex] = useState(0);
     const { noteId } = useParams();
-    // ⭐ IMPROVEMENT: Destructure 'user' as well for saved state check
-    const { user, isAuthenticated, updateUser } = useAuth(); 
+    const { token, isAuthenticated } = useAuth();
 
     const fetchNote = useCallback(async () => {
         try {
@@ -46,7 +45,6 @@ const ViewNotePage = () => {
         setRefetchIndex(prev => prev + 1);
     };
 
-    // ⭐ IMPROVEMENT: Handle saving and unsaving logic
     const handleSaveNote = async () => {
         if (!isAuthenticated) {
             alert('Please log in to save notes.');
@@ -55,23 +53,14 @@ const ViewNotePage = () => {
 
         setIsSaving(true);
         try {
-            // Check if the note is currently saved by the user
-            const action = isSaved ? 'unsave' : 'save'; 
-            const endpoint = `/users/${action}/${noteId}`;
+            const config = { headers: { Authorization: `Bearer ${token}` } };
+            const endpoint = `/users/save/${noteId}`;
 
-            // Authorization is handled by global axios defaults from AuthContext
-            const { data } = await axios.put(endpoint); 
-            
-            // ⭐ Call updateUser from AuthContext to sync the local user state immediately
-            // Assuming the server returns the updated user data or a simple success message
-            if (data.user) {
-                updateUser(data.user);
-            }
-            
+            const { data } = await axios.put(endpoint, {}, config);
             alert(data.message);
         } catch (error) {
-            console.error('Failed to update saved note status', error);
-            alert('Failed to update saved note status. Please try again.');
+            console.error('Failed to save note', error);
+            alert('Failed to save note. It might already be saved or an error occurred.');
         } finally {
             setIsSaving(false);
         }
@@ -86,7 +75,6 @@ const ViewNotePage = () => {
 
         const isLocalFile = note.filePath.startsWith('http://localhost') || note.filePath.startsWith('https://localhost');
 
-        // ... (rest of renderFileViewer remains the same)
         if (
             (fileType.startsWith('image/') || fileType === 'application/pdf' || fileType.includes('officedocument') || fileType.includes('ms-')) && !isLocalFile
         ) {
@@ -138,15 +126,12 @@ const ViewNotePage = () => {
             </div>
         );
     }
-    
-    const authorName = note.user?.name || 'Anonymous';
-    const displayFileSize = formatFileSize(note.fileSize);
-    
-    // ⭐ IMPROVEMENT: Determine saved state for the button
-    // Check if the noteId is in the user's savedNotes array.
-    const isSaved = user?.savedNotes?.includes(note._id || noteId);
 
-    // Educational Resource Schema Markup (remains the same)
+    const authorName = note.user?.name || 'Anonymous';
+    // Calculate display file size
+    const displayFileSize = formatFileSize(note.fileSize);
+
+    // Educational Resource Schema Markup
     const noteSchema = {
         "@context": "https://schema.org",
         "@type": "Course",
@@ -177,7 +162,7 @@ const ViewNotePage = () => {
                 <meta name="description" content={`View and download notes on ${note.subject} from ${note.university}, uploaded by ${authorName}.`} />
                 <link rel="canonical" href={window.location.href} />
 
-                {/* Schema Markup */}
+                {/* Schema Markup (FIXED using dangerouslySetInnerHTML) */}
                 {note.numReviews > 0 && (
                     <script type="application/ld+json"
                         dangerouslySetInnerHTML={{
@@ -192,10 +177,12 @@ const ViewNotePage = () => {
                     <div className="note-header-info">
                         <h1 className="note-title">{note.title}</h1>
 
+                        {/* FIX: AuthorInfoBlock displays the avatar and name */}
                         <div className="author-info-line">
                             <AuthorInfoBlock author={note.user} contentId={noteId} contentType="note" />
                         </div>
 
+                        {/* Displays Course/Subject/University */}
                         <p className="note-subtitle-text">
                             Course: {note.course} | Subject: {note.subject} | University: {note.university}
                         </p>
@@ -212,16 +199,11 @@ const ViewNotePage = () => {
                                 <FaList /> Add to Collection
                             </button>
                         )}
-                        {/* 2. Save/Unsave Note Button */}
+                        {/* 2. Save Note Button */}
                         {isAuthenticated && (
-                            <button 
-                                onClick={handleSaveNote} 
-                                disabled={isSaving} 
-                                // ⭐ IMPROVEMENT: Dynamic class and text
-                                className={`note-action-save-btn ${isSaved ? 'saved-btn' : 'primary-btn'}`}
-                            >
+                            <button onClick={handleSaveNote} disabled={isSaving} className="note-action-save-btn primary-btn">
                                 <FaBookmark />
-                                {isSaving ? ' Updating...' : isSaved ? ' Saved' : ' Save Note'}
+                                {isSaving ? ' Saving...' : ' Save Note'}
                             </button>
                         )}
                         {/* 3. Download Button (with formatted size) */}
@@ -246,17 +228,15 @@ const ViewNotePage = () => {
             </div>
 
             {/* Collection Modal */}
-  {isAuthenticated && isModalOpen && AddToCollectionModal ? (
-  <AddToCollectionModal
-    noteId={noteId}
-    token={user}
-    onClose={() => setIsModalOpen(false)}
-  />
-) : null}
-
+            {isAuthenticated && isModalOpen && (
+                <AddToCollectionModal
+                    noteId={noteId}
+                    token={token}
+                    onClose={() => setIsModalOpen(false)}
+                />
+            )}
         </div>
     );
 };
 
 export default ViewNotePage;
-
