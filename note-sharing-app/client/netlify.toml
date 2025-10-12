@@ -1,13 +1,14 @@
-
-# =======================================================
-# CRITICAL: API PROXY REDIRECT
-# =======================================================
 [[redirects]]
-  # This routes all API calls to your backend URL defined in Netlify's ENV.
-  to = "${REACT_APP_API_URL}/:splat"
+  # 💡 FIX: CRITICAL. You must specify the 'from' path.
+  # This intercepts all requests that start with /api/
+  from = "/api/*" 
+  
+  # The 'to' field uses your full ENV variable URL and appends the rest of the path.
+  # Example: /api/notes/123 -> https://peernotez.onrender.com/api/notes/123
+  to = "${REACT_APP_API_URL}/:splat" 
+  
   status = 200
-  force = true # Ensures the redirect happens
-
+  force = true 
 
 
 [[redirects]]
