@@ -6,6 +6,7 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
+const path = require('path'); // <-- 1. ADD THIS IMPORT
 require('dotenv').config();
 
 // --- Schema Imports ---
@@ -21,9 +22,7 @@ const sitemapRoutes = require('./routes/sitemapRoutes');
 // --- App Initialization ---
 const app = express();
 
-// Set the 'trust proxy' setting. This is crucial for rate limiting on
-// services like Render, which use a proxy. It ensures the rate limiter
-// uses the client's real IP address from the X-Forwarded-For header.
+// Set the 'trust proxy' setting.
 app.set('trust proxy', 1);
 
 const PORT = process.env.PORT || 5001;
@@ -39,7 +38,6 @@ const allowedOrigins = [
 ];
 const corsOptions = {
   origin: function (origin, callback) {
-    // Check if the request origin is in our whitelist or if it's a same-origin request
     if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
       callback(null, true);
     } else {
@@ -71,24 +69,38 @@ mongoose.connect(process.env.MONGO_URI, {
     process.exit(1);
   });
 
-// --- Route Mounting ---
+// --- Route Mounting (API Routes) ---
 app.use('/api/auth', authRoutes);
 app.use('/api/notes', noteRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/blogs', blogRoutes);
 app.use('/', sitemapRoutes);
+
 // --- Health Check Endpoint ---
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'UP', timestamp: new Date().toISOString() });
 });
 
-// --- Fallback Route for Undefined Endpoints ---
-app.use('*', (req, res) => {
-  res.status(404).json({ message: 'The requested resource was not found on this server.' });
-});
+// ------------------------------------------------------------------
+// 2. ADD THIS BLOCK FOR PRODUCTION STATIC ASSET AND ROUTING FALLBACK
+// ------------------------------------------------------------------
 
-// --- Global Error Handler ---
+if (process.env.NODE_ENV === 'production') {
+    // Serve any static files (JS, CSS, images) from the client's build directory
+    // This is crucial for resolving the 'Unexpected token <' error
+    app.use(express.static(path.join(__dirname, '../client/build')));
+
+    // All remaining GET requests that haven't matched an API route
+    // will be redirected to the client's index.html.
+    // This allows React Router to handle client-side routing.
+    app.get('*', (req, res) => {
+        res.sendFile(path.resolve(__dirname, '../client/build', 'index.html'));
+    });
+}
+
+
+// --- Global Error Handler (KEEP LAST) ---
 app.use((err, req, res, next) => {
   console.error('🔴 Global Error:', err.message);
   const statusCode = err.statusCode || 500;
@@ -100,6 +112,3 @@ app.use((err, req, res, next) => {
 
 // --- Server Startup ---
 app.listen(PORT, () => console.log(`🚀 Server is running on port ${PORT}`));
-
-
-
