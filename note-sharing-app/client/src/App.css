@@ -6890,18 +6890,6 @@ hr {
 }
 
 
-/*
-|--------------------------------------------------------------------------
-| CSS Variables (Assumed Dark Mode Context)
-|--------------------------------------------------------------------------
-| --primary-color: #6a40f0; (Accent color)
-| --text-color: #e0e0e0;
-| --card-background: #282c34;
-| --dark-surface: #1e2127; 
-| --border-color: #3f4451;
-|--------------------------------------------------------------------------
-*/
-
 /* Styling for the Reply Form */
 .reply-form {
     margin-top: 15px;
@@ -6941,7 +6929,7 @@ hr {
     justify-content: flex-end; 
 }
 
-/* Styling for the Reply Button */
+/* Styling for the Form Submission Button */
 .reply-submit-btn {
     padding: 10px 20px !important; /* Increased padding */
     font-size: 1rem !important;
@@ -6968,6 +6956,44 @@ hr {
     transform: none;
 }
 
+/* Styling for the Reply Button (the one that shows/hides the form) */
+.toggle-reply-btn {
+    /* Base styling for a link/button */
+    display: inline-flex;
+    align-items: center;
+    gap: 5px; /* Space between text and optional icon */
+    
+    /* Text styling */
+    font-size: 0.875rem; /* Smaller, secondary font size */
+    font-weight: 500;
+    color: var(--primary-color, #6a40f0); /* Use the primary color */
+    
+    /* Button appearance */
+    background: none; /* No background */
+    border: none;
+    padding: 5px 10px; /* Minimal padding */
+    margin-right: 10px; /* Space it out from other actions */
+    border-radius: 4px;
+    cursor: pointer;
+    transition: color 0.2s, background-color 0.2s;
+}
+
+.toggle-reply-btn:hover {
+    /* Subtle background on hover */
+    background-color: rgba(106, 64, 240, 0.1); 
+    color: #5b36d9; /* Slight color change on hover */
+}
+
+.toggle-reply-btn:focus {
+    /* Accessibility focus styling */
+    outline: 2px solid var(--primary-color, #6a40f0);
+    outline-offset: 2px;
+}
+
+/* Optional: Styling for an icon inside the button */
+.toggle-reply-btn i {
+    font-size: 1rem; /* Adjust icon size */
+}
 
 
 /* Optional: Better nesting appearance for Dark Mode */
@@ -7305,4 +7331,5 @@ hr {
         justify-content: center;
     }
 }
+
 
