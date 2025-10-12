@@ -1,5 +1,3 @@
-// note-sharing-app/client/src/components/notes/EditCollectionModal.js
-
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FaTimes, FaSpinner } from 'react-icons/fa';
