@@ -32,13 +32,19 @@ self.addEventListener("activate", event => {
   self.clients.claim(); // claim clients immediately
 });
 
-// Fetch event with method filtering
+// Fetch event with API exclusion
 self.addEventListener("fetch", event => {
-  // Skip non-GET requests (e.g. PUT, POST)
+  // Skip non-GET requests
   if (event.request.method !== "GET") return;
 
+  // Always fetch API requests from network (no caching)
+  if (event.request.url.includes("/api/")) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
+  // Network-first for index.html
   if (event.request.mode === "navigate" || event.request.url.endsWith("/index.html")) {
-    // Network-first strategy for navigation
     event.respondWith(
       fetch(event.request)
         .then(response => {
@@ -49,17 +55,18 @@ self.addEventListener("fetch", event => {
         })
         .catch(() => caches.match(event.request))
     );
-  } else {
-    // Cache-first strategy for static assets
-    event.respondWith(
-      caches.match(event.request).then(response => {
-        return response || fetch(event.request).then(networkResponse => {
-          return caches.open(CACHE_NAME).then(cache => {
-            cache.put(event.request, networkResponse.clone());
-            return networkResponse;
-          });
-        });
-      })
-    );
+    return;
   }
+
+  // Cache-first for other static assets
+  event.respondWith(
+    caches.match(event.request).then(response => {
+      return response || fetch(event.request).then(networkResponse => {
+        return caches.open(CACHE_NAME).then(cache => {
+          cache.put(event.request, networkResponse.clone());
+          return networkResponse;
+        });
+      });
+    })
+  );
 });
