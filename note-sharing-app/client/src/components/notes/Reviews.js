@@ -10,10 +10,6 @@ const formatDate = (dateString) => {
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
     return new Date(dateString).toLocaleDateString(undefined, options);
 };
-
-// ------------------------------------------------------------
-// --- Recursive Comment Component ---
-// ------------------------------------------------------------
 const CommentThread = ({ comment, noteId, onReviewAdded, user, token, level = 0 }) => {
     const [isReplying, setIsReplying] = useState(false);
     const [replyComment, setReplyComment] = useState('');
