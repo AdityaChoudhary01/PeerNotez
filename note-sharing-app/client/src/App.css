@@ -6890,7 +6890,6 @@ hr {
 }
 
 
-
 /*
 |--------------------------------------------------------------------------
 | CSS Variables (Assumed Dark Mode Context)
@@ -6968,6 +6967,8 @@ hr {
     cursor: not-allowed;
     transform: none;
 }
+
+
 
 /* Optional: Better nesting appearance for Dark Mode */
 .review-card.level-1 {
@@ -7304,3 +7305,4 @@ hr {
         justify-content: center;
     }
 }
+
