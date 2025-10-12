@@ -246,15 +246,17 @@ const ViewNotePage = () => {
             </div>
 
             {/* Collection Modal */}
-            {isAuthenticated && isModalOpen && (
-                <AddToCollectionModal
-                    noteId={noteId}
-                    token={user} // Pass user/token for collections
-                    onClose={() => setIsModalOpen(false)}
-                />
-            )}
+  {isAuthenticated && isModalOpen && AddToCollectionModal ? (
+  <AddToCollectionModal
+    noteId={noteId}
+    token={user}
+    onClose={() => setIsModalOpen(false)}
+  />
+) : null}
+
         </div>
     );
 };
 
 export default ViewNotePage;
+
