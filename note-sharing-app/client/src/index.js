@@ -10,11 +10,11 @@ root.render(
   </React.StrictMode>
 );
 
-// Auto-update SW: reload page when new version is available
+// Auto-update service worker
 serviceWorkerRegistration.register({
   onUpdate: (registration) => {
     if (registration && registration.waiting) {
-      // Skip waiting and reload to get latest assets
+      // Skip waiting and reload page to get latest assets
       registration.waiting.postMessage({ type: "SKIP_WAITING" });
       window.location.reload();
     }
