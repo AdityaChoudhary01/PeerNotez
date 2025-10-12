@@ -32,10 +32,13 @@ self.addEventListener("activate", event => {
   self.clients.claim(); // claim clients immediately
 });
 
-// Fetch event
+// Fetch event with method filtering
 self.addEventListener("fetch", event => {
+  // Skip non-GET requests (e.g. PUT, POST)
+  if (event.request.method !== "GET") return;
+
   if (event.request.mode === "navigate" || event.request.url.endsWith("/index.html")) {
-    // Network-first for index.html to always get latest JS
+    // Network-first strategy for navigation
     event.respondWith(
       fetch(event.request)
         .then(response => {
@@ -47,7 +50,7 @@ self.addEventListener("fetch", event => {
         .catch(() => caches.match(event.request))
     );
   } else {
-    // Cache-first for other assets
+    // Cache-first strategy for static assets
     event.respondWith(
       caches.match(event.request).then(response => {
         return response || fetch(event.request).then(networkResponse => {
