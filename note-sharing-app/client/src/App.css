@@ -1036,96 +1036,8 @@ input[type="number"] {
     }
 }
 
-/* --- ADJUSTED NOTE VIEWER CONTAINER (for single note view) --- */
-.note-viewer-container {
-    max-width: 1200px;
-    margin: 2rem auto;
-    padding: 2.5rem;
-    background: var(--gradient-card-background);
-    border-radius: 12px;
-    border: 1px solid var(--border-color);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-    animation: scaleIn 0.8s ease-out forwards;
-    width: 100%;
-    position: relative;
-    overflow: hidden;
-}
 
-/* Mobile Responsiveness for note-viewer-container */
-@media (max-width: 768px) {
-    .note-viewer-container {
-        padding: 1.5rem;
-        margin: 1.5rem auto;
-        box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
-    }
-}
 
-@media (max-width: 480px) {
-    .note-viewer-container {
-        padding: 1rem;
-        margin: 1rem auto;
-        border-radius: 8px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    }
-}
-
-.note-viewer-container iframe {
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    width: 100%;
-    height: 85vh;
-    min-height: 500px;
-    display: block;
-    box-shadow: inset 0 0 15px rgba(0,0,0,0.4);
-    background-color: #f0f0f0;
-    transition: all 0.5s ease-in-out;
-    transform: scale(0.98);
-    animation: iframeLoad 1s ease-out forwards 0.5s;
-}
-
-@media (max-width: 768px) {
-    .note-viewer-container iframe {
-        height: 70vh;
-        min-height: 400px;
-        border-radius: 6px;
-    }
-}
-
-@media (max-width: 480px) {
-    .note-viewer-container iframe {
-        height: 60vh;
-        min-height: 300px;
-        border-radius: 4px;
-        box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
-    }
-}
-
-.note-viewer-container h2 {
-    overflow-wrap: break-word;
-    word-wrap: break-word;
-    text-align: left;
-    border-bottom: 2px solid var(--primary-color);
-    padding-bottom: 0.5rem;
-    margin-bottom: 1.5rem;
-    font-size: 2.2rem;
-    color: var(--heading-color);
-    animation: slideInLeft 0.7s ease-out;
-}
-
-/* Add a subtle overlay or background effect */
-.note-viewer-container::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: radial-gradient(circle at top left, rgba(83, 114, 240, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at bottom right, rgba(26, 39, 68, 0.1) 0%, transparent 50%);
-    opacity: 0.8;
-    z-index: -1;
-    border-radius: 12px;
-}
 
 /* --- Footer - Modern & Minimalist --- */
 .footer {
@@ -1299,74 +1211,67 @@ input[type="number"] {
     padding-left: 1rem;
     margin-bottom: 1rem;
 }
-
 /*
 |--------------------------------------------------------------------------
 | GLOBAL PAGE WRAPPER
 |--------------------------------------------------------------------------
 */
 
+/* General Page Layout */
 .content-page {
-    /* Base container for pages like Profile or MyBlogs */
+    padding: 2rem;
     max-width: 1200px;
     margin: 0 auto;
-    padding: 2rem 1.5rem; 
 }
-
 
 /*
 |--------------------------------------------------------------------------
-| PROFILE HEADER (Avatar & Info Block)
+| PROFILE HEADER (Avatar, Info, & Actions) - Centralized Modern Card
 |--------------------------------------------------------------------------
 */
 
 .profile-header {
-    /* Default: Stacked (Mobile-First) */
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1.5rem;
-    text-align: center;
-    background-color: var(--card-background);
-    padding: 2rem;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    max-width: 900px;
+    flex-direction: column; /* Stack vertically by default */
+    align-items: center; /* Center horizontally */
+    gap: 2.5rem; /* Space between main content and action button */
+    background-color: var(--card-background, #282c34);
+    border-radius: 20px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4), inset 0 0 0 1px var(--border-color, #3f4451);
+    padding: 3rem 2rem;
+    max-width: 800px;
     width: 100%;
-    margin: 2rem auto;
+    margin: 3rem auto;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease-in-out;
 }
 
-.profile-info {
-    /* Ensures info block grows but respects text alignment */
-    flex-grow: 1;
+.profile-header:hover {
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), inset 0 0 0 1px var(--primary-color, #6a40f0);
+}
+
+.profile-header-content { /* New wrapper for avatar and info */
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-}
-
-.profile-info h1 {
-    margin: 0;
-    font-size: 2.2rem;
-    padding-bottom: 0;
-    margin-bottom: 0;
-}
-
-.profile-info p {
-    margin: 0.5rem 0 0 0;
-    color: var(--subtle-text-color);
-    font-size: 1.1rem;
+    flex-direction: column; /* Stack avatar and info vertically */
+    align-items: center; /* Center horizontally */
+    gap: 1.5rem; /* Space between avatar and info */
+    width: 100%; /* Take full width of parent */
 }
 
 /* --- Avatar & Upload Styling --- */
 .avatar-container {
     position: relative;
     cursor: pointer;
-    width: 120px;
-    height: 120px;
+    width: 140px;
+    height: 140px;
     border-radius: 50%;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    box-shadow: 0 0 0 5px rgba(0, 198, 255, 0.1), 0 6px 20px rgba(0,0,0,0.3);
     flex-shrink: 0;
+    transition: transform 0.3s ease;
+}
+
+.avatar-container:hover {
+    transform: scale(1.05);
 }
 
 .profile-avatar {
@@ -1374,90 +1279,155 @@ input[type="number"] {
     height: 100%;
     border-radius: 50%;
     object-fit: cover;
-    border: 3px solid var(--primary-color);
-    transition: filter 0.3s ease;
+    border: 4px solid var(--primary-color, #6a40f0);
+    transition: filter 0.3s ease, box-shadow 0.3s ease;
 }
 
 .avatar-upload-label {
-    /* Upload overlay for hover effect */
     position: absolute;
     top: 0;
     left: 0;
-    /* ... (rest of the overlay styling) ... */
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1rem;
+    font-weight: 600;
     opacity: 0;
     transition: opacity 0.3s ease;
 }
 
 .avatar-container:hover .avatar-upload-label { opacity: 1; }
-.avatar-container:hover .profile-avatar { filter: brightness(0.5); }
+.avatar-container:hover .profile-avatar { filter: brightness(0.6); }
 
-
-/*
-|--------------------------------------------------------------------------
-| NAME DISPLAY AND EDITING (Consolidated and Cleaned)
-|--------------------------------------------------------------------------
-*/
-
-.name-display,
-.name-edit-form {
-    /* Aligns name and edit button/form fields */
+/* --- Profile Info Section --- */
+.profile-info {
     display: flex;
-    align-items: center;
-    gap: 1rem;
-    flex-wrap: wrap;
-    justify-content: center; /* Center align on mobile */
+    flex-direction: column;
+    align-items: center; /* Center children horizontally */
+    gap: 0.5rem; /* Space between info elements */
     width: 100%;
 }
 
+.profile-info-main { /* Wrapper for name, edit, and email */
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center children horizontally */
+    width: 100%;
+    gap: 0.5rem; /* Space between name/edit and email */
+}
+
+.profile-info h1 {
+    margin: 0;
+    font-size: 2.5rem;
+    font-weight: 700;
+    letter-spacing: -0.05rem;
+    color: var(--heading-color, #ffffff);
+}
+
+.profile-email { /* Targeted email style */
+    margin: 0;
+    color: var(--subtle-text-color, #a0a0a0);
+    font-size: 1rem;
+    font-weight: 300;
+}
+
+/*
+|--------------------------------------------------------------------------
+| NAME DISPLAY AND EDITING
+|--------------------------------------------------------------------------
+*/
+
+.name-display {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    justify-content: center; /* Center name and edit button */
+    flex-wrap: wrap; /* Allow wrapping on small screens */
+}
+
+.name-edit-form {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    justify-content: center; /* Center form elements */
+    flex-wrap: wrap;
+    width: 100%; /* Take full width for centering */
+}
+
 .name-edit-input {
-    padding: 0.6rem 1rem;
-    font-size: 1.5rem;
-    font-weight: bold;
-    border-radius: 5px;
-    border: 1px solid var(--primary-color);
-    background-color: var(--input-background);
-    color: var(--heading-color);
+    padding: 0.8rem 1.2rem;
+    font-size: 1.8rem;
+    font-weight: 700;
+    border-radius: 10px;
+    border: 1px solid var(--border-color, #3f4451);
+    background-color: var(--input-background, #1e2127);
+    color: var(--heading-color, #ffffff);
     outline: none;
-    flex-grow: 1;
-    min-width: 150px;
+    flex-grow: 1; /* Allow input to grow */
+    min-width: 180px;
     max-width: 100%;
     box-sizing: border-box;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.name-edit-input:focus {
+    border-color: var(--primary-color, #6a40f0);
+    box-shadow: 0 0 0 3px rgba(106, 64, 240, 0.3);
 }
 
 /* --- Action Buttons (Edit/Save/Cancel) --- */
 .edit-name-btn {
-    background: none;
-    border: 1px solid var(--border-color); /* Use general border color variable */
-    color: var(--subtle-text-color);
-    padding: 0.3rem 0.8rem;
-    border-radius: 5px;
+    background-color: var(--input-background, #1e2127);
+    border: 1px solid var(--border-color, #3f4451);
+    color: var(--subtle-text-color, #a0a0a0);
+    padding: 0.6rem 0.8rem;
+    border-radius: 10px;
     cursor: pointer;
     transition: all 0.2s ease;
     flex-shrink: 0;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
 }
 .edit-name-btn:hover {
-    background-color: var(--border-color);
-    color: var(--heading-color);
+    background-color: var(--border-color, #3f4451);
+    color: var(--primary-color, #6a40f0);
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 .name-edit-form .save-btn,
 .name-edit-form .cancel-btn {
     border: none;
-    padding: 0.6rem 1rem;
-    border-radius: 5px;
+    padding: 0.8rem 1.5rem;
+    border-radius: 10px;
     cursor: pointer;
-    font-weight: bold;
+    font-weight: 600;
     flex-shrink: 0;
+    transition: all 0.2s ease;
 }
 
 .name-edit-form .save-btn {
-    background-color: var(--primary-color);
+    background-color: var(--primary-color, #6a40f0);
     color: white;
+}
+.name-edit-form .save-btn:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
 }
 
 .name-edit-form .cancel-btn {
-    background-color: #2c3e50; /* Specific dark color for cancel */
+    background-color: #576574;
     color: white;
+}
+.name-edit-form .cancel-btn:hover {
+    background-color: #747d8c;
+    transform: translateY(-1px);
 }
 
 
@@ -1470,11 +1440,11 @@ input[type="number"] {
 .profile-tabs {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
-    border-bottom: 1px solid var(--border-color);
+    gap: 1.5rem;
+    border-bottom: 1px solid var(--border-color, #3f4451);
     margin-bottom: 2rem;
     justify-content: center;
-    padding-bottom: 5px;
+    padding-bottom: 0;
     width: 100%;
     max-width: 800px;
     margin-left: auto;
@@ -1482,40 +1452,199 @@ input[type="number"] {
 }
 
 .profile-tabs button,
-.profile-tabs a {
-    padding: 0.8rem 1.5rem;
+.profile-tabs .profile-tabs-link { /* Targeted the specific link class */
+    padding: 0.8rem 0;
     border: none;
     background-color: transparent;
-    color: var(--subtle-text-color);
+    color: var(--subtle-text-color, #a0a0a0);
     border-bottom: 3px solid transparent;
-    transition: all 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     flex-shrink: 0;
     white-space: nowrap;
     text-decoration: none;
     display: flex;
     align-items: center;
+    font-weight: 600;
+    font-size: 1.05rem;
+    cursor: pointer;
 }
 
-.profile-tabs a:hover,
+.profile-tabs .profile-tabs-link:hover,
 .profile-tabs button:hover {
-    color: var(--heading-color);
+    color: var(--heading-color, #ffffff);
 }
 
 .profile-tabs button.active,
-.profile-tabs a.active {
-    color: var(--heading-color);
-    border-bottom-color: var(--primary-color);
+.profile-tabs .profile-tabs-link.active { /* Targeted the specific link class */
+    color: var(--primary-color, #6a40f0);
+    border-bottom-color: var(--primary-color, #6a40f0);
 }
 
+/* RETAINED ORIGINAL NAVBAR AVATAR STYLING */
 .navbar-avatar {
     width: 40px;
     height: 40px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid var(--primary-color);
+    border: 2px solid var(--primary-color, #6a40f0);
     cursor: pointer;
     transition: transform 0.2s ease;
     flex-shrink: 0;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| ENHANCED ELEMENTS (Badges, Feed Button, Collections)
+|--------------------------------------------------------------------------
+*/
+
+/* --- User Badges (Below Name) - ENHANCED LOOK --- */
+.user-badges-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    justify-content: center;
+}
+
+.contributor-badge {
+    display: inline-flex;
+    align-items: center;
+    background-color: var(--primary-color-light, rgba(106, 64, 240, 0.1));
+    color: var(--heading-color, white);
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border: 1px solid var(--primary-color, #6a40f0);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* --- Main CTA Button (My Personalized Feed) --- */
+.profile-actions {
+    width: 100%;
+    display: flex;
+    justify-content: center; /* Center the button within the header */
+}
+
+.main-cta-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0.8rem 1rem;
+    font-size: 1rem;
+    font-weight: bold;
+    color: var(--heading-color, white);
+    background-color: var(--primary-color, #6a40f0);
+    border: none;
+    border-radius: 12px;
+    text-decoration: none;
+    box-shadow: 0 4px 10px rgba(106, 64, 240, 0.4);
+    transition: all 0.3s ease;
+}
+
+.main-cta-button:hover {
+    background-color: #5b36d9;
+    box-shadow: 0 6px 15px rgba(106, 64, 240, 0.6);
+    transform: translateY(-2px);
+}
+
+/* --- Collections Section - ENHANCED CARD STYLE --- */
+.collections-section {
+    max-width: 800px;
+    width: 100%;
+    margin: 0 auto 3rem auto;
+}
+
+.collections-section h2 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    color: var(--heading-color, #ffffff);
+    font-size: 1.8rem;
+}
+
+.collection-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.collection-item-summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background-color: var(--card-background, #282c34);
+    border-radius: 10px;
+    border: 1px solid var(--border-color, #3f4451);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    transition: all 0.2s ease;
+}
+
+.collection-item-summary:hover {
+    transform: translateY(-2px);
+    border-color: var(--primary-color, #6a40f0);
+    box-shadow: 0 6px 15px rgba(106, 64, 240, 0.15);
+}
+
+.collection-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-grow: 1;
+}
+
+.collection-name-link {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--heading-color, #ffffff);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.collection-name-link:hover {
+    color: var(--primary-color, #6a40f0);
+}
+
+.note-count {
+    font-size: 0.9rem;
+    color: var(--subtle-text-color, #a0a0a0);
+    margin-left: 0.5rem;
+    background-color: var(--input-background, #1e2127);
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+}
+
+.delete-collection-btn {
+    background: none;
+    border: none;
+    color: transparent;
+    cursor: pointer;
+    font-size: 1.1rem;
+    padding: 0.5rem;
+    border-radius: 5px;
+    transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.collection-item-summary:hover .delete-collection-btn {
+    color: #ff6b6b;
+}
+.delete-collection-btn:hover {
+    background-color: rgba(255, 107, 107, 0.1);
+}
+
+/*
+|--------------------------------------------------------------------------
+| Notes Grid (Existing)
+|--------------------------------------------------------------------------
+*/
+.notes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
 }
 
 
@@ -1528,64 +1657,86 @@ input[type="number"] {
 /* --- Tablet and Medium Screens (768px +) --- */
 @media screen and (min-width: 768px) {
     .profile-header {
-        /* Switch to horizontal layout */
         flex-direction: row;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 3rem;
+        gap: 2rem;
+    }
+
+    .profile-header-content {
+        flex-direction: row; /* Avatar and info side-by-side */
+        align-items: flex-start;
         text-align: left;
         gap: 2rem;
+        width: auto;
     }
     
     .profile-info {
-        /* Align user info left */
+        align-items: flex-start;
+        text-align: left;
+        gap: 0.5rem;
+    }
+
+    .profile-info-main {
         align-items: flex-start;
     }
 
     .name-display,
     .name-edit-form {
-        /* Align name editing elements left on wide screens */
         justify-content: flex-start;
     }
 
-    .name-edit-input {
-        font-size: 1.5rem;
-        padding: 0.6rem 1rem;
+    .user-badges-container {
+        justify-content: flex-start;
+    }
+
+    .profile-actions {
+        width: auto; /* Allow button to size naturally */
+        justify-content: flex-end;
+        align-self: flex-start;
+        margin-top: 0;
     }
 }
 
 /* --- Small Phones (Max-width 480px) --- */
 @media (max-width: 480px) {
     .profile-header {
-        padding: 1.5rem;
-        gap: 1rem;
-        margin: 1.5rem auto;
+        padding: 2rem 1.5rem;
+        gap: 1.5rem;
+        margin: 2rem auto;
     }
 
     .profile-info h1 {
-        font-size: 1.8rem;
+        font-size: 2rem;
+    }
+
+    .avatar-container {
+        width: 100px;
+        height: 100px;
     }
 
     .profile-tabs {
-        gap: 0.25rem;
+        gap: 0.75rem;
         margin-bottom: 1.5rem;
     }
 
     .profile-tabs button,
-    .profile-tabs a {
+    .profile-tabs .profile-tabs-link {
         font-size: 0.9rem;
-        padding: 0.6rem 0.8rem;
+        padding: 0.5rem 0;
     }
     
-    /* Full width name editing/saving on small phones */
     .name-edit-form {
         flex-direction: column;
         align-items: stretch;
-        gap: 0.5rem;
+        gap: 0.75rem;
     }
 
     .name-edit-input {
         width: 100%;
-        font-size: 1.2rem;
-        padding: 0.5rem 0.8rem;
-        margin-bottom: 0.5rem;
+        font-size: 1.4rem;
+        padding: 0.6rem 1rem;
         min-width: unset;
     }
 
@@ -1599,6 +1750,10 @@ input[type="number"] {
         width: 100%;
         text-align: center;
         padding: 0.6rem 0.8rem;
+    }
+
+    .notes-grid {
+        grid-template-columns: 1fr;
     }
 }
 
@@ -4710,13 +4865,15 @@ hr {
 
 
 
+
+
 /* =================================== */
 /* === VIEW NOTE PAGE STYLES (MODERN & RESPONSIVE) === */
 /* =================================== */
 
 /* Main page container */
 .note-view-page-wrapper {
-    max-width: 1400px; /* Use the widest max-width as the base */
+    max-width: 1400px; 
     margin: 0 auto;
     padding: 3rem 1.5rem;
     line-height: 1.6;
@@ -4725,10 +4882,10 @@ hr {
 /* --- Responsive Container Logic --- */
 /* Mobile-first styles (default) */
 .note-view-page-wrapper {
-    padding: 1.5rem 0.5rem; /* Default padding for small screens */
+    padding: 1.5rem 0.5rem; 
 }
 .note-details-card {
-    background: transparent; /* Remove outer box on small devices */
+    background: transparent; 
     padding: 0;
     box-shadow: none;
     border-radius: 0;
@@ -4748,7 +4905,7 @@ hr {
     background: transparent;
     padding: 0;
     border: none;
-    height: 70vh; /* Smaller height for mobile devices */
+    height: 70vh; 
     min-height: 400px;
     width: 100%;
 }
@@ -4787,7 +4944,7 @@ hr {
         padding: 1rem;
         border-radius: 8px;
         border: 1px solid var(--border-color);
-        height: 90vh; /* Larger height on mid-sized screens */
+        height: 90vh; 
         min-height: 700px;
     }
 }
@@ -4798,10 +4955,10 @@ hr {
         padding: 4rem 2rem;
     }
     .note-details-card {
-        padding: 4rem; /* Increased padding for a more spacious feel */
+        padding: 4rem; 
     }
     .note-file-viewer-container {
-        height: 100vh; /* Make the viewer take up the full viewport height */
+        height: 100vh; 
         min-height: 800px;
     }
 }
@@ -4841,12 +4998,12 @@ hr {
     100% { transform: rotate(360deg); }
 }
 
-/* --- Note Header & Actions --- */
+/* --- Note Header & Actions (CRITICAL FIXES APPLIED) --- */
 .note-header-wrapper {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
+    align-items: flex-start;
+    flex-wrap: wrap; /* Allows header sections to wrap */
     gap: 1.5rem;
     border-bottom: 1px solid var(--border-color);
     padding-bottom: 2rem;
@@ -4890,11 +5047,14 @@ hr {
     font-style: italic;
 }
 
+/* 💡 FIX: Action Buttons Container */
 .note-actions {
     display: flex;
-    gap: 1rem;
+    gap: 0.8rem;
     flex-shrink: 0;
-    flex-wrap: wrap;
+    flex-wrap: wrap; /* CRITICAL: Allows buttons to wrap */
+    min-width: 280px; 
+    justify-content: flex-end;
 }
 
 .note-action-save-btn, .note-action-download-btn {
@@ -4909,6 +5069,11 @@ hr {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    
+    /* FIX: Allow buttons to grow horizontally to fit two columns */
+    flex-grow: 1; 
+    min-width: 150px;
+    justify-content: center;
 }
 
 .note-action-save-btn {
@@ -5018,7 +5183,7 @@ hr {
     margin-top: 3rem;
 }
 
-/* --- Responsive Adjustments --- */
+/* --- Responsive Adjustments (CRITICAL MOBILE FIX) --- */
 @media (max-width: 768px) {
     .note-header-wrapper {
         flex-direction: column;
@@ -5028,28 +5193,27 @@ hr {
     .note-actions {
         width: 100%;
         margin-top: 1rem;
+        flex-wrap: wrap;
+        justify-content: space-between;
     }
+    /* Allow the buttons to take about half the width, wrapping the third */
     .note-action-save-btn, .note-action-download-btn {
-        flex: 1;
+        flex: 1 1 48%; /* Allows max two buttons per row */
         justify-content: center;
     }
 }
 
-@media (max-width: 480px) {
-    .note-view-page-wrapper {
-        padding: 1rem 0.5rem;
+/* Smallest Screens (Force Vertical Stack) */
+@media (max-width: 500px) {
+    .note-actions {
+        flex-direction: column; /* FIX: Forces all buttons to stack vertically */
+        gap: 0.8rem;
     }
-    .note-title {
-        font-size: 1.8rem;
-    }
-    .note-file-viewer-container {
-        height: 60vh;
-        min-height: 300px;
+    .note-action-save-btn, .note-action-download-btn {
+        width: 100%; 
+        flex: 1 1 100%;
     }
 }
-
-
-
 
 
 /*
@@ -5061,7 +5225,7 @@ hr {
 /* Wrapper for positioning the close button relative to the download button */
 .fixed-download-button-wrapper {
     position: fixed;
-    bottom: 30px; /* Slightly higher placement */
+    bottom: 30px; 
     right: 30px;
     z-index: 1000;
 }
@@ -5073,10 +5237,9 @@ hr {
     right: -8px; 
     width: 24px;
     height: 24px;
-    /* Use error color for close action */
     background-color: var(--error-color); 
     color: var(--text-color);
-    border: 2px solid var(--background-color); /* Contrast border */
+    border: 2px solid var(--background-color); 
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -5089,7 +5252,7 @@ hr {
 }
 
 .fixed-download-close-btn:hover {
-    background-color: #d1304b; /* Slightly darker error on hover */
+    background-color: #d1304b; 
     transform: scale(1.05);
 }
 
@@ -5101,34 +5264,32 @@ hr {
     align-items: center;
     justify-content: center;
     gap: 10px;
-    padding: 14px 24px; /* Slightly larger padding */
+    padding: 14px 24px; 
     
     /* Aesthetics */
-    /* *** TRANSPARENT EFFECT: Use card background with opacity and blur *** */
-    background-color: rgba(26, 39, 68, 0.7); /* --card-background (opaque version) with 70% opacity */
-    backdrop-filter: blur(10px); /* Enhanced modern blur effect */
+    background-color: rgba(26, 39, 68, 0.7); 
+    backdrop-filter: blur(10px); 
     -webkit-backdrop-filter: blur(10px); 
     
     /* Color Scheme */
-    color: var(--text-color); /* Light text for dark button */
+    color: var(--text-color); 
     
     font-weight: 700;
     text-decoration: none;
-    border-radius: 50px; /* Pill shape */
-    border: 2px solid var(--primary-color); /* Highlight with primary color border */
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 10px rgba(83, 114, 240, 0.5); /* Deep shadow with a primary color glow */
+    border-radius: 50px; 
+    border: 2px solid var(--primary-color); 
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 10px rgba(83, 114, 240, 0.5); 
     transition: all 0.3s ease;
     cursor: pointer;
     font-size: 1.1rem;
 }
 
 .fixed-download-button:hover {
-    /* Use the primary color gradient on hover */
     background: var(--gradient-primary); 
-    color: var(--heading-color); /* White text on bright gradient */
+    color: var(--heading-color); 
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5), 0 0 15px var(--primary-color);
     transform: translateY(-2px) scale(1.02); 
-    border-color: var(--text-color); /* Subtle border change on hover */
+    border-color: var(--text-color); 
 }
 
 .fixed-download-button .download-icon {
@@ -5148,8 +5309,8 @@ hr {
         height: 55px;
         padding: 0;
         border-radius: 50%;
-        font-size: 0; /* Hide text */
-        border-width: 1px; /* Smaller border on mobile */
+        font-size: 0; 
+        border-width: 1px; 
     }
     
     .fixed-download-button .button-text {
@@ -5165,7 +5326,6 @@ hr {
         right: -5px;
     }
 }
-
 
 
 
@@ -6199,6 +6359,962 @@ hr {
     gap: 2rem;
     margin-bottom: 2rem;
 }
+
+
+
+
+
+
+
+
+
+/* --- AUTHOR INFO BLOCK & FOLLOW BUTTON --- */
+.author-info-block {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    border-radius: 12px;
+    background: var(--gradient-card-background);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.author-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: var(--text-color);
+    flex-grow: 1;
+    min-width: 200px;
+    gap: 1rem;
+}
+
+.author-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--warning-color);
+}
+
+.author-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.author-name {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--heading-color);
+}
+
+.author-contributions {
+    font-size: 0.9rem;
+    color: var(--subtle-text-color);
+}
+
+/* Follow Button Styles */
+.follow-btn {
+    padding: 0.6rem 1.2rem;
+    font-size: 1rem;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: none;
+}
+
+.follow-btn.follow {
+    background-color: var(--primary-color);
+    color: white;
+    box-shadow: 0 4px 10px rgba(83, 114, 240, 0.4);
+}
+
+.follow-btn.follow:hover {
+    background-color: #405de6;
+}
+
+.follow-btn.unfollow {
+    background-color: transparent;
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
+}
+
+.follow-btn.unfollow:hover {
+    background-color: rgba(83, 114, 240, 0.1);
+}
+
+.login-prompt {
+    font-size: 0.8rem;
+    color: var(--error-color);
+    margin: 0;
+    flex-basis: 100%;
+    text-align: right;
+}
+
+/* Gamification Badge Style */
+.badge.contributor-badge {
+    margin-top: 0.3rem;
+    background-color: var(--secondary-color) !important;
+    border: 1px solid gold;
+    color: #ffeb3b !important;
+}
+
+@media (max-width: 600px) {
+    .author-info-block {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .follow-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    .login-prompt {
+        text-align: center;
+    }
+}
+
+/* --- View Note Page Layout Fixes --- */
+
+.note-details-card {
+    /* Use flex for main sections */
+    display: flex;
+    flex-direction: column;
+}
+
+.note-header-wrapper {
+    /* Holds the title/subtitle and the main action buttons */
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start; /* Align header items to the top */
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap; /* Allows sections to wrap on small screens */
+}
+
+.note-header-info {
+    flex-grow: 1;
+    min-width: 0;
+}
+
+.note-title {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0;
+    border: none;
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
+}
+
+.note-actions {
+    display: flex;
+    gap: 0.8rem;
+    flex-shrink: 0;
+    flex-wrap: nowrap; /* Keep the buttons side-by-side if possible */
+}
+
+.note-action-save-btn,
+.note-action-download-btn {
+    padding: 0.7rem 1.2rem;
+    font-size: 0.95rem;
+}
+
+/* New: Styling for Author Info Block integration */
+.note-subtitle {
+    display: flex;
+    flex-direction: column; /* Stack author info and course info */
+    gap: 0.8rem;
+    margin: 0;
+}
+
+/* Ensure the Author Info Block itself is responsive */
+.author-info-block {
+    /* This rule is already implemented, but we ensure it overrides default flex settings */
+    width: 100%;
+    margin-top: 0.5rem; /* Separates it visually from the title */
+}
+
+/* --- Responsive Breakpoint for View Note Page --- */
+@media (max-width: 600px) {
+    .note-header-wrapper {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+    
+    .note-actions {
+        /* Force action buttons to take full width and stack vertically */
+        flex-direction: column;
+        gap: 0.5rem;
+        width: 100%;
+    }
+
+    .note-action-save-btn,
+    .note-action-download-btn {
+        width: 100%;
+        justify-content: center;
+        padding: 0.8rem;
+    }
+
+    .author-info-block {
+        /* This rule is already in your previous CSS, confirming it takes full width and stacks content */
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+
+
+
+
+
+/* |--------------------------------------------------------------------------
+| 1. PAGE HEADER & TITLE
+|--------------------------------------------------------------------------
+*/
+.content-page.ultra-modern-feed {
+    background-color: var(--background-color-primary);
+    padding-bottom: 50px;
+}
+
+.page-header.feed-header.ultra-modern-header {
+    text-align: center;
+    padding: 3rem 1rem 2rem;
+    max-width: 900px;
+    margin: 0 auto;
+    background: var(--background-color-secondary); 
+    border-radius: 0 0 30px 30px; 
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.header-title.feed-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--text-color);
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.5px;
+}
+
+.feed-icon {
+    color: var(--primary-color);
+    filter: drop-shadow(0 0 5px rgba(93, 86, 249, 0.5));
+}
+
+.header-subtitle {
+    font-size: 1.15rem;
+    color: var(--subtle-text-color);
+    font-weight: 400;
+}
+
+/* |--------------------------------------------------------------------------
+| 2. FILTER CONTROLS (PILL DESIGN)
+|--------------------------------------------------------------------------
+*/
+.feed-controls-bar.modern-filter-bar {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--card-background); 
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.filter-label {
+    font-weight: 600;
+    color: var(--primary-color); 
+    margin: 0;
+    font-size: 1em;
+    letter-spacing: 0.5px;
+}
+
+.filter-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.filter-btn {
+    padding: 10px 20px; 
+    border: none;
+    border-radius: 50px; 
+    background-color: var(--background-color-secondary);
+    color: var(--subtle-text-color);
+    cursor: pointer;
+    font-size: 0.95em;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+}
+
+.filter-btn:hover:not(.active) {
+    background-color: #e8ebf0;
+    color: var(--text-color);
+    transform: translateY(-2px);
+}
+
+.filter-btn.active {
+    background-color: var(--primary-color);
+    color: white;
+    box-shadow: 0 5px 15px rgba(93, 86, 249, 0.4); 
+    transform: scale(1.05);
+}
+
+/* |--------------------------------------------------------------------------
+| 3. CONTENT GRID & CARDS
+|--------------------------------------------------------------------------
+*/
+.feed-content-grid.ultra-modern-grid {
+    max-width: 1200px; 
+    margin: 0 auto; 
+    padding: 0 1.5rem 3rem; 
+    display: grid;
+    gap: 30px; 
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+}
+
+.feed-item-card {
+    background-color: var(--card-background); 
+    border-radius: 16px; 
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); 
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out, border-color 0.3s;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid transparent; 
+}
+
+.feed-item-card:hover {
+    transform: translateY(-8px); 
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.15); 
+    border-color: rgba(93, 86, 249, 0.2); 
+}
+
+.card-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap; 
+    
+    position: relative; 
+    z-index: 2; 
+    padding-right: 40px; 
+}
+
+.feed-item-card .new-badge {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: #ff5722; 
+    color: white;
+    padding: 5px 15px;
+    font-size: 0.8em;
+    font-weight: 700;
+    border-bottom-right-radius: 16px;
+    z-index: 10;
+    animation: pulse 1.5s infinite alternate;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(1.03); opacity: 0.9; }
+}
+
+.content-type-badge {
+    position: absolute;
+    bottom: 15px; 
+    right: 15px;
+    padding: 5px 12px;
+    border-radius: 50px;
+    font-size: 0.8em;
+    font-weight: 700;
+    text-transform: uppercase;
+    opacity: 0.8;
+}
+
+.generic-thumbnail-warning {
+    color: var(--warning-color); 
+    padding: 0.5rem 1rem;
+    text-align: center; 
+    font-size: 0.85em; 
+    font-weight: 500;
+    margin: 0;
+    background-color: rgba(255, 193, 7, 0.1); 
+    border-bottom-left-radius: 16px;
+    border-bottom-right-radius: 16px;
+}
+
+/* |--------------------------------------------------------------------------
+| 4. STATUS COMPONENTS & BUTTONS
+|--------------------------------------------------------------------------
+*/
+.feed-status {
+    text-align: center;
+    padding: 5rem 2rem; 
+    max-width: 650px;
+    margin: 4rem auto;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); 
+    border: 1px solid var(--border-color);
+    background: var(--card-background);
+}
+
+.feed-status h2 {
+    margin-top: 0.5rem;
+    border: none;
+    font-size: 1.8em;
+}
+
+.discover-button {
+    font-size: 1.15rem; 
+    padding: 1.2rem 2.5rem; 
+    background: linear-gradient(45deg, var(--primary-color), #7f78ff) !important; 
+    color: white !important;
+    box-shadow: 0 10px 20px rgba(93, 86, 249, 0.4);
+    border-radius: 12px;
+    transition: all 0.3s;
+}
+
+.back-to-top-btn.ultra-modern-scroll-btn {
+    position: fixed;
+    bottom: 40px;
+    right: 40px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    box-shadow: 0 6px 15px rgba(93, 86, 249, 0.5);
+    transition: all 0.3s ease;
+    z-index: 100;
+}
+
+/* |--------------------------------------------------------------------------
+| 5. RESPONSIVENESS AND SINGLE CARD FIX
+|--------------------------------------------------------------------------
+*/
+
+/* Fix for Extra Large Devices (Desktop) */
+@media (min-width: 1600px) {
+    .feed-content-grid.ultra-modern-grid {
+        grid-template-columns: repeat(3, 1fr); 
+        max-width: 1050px;
+    }
+}
+
+/* Medium Devices (Tablets, 768px and below) */
+@media (max-width: 768px) {
+    .header-title.feed-title {
+        font-size: 2rem;
+    }
+    .feed-controls-bar.modern-filter-bar {
+        /* Stack controls on smaller screens */
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        margin: 1.5rem 1rem;
+    }
+    .filter-buttons {
+        width: 100%;
+        justify-content: space-between;
+    }
+    .filter-btn {
+        flex: 1;
+        padding: 10px 5px;
+        font-size: 0.9em;
+    }
+    .feed-content-grid.ultra-modern-grid {
+        padding: 0 1rem 3rem;
+    }
+    .back-to-top-btn.ultra-modern-scroll-btn {
+        bottom: 20px;
+        right: 20px;
+        width: 45px;
+        height: 45px;
+    }
+}
+
+/* **New Small Device (Mobile Portrait, 480px and below) Fixes** */
+@media (max-width: 480px) {
+    /* Header Adjustments */
+    .page-header.feed-header.ultra-modern-header {
+        padding: 2rem 0.5rem 1.5rem;
+    }
+    .header-title.feed-title {
+        font-size: 1.8rem;
+    }
+    .header-subtitle {
+        font-size: 1rem;
+    }
+
+    /* Filter Controls Stacking */
+    .feed-controls-bar.modern-filter-bar {
+        padding: 10px 15px;
+        margin: 1rem 0.5rem;
+    }
+    .filter-buttons {
+        /* Allow buttons to wrap if the screen is super narrow */
+        flex-wrap: wrap; 
+        gap: 5px;
+    }
+    .filter-btn {
+        /* Ensure buttons don't consume too much height */
+        padding: 8px 12px; 
+        font-size: 0.8em;
+    }
+
+    /* Content Grid: Force single column for all mobile devices */
+    .feed-content-grid.ultra-modern-grid {
+        /* Overrides the minmax(320px, 1fr) to ensure it uses the full width */
+        grid-template-columns: 1fr; 
+        padding: 0 0.5rem 3rem;
+        gap: 20px; /* Slightly less gap */
+    }
+
+    /* Card Adjustments */
+    .feed-item-card {
+        border-radius: 12px;
+    }
+    .card-title {
+        font-size: 1.2rem;
+        padding-right: 30px; /* Ensure space for badges/buttons */
+    }
+    
+    /* CTA Button on Empty State */
+    .discover-button {
+        font-size: 1rem;
+        padding: 0.8rem 1.5rem;
+    }
+}
+
+
+
+/*
+|--------------------------------------------------------------------------
+| CSS Variables (Assumed Dark Mode Context)
+|--------------------------------------------------------------------------
+| --primary-color: #6a40f0; (Accent color)
+| --text-color: #e0e0e0;
+| --card-background: #282c34;
+| --dark-surface: #1e2127; 
+| --border-color: #3f4451;
+|--------------------------------------------------------------------------
+*/
+
+/* Styling for the Reply Form */
+.reply-form {
+    margin-top: 15px;
+    padding: 15px;
+    /* Dark Mode: Use a darker surface color for contrast against the main background */
+    background-color: var(--dark-surface, #1e2127); 
+    border: 1px solid var(--border-color, #3f4451);
+    border-radius: 8px; /* Slightly softer corners */
+    display: flex;
+    flex-direction: column;
+}
+
+/* Styling for the Textarea */
+.reply-form textarea {
+    width: 100%;
+    padding: 12px; /* Slightly more padding */
+    margin-bottom: 10px;
+    /* Dark Mode: Darker background, light text */
+    background-color: #2c313a; 
+    color: var(--text-color, #e0e0e0);
+    border: 1px solid var(--border-color, #3f4451);
+    border-radius: 6px;
+    resize: vertical;
+    font-size: 1rem; /* Slightly larger font */
+    box-sizing: border-box; 
+}
+
+.reply-form textarea:focus {
+    border-color: var(--primary-color, #6a40f0); /* Highlight border on focus */
+    box-shadow: 0 0 0 2px rgba(106, 64, 240, 0.3); /* Subtle glow effect */
+    outline: none;
+}
+
+/* Styling for the button wrapper */
+.reply-actions {
+    display: flex;
+    justify-content: flex-end; 
+}
+
+/* Styling for the Reply Button */
+.reply-submit-btn {
+    padding: 10px 20px !important; /* Increased padding */
+    font-size: 1rem !important;
+    font-weight: 600;
+    background-color: var(--primary-color, #6a40f0); 
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.reply-submit-btn:hover:not(:disabled) {
+    /* Darker primary color on hover for contrast */
+    background-color: #5b36d9; 
+    transform: translateY(-1px); /* Subtle press effect */
+}
+
+.reply-submit-btn:disabled {
+    /* Muted dark background when disabled */
+    background-color: var(--border-color, #3f4451); 
+    color: #888;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Optional: Better nesting appearance for Dark Mode */
+.review-card.level-1 {
+    margin-left: 20px;
+    /* Darker border for visual separation */
+    border-left: 3px solid #3f4451; 
+    padding-left: 15px;
+}
+.review-card.level-2 {
+    margin-left: 40px;
+    /* Slightly lighter border to show difference */
+    border-left: 3px solid #576574; 
+    padding-left: 15px;
+}
+
+
+
+
+
+/*
+|--------------------------------------------------------------------------
+| ADD TO COLLECTION MODAL
+|--------------------------------------------------------------------------
+*/
+
+/* --- Modal Backdrop --- */
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+/* --- Modal Container --- */
+.modal-content {
+    background-color: var(--card-background, #282c34);
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh; /* Limits height on smaller screens */
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color, #3f4451);
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.4rem;
+    color: var(--heading-color, #ffffff);
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: var(--subtle-text-color, #a0a0a0);
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.close-btn:hover {
+    color: #ff6b6b;
+}
+
+/* --- Modal Body & Scrollable List --- */
+.modal-body {
+    padding: 20px;
+    overflow-y: auto; /* Allows scrolling if list is too long */
+    flex-grow: 1;
+}
+
+.collection-list-container {
+    max-height: 250px;
+    overflow-y: auto;
+    border: 1px solid var(--border-color, #3f4451);
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.collection-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--border-color, #3f4451);
+    background-color: var(--input-background, #1e2127);
+    transition: background-color 0.2s;
+    color: var(--heading-color, #ffffff);
+}
+
+.collection-item:last-child {
+    border-bottom: none;
+}
+
+.collection-item:hover {
+    background-color: var(--border-color, #3f4451);
+}
+
+.collection-item.selected {
+    background-color: rgba(106, 64, 240, 0.15); /* Primary color highlight */
+    border-left: 5px solid var(--primary-color, #6a40f0);
+    padding-left: 10px;
+}
+
+.no-collections {
+    text-align: center;
+    padding: 20px;
+    color: var(--subtle-text-color, #a0a0a0);
+}
+
+/* --- Create Collection Form --- */
+.create-collection-form {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid var(--border-color, #3f4451);
+}
+
+.create-collection-form input {
+    flex-grow: 1;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color, #3f4451);
+    background-color: var(--input-background, #1e2127);
+    color: var(--heading-color, #ffffff);
+    outline: none;
+}
+
+.create-collection-form .create-btn {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+/* --- Modal Footer --- */
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: 15px 20px;
+    gap: 10px;
+    border-top: 1px solid var(--border-color, #3f4451);
+}
+
+.modal-footer button {
+    padding: 10px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.2s;
+}
+
+.modal-footer .cancel-btn {
+    background-color: var(--input-background, #1e2127);
+    color: var(--subtle-text-color, #a0a0a0);
+    border: 1px solid var(--border-color, #3f4451);
+}
+
+.modal-footer .save-changes-btn {
+    background-color: var(--primary-color, #6a40f0);
+    color: white;
+    border: 1px solid var(--primary-color, #6a40f0);
+}
+
+.modal-footer .save-changes-btn:disabled, .loading-state {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.spin {
+    animation: spin 1s linear infinite;
+}
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+
+
+/* --- VIEW COLLECTION PAGE STYLES --- */
+
+.view-collection-page-wrapper {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.collection-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 20px 0;
+    margin-bottom: 20px;
+    border-bottom: 2px solid var(--color-light-gray);
+}
+
+.collection-title {
+    font-size: 2.5rem;
+    color: var(--color-primary);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 10px 0;
+}
+
+.collection-icon {
+    color: var(--color-secondary);
+}
+
+.collection-meta {
+    font-size: 1rem;
+    color: var(--color-text-light);
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.note-count-badge {
+    background-color: var(--color-primary-light);
+    color: var(--color-primary-dark);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-weight: bold;
+}
+
+.collection-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.collection-action-btn {
+    padding: 8px 15px;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.collection-action-btn.edit-btn {
+    background-color: var(--color-accent-light);
+    color: var(--color-dark);
+}
+
+.collection-action-btn.edit-btn:hover {
+    background-color: var(--color-accent);
+}
+
+.collection-action-btn.delete-btn {
+    background-color: var(--color-danger);
+    color: white;
+}
+
+.collection-action-btn.delete-btn:hover {
+    background-color: var(--color-danger-dark);
+}
+
+/* Notes Grid Layout */
+.collection-notes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    padding-top: 10px;
+}
+
+/* Empty State */
+.empty-collection-message {
+    grid-column: 1 / -1; /* Span all columns */
+    text-align: center;
+    padding: 50px;
+    border: 1px dashed var(--color-light-gray);
+    border-radius: var(--border-radius);
+    color: var(--color-text-light);
+    font-size: 1.2rem;
+}
+
+/* Loading and Error */
+.collection-center-message {
+    text-align: center;
+    padding: 50px 20px;
+    color: var(--color-text);
+}
+.collection-center-message.loading .spin-icon {
+    animation: spin 1s linear infinite;
+    color: var(--color-secondary);
+}
+.collection-center-message.error {
+    color: var(--color-danger);
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .collection-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .collection-actions {
+        margin-top: 15px;
+        width: 100%;
+        justify-content: space-between;
+    }
+    .collection-action-btn {
+        flex: 1;
+        justify-content: center;
+    }
+}
+
+
+
 
 
 
