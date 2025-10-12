@@ -14,7 +14,6 @@ export function register(config) {
                 installingWorker.state === 'installed' &&
                 navigator.serviceWorker.controller
               ) {
-                // New content is available
                 if (config && config.onUpdate) {
                   config.onUpdate(registration);
                 }
