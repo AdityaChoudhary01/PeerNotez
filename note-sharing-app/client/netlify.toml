@@ -1,21 +1,61 @@
+# =======================================================
+# 0. Build settings
+# =======================================================
+[build]
+  command = "npm run build"        # Adjust if using yarn or another build command
+  publish = "build"                # Your build output folder
+
+# =======================================================
+# 1. Headers for caching control
+# =======================================================
+
+[[headers]]
+  # Always fetch the latest index.html to avoid stale JS references
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-store, must-revalidate"
+
+[[headers]]
+  # JS files can be cached long-term because they are hashed
+  for = "/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  # CSS files can be cached long-term
+  for = "/*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  # Static sitemap headers
+  for = "/sitemap.xml"
+  [headers.values]
+    Content-Type = "application/xml"
+    X-Robots-Tag = "all"
+    Access-Control-Allow-Origin = "*"
+    Cache-Control = "no-cache"
+
+# =======================================================
+# 2. Redirects
+# =======================================================
+
+# Dynamic sitemap redirect
 [[redirects]]
   from = "/sitemap-dynamic.xml"
   to = "https://peernotez.onrender.com/sitemap-dynamic.xml"
   status = 200
-  force = true # Critical: Ensures the redirect happens even if a file exists
-# =======================================================
-# 2. STATIC SITEMAP/ROBOTS (Optional, but kept for legacy)
-# =======================================================
-# If you have a static sitemap.xml file, you can keep it simple:
+  force = true
+
+# Static sitemap redirect (kept for legacy)
 [[redirects]]
   from = "/sitemap.xml"
   to = "/sitemap.xml"
   status = 200
-  
+
+# SPA catch-all route (React/Vue/Angular)
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
-
-
-
+  force = true
