@@ -246,7 +246,8 @@ router.get('/', async (req, res) => {
         sortOptions = { uploadDate: -1 };
     }
     
-    const selectFields = 'title university course subject year rating numReviews downloadCount uploadDate fileType fileName cloudinaryId filePath'; // Ensure all fields are selected
+    // 🛑 FIX APPLIED HERE: Added 'isFeatured' to the selected fields.
+    const selectFields = 'title university course subject year rating numReviews downloadCount uploadDate fileType fileName cloudinaryId filePath isFeatured'; 
     
     const count = await Note.countDocuments(query);
     const notes = await Note.find(query)
@@ -272,7 +273,8 @@ router.get('/mynotes', protect, async (req, res) => {
 
     const query = { user: req.user.id };
 
-    const selectFields = 'title university course subject year rating numReviews downloadCount uploadDate fileType fileName cloudinaryId filePath'; // ADDED all file metadata fields
+    // 🛑 FIX APPLIED HERE: Added 'isFeatured' to the selected fields.
+    const selectFields = 'title university course subject year rating numReviews downloadCount uploadDate fileType fileName cloudinaryId filePath isFeatured'; // ADDED all file metadata fields
 
     const totalNotes = await Note.countDocuments(query);
 
@@ -668,7 +670,7 @@ router.get('/collections/:collectionId', protect, async (req, res) => {
         .populate({
             path: 'notes',
             // Select the note fields required for the client-side NoteCard component
-            select: 'title university course subject year rating numReviews downloadCount uploadDate fileType fileName filePath cloudinaryId'
+            select: 'title university course subject year rating numReviews downloadCount uploadDate fileType fileName filePath cloudinaryId isFeatured'
         })
         .lean(); // Use .lean() to return a plain JS object, preventing 500 errors
 
