@@ -10,6 +10,8 @@ const formatDate = (dateString) => {
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
     return new Date(dateString).toLocaleDateString(undefined, options);
 };
+
+// --- Recursive Comment Component ---
 const CommentThread = ({ comment, noteId, onReviewAdded, user, token, level = 0 }) => {
     const [isReplying, setIsReplying] = useState(false);
     const [replyComment, setReplyComment] = useState('');
@@ -23,8 +25,6 @@ const CommentThread = ({ comment, noteId, onReviewAdded, user, token, level = 0 
             const config = { headers: { Authorization: `Bearer ${token}` } };
             
             // FIX APPLIED HERE: The 'rating' field is REMOVED from the payload 
-            // for replies. This requires the Mongoose schema on the server
-            // to have 'required: false' for the rating field.
             await axios.post(`/notes/${noteId}/reviews`, { 
                 comment: replyComment, 
                 parentReviewId: comment._id,
@@ -75,9 +75,19 @@ const CommentThread = ({ comment, noteId, onReviewAdded, user, token, level = 0 
                             placeholder="Type your reply..."
                             required
                         />
-                        <button type="submit" disabled={loading} className="action-button download-btn" style={{padding: '0.4rem 1rem', fontSize: '0.9rem'}}>
-                            {loading ? 'Sending...' : 'Post Reply'}
-                        </button>
+                        
+                        {/* Updated: Using reply-actions wrapper and reply-submit-btn class
+                            to apply the dedicated CSS styles. 
+                        */}
+                        <div className="reply-actions">
+                            <button 
+                                type="submit" 
+                                disabled={loading || !replyComment.trim()} // Also added check for empty comment
+                                className="reply-submit-btn" 
+                            >
+                                {loading ? 'Sending...' : 'Post Reply'}
+                            </button>
+                        </div>
                     </form>
             )}
 
@@ -206,6 +216,9 @@ const Reviews = ({ noteId, reviews, onReviewAdded }) => {
                                 required
                             />
                         </div>
+                        {/* Keeping the original class for the main form submission button, 
+                            as you didn't provide specific CSS for it, but using a dedicated 
+                            reply-actions container might be overkill here. */}
                         <button type="submit" className="action-button download-btn" disabled={loading}>
                             {loading ? 'Submitting...' : 'Submit Review'}
                         </button>
