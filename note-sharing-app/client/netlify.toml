@@ -35,8 +35,9 @@
     X-Robots-Tag = "all"
     Access-Control-Allow-Origin = "*"
     Cache-Control = "no-cache"
-    
+
 [[headers]]
+  # Service worker should never be cached
   for = "/service-worker.js"
   [headers.values]
     Cache-Control = "no-store, must-revalidate"
@@ -52,7 +53,7 @@
   status = 200
   force = true
 
-# Static sitemap redirect (kept for legacy)
+# Static sitemap redirect (legacy)
 [[redirects]]
   from = "/sitemap.xml"
   to = "/sitemap.xml"
