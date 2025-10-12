@@ -21,6 +21,8 @@ import SupportersPage from './pages/SupportersPage';
 import BlogPage from './pages/BlogPage';
 import PostBlogPage from './pages/PostBlogPage';
 import MyBlogsPage from './pages/MyBlogsPage';
+import MyFeedPage from './pages/MyFeedPage';
+import ViewCollectionPage from './pages/ViewCollectionPage';
 import './App.css';
 
 function App() {
@@ -45,6 +47,14 @@ function App() {
               <Route path="/blogs/post" element={<PrivateRoute><PostBlogPage /></PrivateRoute>} />
               <Route path="/blogs/my-blogs" element={<PrivateRoute><MyBlogsPage /></PrivateRoute>} />
               <Route path="/blogs/:slug" element={<BlogPage />} />
+
+
+
+ <Route path="/feed" element={<PrivateRoute><MyFeedPage /></PrivateRoute>} />
+              <Route 
+                path="/collections/:collectionId" 
+                element={<PrivateRoute><ViewCollectionPage /></PrivateRoute>} 
+              />
               {/* --- ADDED ROUTE FOR SUPPORTERS PAGE --- */}
               <Route path="/supporters" element={<SupportersPage />} />
               <Route path="/profile" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
@@ -60,4 +70,5 @@ function App() {
 }
 
 export default App;
+
 
