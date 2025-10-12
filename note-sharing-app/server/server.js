@@ -82,22 +82,6 @@ app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'UP', timestamp: new Date().toISOString() });
 });
 
-// ------------------------------------------------------------------
-// 2. ADD THIS BLOCK FOR PRODUCTION STATIC ASSET AND ROUTING FALLBACK
-// ------------------------------------------------------------------
-
-if (process.env.NODE_ENV === 'production') {
-    // Serve any static files (JS, CSS, images) from the client's build directory
-    // This is crucial for resolving the 'Unexpected token <' error
-    app.use(express.static(path.join(__dirname, '../client/build')));
-
-    // All remaining GET requests that haven't matched an API route
-    // will be redirected to the client's index.html.
-    // This allows React Router to handle client-side routing.
-    app.get('*', (req, res) => {
-        res.sendFile(path.resolve(__dirname, '../client/build', 'index.html'));
-    });
-}
 
 
 // --- Global Error Handler (KEEP LAST) ---
@@ -112,3 +96,4 @@ app.use((err, req, res, next) => {
 
 // --- Server Startup ---
 app.listen(PORT, () => console.log(`🚀 Server is running on port ${PORT}`));
+
