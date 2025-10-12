@@ -1,14 +1,16 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-// New Review Schema for Blogs
 const blogReviewSchema = new Schema({
   user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-  rating: { type: Number, required: true, min: 1, max: 5 },
-  comment: { type: String, required: true }
+  // 👇 CHANGE REQUIRED TO FALSE
+  rating: { type: Number, required: false, min: 1, max: 5 }, 
+  comment: { type: String, required: true },
+  parentReviewId: { type: Schema.Types.ObjectId, default: null } 
 }, {
   timestamps: true
 });
+
 
 const blogSchema = new mongoose.Schema({
   title: { type: String, required: true },
