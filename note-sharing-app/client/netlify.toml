@@ -2,45 +2,52 @@
 # 0. Build settings
 # =======================================================
 [build]
-  command = "npm run build"        # Adjust if using yarn or another build command
-  publish = "build"                # Your build output folder
+  command = "npm run build"
+  publish = "build"
 
 # =======================================================
 # 1. Headers for caching control
 # =======================================================
 
 [[headers]]
-  # Always fetch the latest index.html to avoid stale JS references
-  for = "/index.html"
-  [headers.values]
-    Cache-Control = "no-store, must-revalidate"
+# Always fetch latest index.html (stale-while-revalidate handled by SW)
+for = "/index.html"
+[headers.values]
+  Cache-Control = "no-store, must-revalidate"
 
 [[headers]]
-  # JS files can be cached long-term because they are hashed
-  for = "/*.js"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
+# JS files can be cached long-term
+for = "/*.js"
+[headers.values]
+  Cache-Control = "public, max-age=31536000, immutable"
 
 [[headers]]
-  # CSS files can be cached long-term
-  for = "/*.css"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
+# CSS files can be cached long-term
+for = "/*.css"
+[headers.values]
+  Cache-Control = "public, max-age=31536000, immutable"
 
 [[headers]]
-  # Service worker should never be cached to ensure updates
-  for = "/service-worker.js"
-  [headers.values]
-    Cache-Control = "no-store, must-revalidate"
+# Service worker should never be cached
+for = "/service-worker.js"
+[headers.values]
+  Cache-Control = "no-store, must-revalidate"
 
 [[headers]]
-  # Static sitemap headers
-  for = "/sitemap.xml"
-  [headers.values]
-    Content-Type = "application/xml"
-    X-Robots-Tag = "all"
-    Access-Control-Allow-Origin = "*"
-    Cache-Control = "no-cache"
+# Manifest JSON
+for = "/manifest.json"
+[headers.values]
+  Cache-Control = "no-cache"
+  Content-Type = "application/json"
+
+[[headers]]
+# Static sitemap
+for = "/sitemap.xml"
+[headers.values]
+  Content-Type = "application/xml"
+  X-Robots-Tag = "all"
+  Access-Control-Allow-Origin = "*"
+  Cache-Control = "no-cache"
 
 # =======================================================
 # 2. Redirects
@@ -48,20 +55,20 @@
 
 # Dynamic sitemap redirect
 [[redirects]]
-  from = "/sitemap-dynamic.xml"
-  to = "https://peernotez.onrender.com/sitemap-dynamic.xml"
-  status = 200
-  force = true
+from = "/sitemap-dynamic.xml"
+to = "https://peernotez.onrender.com/sitemap-dynamic.xml"
+status = 200
+force = true
 
 # Static sitemap redirect (legacy)
 [[redirects]]
-  from = "/sitemap.xml"
-  to = "/sitemap.xml"
-  status = 200
+from = "/sitemap.xml"
+to = "/sitemap.xml"
+status = 200
 
 # SPA catch-all route (React/Vue/Angular)
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-  # removed force = true to avoid overriding existing files
+from = "/*"
+to = "/index.html"
+status = 200
+# force is removed to avoid overriding existing files like JS/CSS/manifest
