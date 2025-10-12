@@ -60,6 +60,13 @@ body {
     flex-direction: column;
 }
 
+@media screen and (max-width: 480px) {
+    .container {
+        padding: 1rem;
+      
+    }
+}
+
 h1, h2, h3 {
     color: var(--heading-color);
     border-bottom: 2px solid var(--primary-color);
@@ -7332,6 +7339,7 @@ hr {
         justify-content: center;
     }
 }
+
 
 
 
