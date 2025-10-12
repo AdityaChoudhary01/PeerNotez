@@ -1,5 +1,3 @@
-// note-sharing-app/client/src/context/AuthContext.js
-
 import React, { createContext, useState, useEffect } from 'react';
 import axios from 'axios';
 
@@ -12,7 +10,14 @@ export const AuthProvider = ({ children }) => {
   // FIX 1: Add isAuthenticated state, initialize based on token presence
   const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('token')); 
 
-  axios.defaults.baseURL = process.env.REACT_APP_API_URL || 'https://peernotez.onrender.com/api';
+  // 💡 CRITICAL FIX: Base URL Configuration
+  // 1. If running on Netlify (production build with REACT_APP_API_URL set), use the relative path '/api'.
+  //    This path is intercepted by the netlify.toml proxy.
+  // 2. Otherwise (local development or fallback), use the full Render URL.
+  axios.defaults.baseURL = process.env.NODE_ENV === 'production' 
+      ? '/api' 
+      : process.env.REACT_APP_API_URL || 'https://peernotez.onrender.com/api';
+
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -76,19 +81,18 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    // The variables used here MUST be defined above.
     <AuthContext.Provider 
       value={{ 
         user, 
         token, 
         loading, 
-        isAuthenticated, // This is the new, required variable
-        login,          // This must be defined above
-        signup,         // This must be defined above
-        logout,         // This must be defined above
-        updateUser,     // This must be defined above
-        saveNote,       // This must be defined above
-        unsaveNote      // This must be defined above
+        isAuthenticated,
+        login,
+        signup,
+        logout,
+        updateUser,
+        saveNote,
+        unsaveNote
       }}
     >
       {!loading && children}
