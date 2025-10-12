@@ -28,7 +28,7 @@ import './App.css';
 function App() {
   return (
     <AuthProvider>
-      <Router>
+      <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <div className="app-wrapper">
           <Navbar />
           <main className="container">
@@ -42,19 +42,17 @@ function App() {
               <Route path="/about" element={<AboutPage />} />
               <Route path="/donate" element={<DonatePage />} />
 
-
               <Route path="/blogs" element={<BlogPage />} />
               <Route path="/blogs/post" element={<PrivateRoute><PostBlogPage /></PrivateRoute>} />
               <Route path="/blogs/my-blogs" element={<PrivateRoute><MyBlogsPage /></PrivateRoute>} />
               <Route path="/blogs/:slug" element={<BlogPage />} />
-
-
-
- <Route path="/feed" element={<PrivateRoute><MyFeedPage /></PrivateRoute>} />
+              <Route path="/feed" element={<PrivateRoute><MyFeedPage /></PrivateRoute>} />
               <Route 
                 path="/collections/:collectionId" 
                 element={<PrivateRoute><ViewCollectionPage /></PrivateRoute>} 
               />
+
+
               {/* --- ADDED ROUTE FOR SUPPORTERS PAGE --- */}
               <Route path="/supporters" element={<SupportersPage />} />
               <Route path="/profile" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
@@ -70,5 +68,3 @@ function App() {
 }
 
 export default App;
-
-
