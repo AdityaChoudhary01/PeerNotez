@@ -65,6 +65,37 @@ router.get('/', async (req, res) => {
     }
 });
 
+// @route   GET /api/blogs/id/:id
+// @desc    Get a single blog post by its MongoDB ID (Protected for editing/internal use)
+router.get('/id/:id', protect, async (req, res) => {
+    try {
+        const blog = await Blog.findById(req.params.id)
+            .populate('author', 'name avatar')
+            .populate({
+                path: 'reviews.user',
+                select: 'name avatar'
+            });
+
+        if (!blog) {
+            return res.status(404).json({ message: 'Blog post not found by ID.' });
+        }
+        
+        // OPTIONAL SECURITY CHECK: Only allow author or admin to access this ID route directly
+        if (blog.author.toString() !== req.user.id && req.user.role !== 'admin') {
+            return res.status(401).json({ message: 'Not authorized to access this blog detail route.' });
+        }
+
+        res.json(blog);
+    } catch (error) {
+        // Mongoose cast error if the ID format is wrong
+        if (error.name === 'CastError') {
+            return res.status(404).json({ message: 'Invalid Blog ID format.' });
+        }
+        console.error("Error fetching single blog post by ID:", error);
+        res.status(500).json({ message: 'Server error: Could not fetch the requested blog post by ID' });
+    }
+});
+
 // @route   GET /api/blogs/my-blogs
 router.get('/my-blogs', protect, async (req, res) => {
     try {
