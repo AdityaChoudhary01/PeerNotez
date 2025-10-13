@@ -6014,8 +6014,14 @@ hr {
 
 /* Media Query for Mobile Phones (max-width: 480px) */
 @media (max-width: 480px) {
+    .content-page{
+        max-width: 100%;
+        padding-left: 2px;
+        padding-right: 2px;
+    }
     /* --- Header Section --- */
     /* Header title's clamp is already good, but remove gap if it causes layout issues */
+    
     .blog-header .header-title {
         gap: 0.75rem; /* Slightly reduce gap */
     }
@@ -7372,4 +7378,5 @@ hr {
     max-height: 50vh; 
     overflow-y: auto; 
 }
+
 
