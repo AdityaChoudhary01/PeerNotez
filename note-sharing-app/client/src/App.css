@@ -7351,7 +7351,7 @@ hr {
     
     /* Crucial: Allows the entire modal container to scroll if its content is huge */
     overflow-y: auto; 
-    padding: 20px; 
+    padding: 2px; 
     box-sizing: border-box; 
 }
 
@@ -7378,5 +7378,6 @@ hr {
     max-height: 50vh; 
     overflow-y: auto; 
 }
+
 
 
