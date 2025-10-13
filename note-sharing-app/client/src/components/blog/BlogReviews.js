@@ -1,222 +1,327 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import useAuth from '../../hooks/useAuth'; 
+import useAuth from '../../hooks/useAuth';
 import StarRating from '../common/StarRating';
 import { Link } from 'react-router-dom';
 import { FaReply } from 'react-icons/fa';
 
-// --- Recursive Comment Component ---
-const CommentThread = ({ comment, postId, onReviewAdded, user, token, level = 0 }) => {
-    const [isReplying, setIsReplying] = useState(false);
-    const [replyComment, setReplyComment] = useState('');
-    const [loading, setLoading] = useState(false);
-    
-    const formatDate = (dateString) => new Date(dateString).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
-    
-    const handleReplySubmit = async (e) => {
-        e.preventDefault();
-        setLoading(true);
+// Utility for formatting dates
+const formatDate = (dateString) =>
+  new Date(dateString).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
 
-        try {
-            const config = { headers: { Authorization: `Bearer ${token}` } };
-            
-            // The 'rating' field is REMOVED from the payload for replies
-            await axios.post(`/blogs/${postId}/reviews`, { 
-                comment: replyComment, 
-                parentReviewId: comment._id,
-            }, config);
-            
-            alert('Reply submitted successfully! Refreshing...');
-            setReplyComment('');
-            setIsReplying(false);
-            onReviewAdded(); // Triggers parent refetch
+// ----------------------------
+// Single Reply Card Component (Helper)
+// ----------------------------
+const ReplyCard = ({ reply, postId, onReviewAdded, user, token, parentId }) => {
+  const [isReplying, setIsReplying] = useState(false);
+  const [replyComment, setReplyComment] = useState('');
+  const [loading, setLoading] = useState(false);
 
-        } catch (error) {
-            alert(error.response?.data?.message || 'Failed to submit reply.');
-        } finally {
-            setLoading(false);
-        }
-    };
-    
-    const nestedReplies = comment.replies || [];
+  const handleReplySubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      // Submitting a reply to the current visible reply card
+      await axios.post(`/blogs/${postId}/reviews`, {
+        comment: replyComment,
+        parentReviewId: reply._id, 
+      }, config);
 
-    return (
-        <div className={`review-card level-${level}`}>
-            <div className="review-author">
-                <img src={comment.user?.avatar || 'https://via.placeholder.com/45'} alt={comment.user?.name || 'Deleted User'} className="review-avatar" />
-                <div className="review-author-info">
-                    <strong>{comment.user?.name || 'Deleted User'}</strong>
-                    <span>{formatDate(comment.createdAt)}</span>
-                </div>
-            </div>
-            <div className="review-content">
-                {/* Only display rating on top-level comments */}
-                {!comment.parentReviewId && comment.rating > 0 && <StarRating rating={comment.rating} readOnly={true} />} 
-                <p>{comment.comment}</p>
-                
-                {user && level < 3 && ( // Limit nesting to 3 levels
-                    // USES THE CORRECT 'reply-btn' CLASS HERE
-                    <button className="reply-btn" onClick={() => setIsReplying(prev => !prev)}>
-                        <FaReply /> {isReplying ? 'Cancel Reply' : 'Reply'}
-                    </button>
-                )}
-            </div>
+      setReplyComment('');
+      setIsReplying(false);
+      onReviewAdded();
+    } catch (error) {
+      alert(error.response?.data?.message || 'Failed to submit reply.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div
+      key={reply._id}
+      className="review-card level-1"
+    >
+      <div className="review-author">
+        <img
+          src={reply.user?.avatar || 'https://via.placeholder.com/40'}
+          alt={reply.user?.name || 'Deleted User'}
+          className="review-avatar"
+        />
+        <div className="review-author-info">
+          <strong>
+            {reply.user?.name || 'Deleted User'}
+            {/* FINAL FIX: Display @username if parent user data exists. 
+                This shows the name of the person being replied to. */}
+            {reply.parentUser?.name && (
+              <span className="replying-to"> @{reply.parentUser.name}</span>
+            )}
+          </strong>
+          <span>{formatDate(reply.createdAt)}</span>
+        </div>
+      </div>
+
+      <div className="review-content">
+        <p>{reply.comment}</p>
+
+        {user && (
+          <>
+            <button className="reply-btn" onClick={() => setIsReplying(prev => !prev)}>
+              <FaReply /> {isReplying ? 'Cancel Reply' : 'Reply'}
+            </button>
 
             {isReplying && (
-                    <form onSubmit={handleReplySubmit} className="reply-form">
-                        <textarea
-                            rows="2"
-                            value={replyComment}
-                            onChange={(e) => setReplyComment(e.target.value)}
-                            placeholder="Type your reply..."
-                            required
-                        />
-                        {/* USES THE CORRECT 'reply-submit-btn' CLASS HERE */}
-                        <div className="reply-actions"> 
-                            <button type="submit" disabled={loading} className="reply-submit-btn">
-                                {loading ? 'Sending...' : 'Post Reply'}
-                            </button>
-                        </div>
-                    </form>
-            )}
-
-            <div className="nested-replies">
-                {nestedReplies.map(reply => (
-                    // Recursive call
-                    <CommentThread 
-                        key={reply._id} 
-                        comment={reply} 
-                        postId={postId} 
-                        onReviewAdded={onReviewAdded} 
-                        user={user}
-                        token={token}
-                        level={level + 1}
-                    />
-                ))}
-            </div>
-        </div>
-    );
-};
-// --- End Recursive Component ---
-
-// ... (BlogReviews component remains unchanged) ...
-
-const BlogReviews = ({ blogId, reviews, onReviewAdded }) => {
-    const [rating, setRating] = useState(0);
-    const [comment, setComment] = useState('');
-    const [loading, setLoading] = useState(false);
-    const { user, token } = useAuth();
-    
-    // Function to transform flat review array into nested threads
-    const buildCommentThreads = (flatReviews) => {
-        const commentMap = {};
-        const rootComments = [];
-
-        // Map every comment by its ID
-        flatReviews.forEach(comment => {
-            commentMap[comment._id] = { ...comment, replies: [] };
-        });
-
-        // Organize comments into root and nested structure
-        Object.values(commentMap).forEach(comment => {
-            if (comment.parentReviewId) {
-                const parent = commentMap[comment.parentReviewId];
-                if (parent) {
-                    parent.replies.push(comment);
-                }
-            } else {
-                rootComments.push(comment);
-            }
-        });
-        
-        // Sort root comments by creation date (newest first)
-        rootComments.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        
-        return rootComments;
-    };
-    
-    const commentThreads = buildCommentThreads(reviews);
-    const alreadyReviewedTopLevel = reviews.some(r => r.user?._id === user?._id && !r.parentReviewId);
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        if (rating === 0) {
-            alert('Please provide a star rating for a top-level review.');
-            setLoading(false);
-            return;
-        }
-
-        try {
-            const config = { headers: { Authorization: `Bearer ${token}` } };
-            // Note: parentReviewId is implicitly null/undefined here for top-level review
-            await axios.post(`/blogs/${blogId}/reviews`, { rating, comment }, config);
-            
-            alert('Review submitted successfully! Refreshing content...');
-            onReviewAdded(); 
-            setRating(0);
-            setComment('');
-
-        } catch (error) {
-            alert(error.response?.data?.message || 'Failed to submit review.');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    return (
-        <div className="reviews-section">
-            <h2>Comments & Reviews ({reviews.length})</h2>
-            
-            <div className="reviews-list">
-                {commentThreads.length === 0 && <p className="no-reviews">No comments yet. Be the first!</p>}
-                {commentThreads.map((thread) => (
-                    <CommentThread 
-                        key={thread._id} 
-                        comment={thread} 
-                        postId={blogId} 
-                        onReviewAdded={onReviewAdded} 
-                        user={user}
-                        token={token}
-                    />
-                ))}
-            </div>
-
-            {/* Top-Level Review Form */}
-            {user && !alreadyReviewedTopLevel && (
-                <div className="review-form">
-                    <h3>Post a New Top-Level Review</h3>
-                    <form onSubmit={handleSubmit}>
-                        <div className="form-group">
-                            <label>Your Rating</label>
-                            <StarRating rating={rating} setRating={setRating} />
-                        </div>
-                        <div className="form-group">
-                            <label>Your Comment</label>
-                            <textarea
-                                rows="4"
-                                value={comment}
-                                onChange={(e) => setComment(e.target.value)}
-                                placeholder="Share your thoughts and rate the article..."
-                                required
-                            />
-                        </div>
-                        <button type="submit" className="action-button download-btn" disabled={loading}>
-                            {loading ? 'Submitting...' : 'Submit Review'}
-                        </button>
-                    </form>
+              <form onSubmit={handleReplySubmit} className="reply-form">
+                <textarea
+                  rows="2"
+                  value={replyComment}
+                  onChange={(e) => setReplyComment(e.target.value)}
+                  placeholder={`Replying to ${reply.user?.name || 'this comment'}...`}
+                  required
+                />
+                <div className="reply-actions">
+                  <button type="submit" disabled={loading} className="reply-submit-btn">
+                    {loading ? 'Sending...' : 'Post Reply'}
+                  </button>
                 </div>
+              </form>
             )}
-            {user && alreadyReviewedTopLevel && (
-                <p className="no-reviews" style={{borderColor: 'var(--primary-color)'}}>
-                    You have already posted a top-level review. You can reply to any existing comment instead.
-                </p>
-            )}
-            {!user && (
-                <p className="no-reviews">Please <Link to="/login" style={{color: 'var(--primary-color)'}}>log in</Link> to submit a review or comment.</p>
-            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
+
+
+// ----------------------------
+// CommentThread Component (YouTube-style flattened replies)
+// ----------------------------
+const CommentThread = ({ comment, postId, onReviewAdded, user, token }) => {
+  const [isReplying, setIsReplying] = useState(false);
+  const [replyComment, setReplyComment] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleReplySubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      await axios.post(`/blogs/${postId}/reviews`, {
+        comment: replyComment,
+        parentReviewId: comment._id, // Replying directly to the top-level comment
+      }, config);
+
+      setReplyComment('');
+      setIsReplying(false);
+      onReviewAdded();
+    } catch (error) {
+      alert(error.response?.data?.message || 'Failed to submit reply.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Function to extract all replies into a single flat array
+  const flattenReplies = (replyList) => {
+    let allReplies = [];
+    if (!replyList) return allReplies;
+
+    for (const reply of replyList) {
+      allReplies.push(reply);
+      allReplies = allReplies.concat(flattenReplies(reply.replies));
+    }
+    return allReplies;
+  };
+
+  const allFlatReplies = flattenReplies(comment.replies);
+
+  return (
+    <div className="review-card-thread">
+      {/* 1. Main Top-Level Comment (Level 0) */}
+      <div className="review-card level-0">
+        <div className="review-author">
+          <img
+            src={comment.user?.avatar || 'https://via.placeholder.com/45'}
+            alt={comment.user?.name || 'Deleted User'}
+            className="review-avatar"
+          />
+          <div className="review-author-info">
+            <strong>{comment.user?.name || 'Deleted User'}</strong>
+            <span>{formatDate(comment.createdAt)}</span>
+          </div>
         </div>
-    );
+
+        <div className="review-content">
+          {!comment.parentReviewId && comment.rating > 0 && <StarRating rating={comment.rating} readOnly />}
+          <p>{comment.comment}</p>
+
+          {user && (
+            <>
+              <button className="reply-btn" onClick={() => setIsReplying(prev => !prev)}>
+                <FaReply /> {isReplying ? 'Cancel Reply' : 'Reply'}
+              </button>
+
+              {isReplying && (
+                <form onSubmit={handleReplySubmit} className="reply-form">
+                  <textarea
+                    rows="2"
+                    value={replyComment}
+                    onChange={(e) => setReplyComment(e.target.value)}
+                    placeholder="Type your reply to this comment..."
+                    required
+                  />
+                  <div className="reply-actions">
+                    <button type="submit" disabled={loading} className="reply-submit-btn">
+                      {loading ? 'Sending...' : 'Post Reply'}
+                    </button>
+                  </div>
+                </form>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* 2. All Replies Flattened */}
+      {allFlatReplies.map(reply => (
+        <ReplyCard
+          key={reply._id}
+          reply={reply}
+          postId={postId}
+          onReviewAdded={onReviewAdded}
+          user={user}
+          token={token}
+          parentId={comment._id}
+        />
+      ))}
+    </div>
+  );
+};
+
+// ----------------------------
+// Main BlogReviews Component
+// ----------------------------
+const BlogReviews = ({ blogId, reviews, onReviewAdded }) => {
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { user, token } = useAuth();
+
+  // --- LOGIC FOR TARGETED USERNAME ---
+  const buildCommentThreads = (flatReviews) => {
+    const map = {};
+    const rootComments = [];
+
+    // Step 1: Map all reviews and initialize replies array, attaching the immediate parent user
+    flatReviews.forEach(r => { 
+        // Find the user object of the direct parent *comment*
+        const parentComment = r.parentReviewId 
+            ? flatReviews.find(p => p._id === r.parentReviewId) 
+            : null;
+        
+        let parentUser = null;
+        
+        // If the immediate parent comment is available in the current list, use its user data
+        if (parentComment && parentComment.user) {
+             parentUser = parentComment.user;
+        } 
+
+        map[r._id] = { 
+            ...r, 
+            replies: [],
+            // This property holds the user of the comment being replied to
+            parentUser: parentUser 
+        }; 
+    });
+
+    // Step 2: Build the hierarchy
+    Object.values(map).forEach(r => {
+      if (r.parentReviewId) {
+        const parent = map[r.parentReviewId];
+        if (parent) {
+            parent.replies.push(r);
+        } else {
+          rootComments.push(r); 
+        }
+      } else {
+        rootComments.push(r);
+      }
+    });
+
+    return rootComments;
+  };
+
+  const commentThreads = buildCommentThreads(reviews);
+  const alreadyReviewedTopLevel = reviews.some(r => r.user?._id === user?._id && !r.parentReviewId);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (rating === 0) return alert('Please provide a star rating.');
+
+    setLoading(true);
+    try {
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      await axios.post(`/blogs/${blogId}/reviews`, { rating, comment }, config);
+      setRating(0);
+      setComment('');
+      onReviewAdded();
+    } catch (error) {
+      alert(error.response?.data?.message || 'Failed to submit review.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="reviews-section">
+      <h2>Comments & Reviews ({reviews.length})</h2>
+
+      <div className="reviews-list">
+        {commentThreads.length === 0 && <p>No comments yet. Be the first!</p>}
+        {commentThreads.map(thread => (
+          <CommentThread
+            key={thread._id}
+            comment={thread}
+            postId={blogId}
+            onReviewAdded={onReviewAdded}
+            user={user}
+            token={token}
+          />
+        ))}
+      </div>
+
+      {user && !alreadyReviewedTopLevel && (
+        <div className="review-form">
+          <h3>Post a New Review</h3>
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label>Your Rating</label>
+              <StarRating rating={rating} setRating={setRating} />
+            </div>
+            <div className="form-group">
+              <label>Your Comment</label>
+              <textarea
+                rows="4"
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                placeholder="Share your thoughts..."
+                required
+              />
+            </div>
+            <button type="submit" disabled={loading}>
+              {loading ? 'Submitting...' : 'Submit Review'}
+            </button>
+          </form>
+        </div>
+      )}
+
+      {!user && (
+        <p>Please <Link to="/login" style={{ color: 'var(--primary-color)' }}>log in</Link> to submit a review or comment.</p>
+      )}
+    </div>
+  );
 };
 
 export default BlogReviews;
