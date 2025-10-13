@@ -5,6 +5,7 @@ const { storage } = require('../config/cloudinary');
 const User = require('../models/User');
 const Note = require('../models/Note'); 
 const Blog = require('../models/Blog'); 
+const Collection = require('../models/Collection');
 const { protect } = require('../middleware/authMiddleware');
 const { admin } = require('../middleware/adminMiddleware');
 
@@ -356,6 +357,23 @@ router.get('/top-contributors', async (req, res) => {
     }
 });
 
+// @route   GET /api/users/me/collections
+// @desc    Get all user collections (used for profile/modal)
+// @access  Private
+router.get('/me/collections', protect, async (req, res) => {
+    try {
+        // Find all collections belonging to the authenticated user
+        const collections = await Collection.find({ user: req.user.id })
+            .select('name notes createdAt')
+            .lean(); 
+        
+        // Return collections under a key to mirror standard API responses
+        res.json({ collections });
+    } catch (error) {
+        console.error('Error fetching user collections:', error);
+        res.status(500).json({ message: 'Failed to fetch user collections.' });
+    }
+});
 
 // @route   GET /api/users
 // @desc    Get all users (Admin only)
