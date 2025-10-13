@@ -728,24 +728,42 @@ router.put('/collections/:collectionId/add/:noteId', protect, async (req, res) =
 
 // @route   PUT /api/notes/collections/:collectionId/remove/:noteId
 // @desc    Remove a note from a collection
-router.put('/collections/:collectionId/remove/:noteId', protect, async (req, res) => {
-    try {
-        const { collectionId, noteId } = req.params;
-        const collection = await Collection.findOneAndUpdate(
-            { _id: collectionId, user: req.user.id },
-            { $pull: { notes: noteId } },
-            { new: true }
-        );
+// ... (The rest of the file remains the same)
 
-        if (!collection) {
-            return res.status(404).json({ message: 'Collection not found or access denied.' });
-        }
-        res.json({ message: 'Note removed from collection.', collection });
-    } catch (error) {
-        console.error('Error removing note from collection:', error);
-        res.status(500).json({ message: 'Failed to remove note from collection.' });
-    }
+// @route   PUT /api/notes/collections/:collectionId/remove/:noteId
+// @desc    Remove a note from a collection
+router.put('/collections/:collectionId/remove/:noteId', protect, async (req, res) => {
+    try {
+        const { collectionId, noteId } = req.params;
+        
+        // --- FINAL, ROBUST FIX: Use findOneAndUpdate with $pull ---
+        // This operation attempts to remove the item from the 'notes' array.
+        const collection = await Collection.findOneAndUpdate(
+            { _id: collectionId, user: req.user.id },
+            { $pull: { notes: noteId } }, // $pull operator removes the specified ID from the array
+            { new: true } // Return the updated document
+        );
+
+        if (!collection) {
+            // If collection is not found, verify if it's due to ownership or the collection doesn't exist
+            const checkOwnership = await Collection.findById(collectionId);
+            if (!checkOwnership) {
+                 return res.status(404).json({ message: 'Collection not found.' });
+            }
+            // If the collection exists but this user doesn't own it, or the note ID was already gone
+            return res.status(401).json({ message: 'Access denied or note already removed.' });
+        }
+        
+        // Success response
+        res.json({ message: 'Note removed from collection.', collection });
+    } catch (error) {
+        console.error('Error removing note from collection:', error);
+        // A 500 error here is the source of the generic "failed" message on the client.
+        res.status(500).json({ message: 'Failed to remove note from collection. Check server logs.' });
+    }
 });
+
+// ... (The rest of the file remains the same)
 
 // note-sharing-app/server/routes/noteRoutes.js
 
