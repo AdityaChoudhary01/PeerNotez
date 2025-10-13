@@ -30,9 +30,9 @@ const calculateBadges = (user) => {
 // USER AUTH & PROFILE MANAGEMENT
 // ==========================================================
 
-// @route   GET /api/users/profile
-// @desc    Get user profile with calculated badges and following status
-// @access  Private
+// @route   GET /api/users/profile
+// @desc    Get user profile with calculated badges and following status
+// @access  Private
 router.get('/profile', protect, async (req, res) => {
     try {
         const user = await User.findById(req.user.id).select('-password');
@@ -58,38 +58,38 @@ router.get('/profile', protect, async (req, res) => {
 });
 
 
-// @route   PUT /api/users/profile/avatar
-// @desc    Update user profile picture
-// @access  Private
+// @route   PUT /api/users/profile/avatar
+// @desc    Update user profile picture
+// @access  Private
 router.put('/profile/avatar', protect, upload.single('avatar'), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ message: 'No file uploaded or file type not supported for avatar.' });
-    }
-    const user = await User.findById(req.user.id);
-    if (user) {
-      user.avatar = req.file.path; 
-      const updatedUser = await user.save();
-      res.json({
-        _id: updatedUser._id,
-        name: updatedUser.name,
-        email: updatedUser.email,
-        avatar: updatedUser.avatar, 
-        // IMPORTANT: Retain following list for client context update
-        following: updatedUser.following || [], 
-      });
-    } else {
-      res.status(404).json({ message: 'User not found' });
-    }
-  } catch (error) {
-    console.error('Error updating avatar (userRoutes):', error);
-    res.status(500).json({ message: 'Server Error occurred while updating avatar.', error: error.message });
-  }
+    try {
+        if (!req.file) {
+            return res.status(400).json({ message: 'No file uploaded or file type not supported for avatar.' });
+        }
+        const user = await User.findById(req.user.id);
+        if (user) {
+            user.avatar = req.file.path; 
+            const updatedUser = await user.save();
+            res.json({
+                _id: updatedUser._id,
+                name: updatedUser.name,
+                email: updatedUser.email,
+                avatar: updatedUser.avatar, 
+                // IMPORTANT: Retain following list for client context update
+                following: updatedUser.following || [], 
+            });
+        } else {
+            res.status(404).json({ message: 'User not found' });
+        }
+    } catch (error) {
+        console.error('Error updating avatar (userRoutes):', error);
+        res.status(500).json({ message: 'Server Error occurred while updating avatar.', error: error.message });
+    }
 });
 
-// @route   PUT /api/users/profile
-// @desc    Update user profile details (e.g., name)
-// @access  Private
+// @route   PUT /api/users/profile
+// @desc    Update user profile details (e.g., name)
+// @access  Private
 router.put('/profile', protect, async (req, res) => {
     try {
         const user = await User.findById(req.user.id);
@@ -120,8 +120,8 @@ router.put('/profile', protect, async (req, res) => {
 // NEW: FOLLOWING & FEED ROUTES
 // ==========================================================
 
-// @route   PUT /api/users/:id/follow
-// @desc    Follow or unfollow a user (User ID in params is the author to follow)
+// @route   PUT /api/users/:id/follow
+// @desc    Follow or unfollow a user (User ID in params is the author to follow)
 router.put('/:id/follow', protect, async (req, res) => {
     try {
         const userIdToFollow = req.params.id;
@@ -171,8 +171,8 @@ router.put('/:id/follow', protect, async (req, res) => {
     }
 });
 
-// @route   GET /api/users/feed
-// @desc    Get latest content from followed users (Personalized Feed)
+// @route   GET /api/users/feed
+// @desc    Get latest content from followed users (Personalized Feed)
 router.get('/feed', protect, async (req, res) => {
     try {
         const followedUsers = req.user.following;
@@ -191,7 +191,7 @@ router.get('/feed', protect, async (req, res) => {
         
         // Find recent Notes and Blogs from followed users
         const notePromise = Note.find({ user: { $in: followedUsers } })
-            // 🛑 FIX APPLIED HERE: Added cloudinaryId, fileType, and filePath 🛑
+            // Note: Keep only necessary fields for list view
             .select('title university course uploadDate downloadCount user rating cloudinaryId fileType filePath') 
             .populate('user', 'name avatar')
             .sort({ uploadDate: -1 })
@@ -200,7 +200,8 @@ router.get('/feed', protect, async (req, res) => {
             .lean();
 
         const blogPromise = Blog.find({ author: { $in: followedUsers } })
-            .select('title slug createdAt downloadCount author rating')
+            // 🚀 FIX: Explicitly include 'summary' and 'content' for the mobile app's card preview.
+            .select('title slug createdAt downloadCount author rating summary content')
             .populate('author', 'name avatar')
             .sort({ createdAt: -1 })
             .limit(limit)
@@ -211,9 +212,10 @@ router.get('/feed', protect, async (req, res) => {
 
         // Combine and sort content by creation date (latest first)
         const combinedContent = [
-            ...notes.map(n => ({ type: 'note', ...n })),
+            // Use uploadDate for Note's sorting date
+            ...notes.map(n => ({ type: 'note', ...n, createdAt: n.uploadDate })), 
             ...blogs.map(b => ({ type: 'blog', ...b })),
-        ].sort((a, b) => new Date(b.uploadDate || b.createdAt) - new Date(a.uploadDate || a.createdAt));
+        ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
         // Return the first 'limit' items from the sorted list
         res.json({ 
@@ -233,89 +235,89 @@ router.get('/feed', protect, async (req, res) => {
 // NOTE SAVING ROUTES (Existing Logic)
 // ==========================================================
 
-// @route   PUT /api/users/save/:noteId
-// @desc    Save a note to user's savedNotes list
-// @access  Private
+// @route   PUT /api/users/save/:noteId
+// @desc    Save a note to user's savedNotes list
+// @access  Private
 router.put('/save/:noteId', protect, async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id);
-    if (!user) return res.status(404).json({ message: 'User not found' });
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ message: 'User not found' });
 
-    if (!user.savedNotes.includes(req.params.noteId)) {
-      user.savedNotes.push(req.params.noteId);
-      await user.save();
-      res.status(200).json({ message: 'Note saved successfully!', savedNotesCount: user.savedNotes.length });
-    } else {
-      res.status(200).json({ message: 'Note already saved.', savedNotesCount: user.savedNotes.length });
-    }
-  } catch (error) {
-    console.error('Error saving note (userRoutes):', error);
-    res.status(500).json({ message: 'Server Error occurred while saving note.' });
-  }
+        if (!user.savedNotes.includes(req.params.noteId)) {
+            user.savedNotes.push(req.params.noteId);
+            await user.save();
+            res.status(200).json({ message: 'Note saved successfully!', savedNotesCount: user.savedNotes.length });
+        } else {
+            res.status(200).json({ message: 'Note already saved.', savedNotesCount: user.savedNotes.length });
+        }
+    } catch (error) {
+        console.error('Error saving note (userRoutes):', error);
+        res.status(500).json({ message: 'Server Error occurred while saving note.' });
+    }
 });
 
-// @route   PUT /api/users/unsave/:noteId
-// @desc    Unsave a note from user's savedNotes list
-// @access  Private
+// @route   PUT /api/users/unsave/:noteId
+// @desc    Unsave a note from user's savedNotes list
+// @access  Private
 router.put('/unsave/:noteId', protect, async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id);
-    if (!user) return res.status(404).json({ message: 'User not found' });
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ message: 'User not found' });
 
-    const initialLength = user.savedNotes.length;
-    user.savedNotes = user.savedNotes.filter(
-      (noteId) => noteId.toString() !== req.params.noteId.toString()
-    );
-    if (user.savedNotes.length < initialLength) {
-      await user.save();
-      res.status(200).json({ message: 'Note unsaved successfully!', savedNotesCount: user.savedNotes.length });
-    } else {
-        res.status(200).json({ message: 'Note was not found in saved list.', savedNotesCount: user.savedNotes.length });
-    }
-  } catch (error) {
-    console.error('Error unsaving note (userRoutes):', error);
-    res.status(500).json({ message: 'Server Error occurred while unsaving note.' });
-  }
+        const initialLength = user.savedNotes.length;
+        user.savedNotes = user.savedNotes.filter(
+            (noteId) => noteId.toString() !== req.params.noteId.toString()
+        );
+        if (user.savedNotes.length < initialLength) {
+            await user.save();
+            res.status(200).json({ message: 'Note unsaved successfully!', savedNotesCount: user.savedNotes.length });
+        } else {
+            res.status(200).json({ message: 'Note was not found in saved list.', savedNotesCount: user.savedNotes.length });
+        }
+    } catch (error) {
+        console.error('Error unsaving note (userRoutes):', error);
+        res.status(500).json({ message: 'Server Error occurred while unsaving note.' });
+    }
 });
 
-// @route   GET /api/users/savednotes
-// @desc    Get all saved notes for a user with pagination
-// @access  Private
+// @route   GET /api/users/savednotes
+// @desc    Get all saved notes for a user with pagination
+// @access  Private
 router.get('/savednotes', protect, async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const skip = (page - 1) * limit;
+    try {
+        const userId = req.user.id;
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
 
-    const user = await User.findById(userId);
+        const user = await User.findById(userId);
 
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
 
-    const savedNoteIds = user.savedNotes;
+        const savedNoteIds = user.savedNotes;
 
-    const notes = await Note.find({ _id: { $in: savedNoteIds } })
-                            .populate('user', 'name avatar')
-                            .sort({ createdAt: -1 })
-                            .skip(skip)
-                            .limit(limit);
+        const notes = await Note.find({ _id: { $in: savedNoteIds } })
+                                 .populate('user', 'name avatar')
+                                 .sort({ createdAt: -1 })
+                                 .skip(skip)
+                                 .limit(limit);
 
-    const totalNotes = savedNoteIds.length;
-    const totalPages = Math.ceil(totalNotes / limit);
+        const totalNotes = savedNoteIds.length;
+        const totalPages = Math.ceil(totalNotes / limit);
 
-    res.json({
-      notes: notes,
-      page: page,
-      totalPages: totalPages,
-      totalNotes: totalNotes,
-    });
+        res.json({
+            notes: notes,
+            page: page,
+            totalPages: totalPages,
+            totalNotes: totalNotes,
+        });
 
-  } catch (error) {
-    console.error('Error fetching saved notes (userRoutes):', error);
-    res.status(500).json({ message: 'Server Error occurred while fetching saved notes.' });
-  }
+    } catch (error) {
+        console.error('Error fetching saved notes (userRoutes):', error);
+        res.status(500).json({ message: 'Server Error occurred while fetching saved notes.' });
+    }
 });
 
 
@@ -357,9 +359,9 @@ router.get('/top-contributors', async (req, res) => {
     }
 });
 
-// @route   GET /api/users/me/collections
-// @desc    Get all user collections (used for profile/modal)
-// @access  Private
+// @route   GET /api/users/me/collections
+// @desc    Get all user collections (used for profile/modal)
+// @access  Private
 router.get('/me/collections', protect, async (req, res) => {
     try {
         // Find all collections belonging to the authenticated user
@@ -375,62 +377,62 @@ router.get('/me/collections', protect, async (req, res) => {
     }
 });
 
-// @route   GET /api/users
-// @desc    Get all users (Admin only)
-// @access  Private/Admin
+// @route   GET /api/users
+// @desc    Get all users (Admin only)
+// @access  Private/Admin
 router.get('/', protect, admin, async (req, res) => {
-  try {
-    const users = await User.find({});
-    res.json(users);
-  } catch (error) {
-    console.error('Error fetching all users (userRoutes):', error);
-    res.status(500).json({ message: 'Server Error occurred while fetching users.' });
-  }
+    try {
+        const users = await User.find({});
+        res.json(users);
+    } catch (error) {
+        console.error('Error fetching all users (userRoutes):', error);
+        res.status(500).json({ message: 'Server Error occurred while fetching users.' });
+    }
 });
 
-// @route   DELETE /api/users/:id
-// @desc    Delete a user (Admin only)
-// @access  Private/Admin
+// @route   DELETE /api/users/:id
+// @desc    Delete a user (Admin only)
+// @access  Private/Admin
 router.delete('/:id', protect, admin, async (req, res) => {
-  try {
-    if (req.params.id.toString() === req.user.id.toString()) {
-      return res.status(400).json({ message: 'Cannot delete yourself as an admin.' });
-    }
+    try {
+        if (req.params.id.toString() === req.user.id.toString()) {
+            return res.status(400).json({ message: 'Cannot delete yourself as an admin.' });
+        }
 
-    const user = await User.findById(req.params.id);
-    if (user) {
-      await user.deleteOne();
-      res.json({ message: 'User removed successfully' });
-    } else {
-      res.status(404).json({ message: 'User not found' });
-    }
-  } catch (error) {
-    console.error('Error deleting user (userRoutes):', error);
-    res.status(500).json({ message: 'Server Error occurred while deleting user.' });
-  }
+        const user = await User.findById(req.params.id);
+        if (user) {
+            await user.deleteOne();
+            res.json({ message: 'User removed successfully' });
+        } else {
+            res.status(404).json({ message: 'User not found' });
+        }
+    } catch (error) {
+        console.error('Error deleting user (userRoutes):', error);
+        res.status(500).json({ message: 'Server Error occurred while deleting user.' });
+    }
 });
 
-// @route   PUT /api/users/:id/role
-// @desc    Change a user's role (toggle between 'user' and 'admin')
-// @access  Private/Admin
+// @route   PUT /api/users/:id/role
+// @desc    Change a user's role (toggle between 'user' and 'admin')
+// @access  Private/Admin
 router.put('/:id/role', protect, admin, async (req, res) => {
-  try {
-    if (req.params.id.toString() === req.user.id.toString()) {
-      return res.status(400).json({ message: 'Cannot change your own role via this endpoint.' });
-    }
+    try {
+        if (req.params.id.toString() === req.user.id.toString()) {
+            return res.status(400).json({ message: 'Cannot change your own role via this endpoint.' });
+        }
 
-    const user = await User.findById(req.params.id);
-    if (user) {
-      user.role = user.role === 'admin' ? 'user' : 'admin';
-      await user.save();
-      res.json({ message: `User role for ${user.name} updated to ${user.role}`, userId: user._id, newRole: user.role });
-    } else {
-      res.status(404).json({ message: 'User not found' });
-    }
-  } catch (error) {
-    console.error('Error changing user role (userRoutes):', error);
-    res.status(500).json({ message: 'Server Error occurred while changing user role.' });
-  }
+        const user = await User.findById(req.params.id);
+        if (user) {
+            user.role = user.role === 'admin' ? 'user' : 'admin';
+            await user.save();
+            res.json({ message: `User role for ${user.name} updated to ${user.role}`, userId: user._id, newRole: user.role });
+        } else {
+            res.status(404).json({ message: 'User not found' });
+        }
+    } catch (error) {
+        console.error('Error changing user role (userRoutes):', error);
+        res.status(500).json({ message: 'Server Error occurred while changing user role.' });
+    }
 });
 
 
