@@ -6896,7 +6896,6 @@ hr {
     }
 }
 
-
 /* Styling for the Reply Button (the one that shows/hides the form) */
 .reply-btn {
     /* Base styling for a link/button */
@@ -7019,6 +7018,7 @@ hr {
     border-left: 3px solid #576574; 
     padding-left: 15px;
 }
+
 
 
 
@@ -7339,6 +7339,7 @@ hr {
         justify-content: center;
     }
 }
+
 
 
 
