@@ -1,3 +1,4 @@
+// client/src/components/layout/Footer.js
 import React from 'react';
 import { FaLinkedin, FaGithub, FaYoutube, FaInstagram } from 'react-icons/fa';
 
@@ -19,6 +20,10 @@ const Footer = () => {
             <li><a href="/about">About Us</a></li>
             <li><a href="/contact">Contact</a></li>
             <li><a href="/upload">Upload Notes</a></li>
+            {/* --- NEW LEGAL LINKS ADDED HERE --- */}
+            <li><a href="/terms">Terms of Service</a></li>
+            <li><a href="/dmca">DMCA & Copyright</a></li>
+            <li><a href="/privacy">Privacy Policy</a></li> {/* <-- NEW LINK */}
           </ul>
         </div>
         
