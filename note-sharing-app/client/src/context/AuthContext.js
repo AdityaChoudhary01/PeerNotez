@@ -82,9 +82,6 @@ export const AuthProvider = ({ children }) => {
     updateUser(updatedUser);
   };
 
-  // ✅ Debug log for deployment (can remove later)
-  console.log("AuthContext baseURL:", baseURL);
-
   return (
     <AuthContext.Provider
       value={{
@@ -106,3 +103,4 @@ export const AuthProvider = ({ children }) => {
 };
 
 export default AuthContext;
+
