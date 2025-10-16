@@ -16,13 +16,19 @@ import PrivateRoute from './utils/PrivateRoute';
 import ProfilePage from './pages/ProfilePage';
 import AdminRoute from './utils/AdminRoute';
 import AdminDashboardPage from './pages/AdminDashboardPage';
-// --- ADDED IMPORT FOR SUPPORTERS PAGE ---
 import SupportersPage from './pages/SupportersPage'; 
 import BlogPage from './pages/BlogPage';
 import PostBlogPage from './pages/PostBlogPage';
 import MyBlogsPage from './pages/MyBlogsPage';
 import MyFeedPage from './pages/MyFeedPage';
 import ViewCollectionPage from './pages/ViewCollectionPage';
+
+// --- ADDED LEGAL IMPORTS ---
+import NotFoundPage from './pages/NotFoundPage'; 
+import DMCAPolicyPage from './pages/DMCAPolicyPage';
+import TermsOfServicePage from './pages/TermsOfServicePage'; 
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage'; // <-- NEW IMPORT
+
 import './App.css';
 
 function App() {
@@ -42,6 +48,11 @@ function App() {
               <Route path="/about" element={<AboutPage />} />
               <Route path="/donate" element={<DonatePage />} />
 
+              {/* --- LEGAL ROUTES --- */}
+              <Route path="/dmca" element={<DMCAPolicyPage />} />
+              <Route path="/terms" element={<TermsOfServicePage />} />
+              <Route path="/privacy" element={<PrivacyPolicyPage />} /> {/* <-- NEW ROUTE */}
+              
               <Route path="/blogs" element={<BlogPage />} />
               <Route path="/blogs/post" element={<PrivateRoute><PostBlogPage /></PrivateRoute>} />
               <Route path="/blogs/my-blogs" element={<PrivateRoute><MyBlogsPage /></PrivateRoute>} />
@@ -53,11 +64,13 @@ function App() {
               />
 
 
-              {/* --- ADDED ROUTE FOR SUPPORTERS PAGE --- */}
               <Route path="/supporters" element={<SupportersPage />} />
               <Route path="/profile" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
               <Route path="/upload" element={<PrivateRoute><UploadPage /></PrivateRoute>} />
               <Route path="/admin" element={<AdminRoute><AdminDashboardPage /></AdminRoute>} />
+
+              {/* --- 404 NOT FOUND ROUTE --- */}
+              <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </main>
           <Footer />
