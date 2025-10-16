@@ -10,7 +10,6 @@ const PrivacyPolicyPage = () => {
         <div className="content-page privacy-policy-wrapper">
             <Helmet>
                 <title>Privacy Policy | PeerNotez</title>
-                <meta name="robots" content="noindex, follow" />
                 <meta name="description" content="PeerNotez's official privacy policy, detailing how we collect, use, and protect your personal data." />
             </Helmet>
             
@@ -126,5 +125,6 @@ const PrivacyPolicyPage = () => {
         </div>
     );
 };
+
 
 export default PrivacyPolicyPage;
