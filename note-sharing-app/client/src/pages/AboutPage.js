@@ -12,7 +12,7 @@ const AboutPage = () => {
                     content="Learn about PeerNotez's mission to provide free, high-quality academic resources and study materials. We are the leading community-driven note sharing platform, empowering student success globally. Discover our story and mission." 
                 />
                 <meta name="keywords" content="note sharing platform, academic resources, study materials, student community, free notes, PeerNotez mission, online learning" />
-                <link rel="canonical" href="https://www.peernotez.com/about" />
+                <link rel="canonical" href="https://peernotez.netlify.app/about" />
             </Helmet>
             
             <header className="about-header">
@@ -125,3 +125,4 @@ const AboutPage = () => {
 };
 
 export default AboutPage;
+
