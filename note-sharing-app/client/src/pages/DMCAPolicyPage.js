@@ -12,7 +12,6 @@ const DMCAPolicyPage = () => {
         <div className="content-page dmca-policy-wrapper">
             <Helmet>
                 <title>DMCA & Copyright Policy | PeerNotez</title>
-                <meta name="robots" content="noindex, follow" />
                 <meta name="description" content="PeerNotez's official policy for handling copyright infringement claims (DMCA and Indian IT Act compliance)." />
             </Helmet>
             
@@ -87,5 +86,6 @@ const DMCAPolicyPage = () => {
         </div>
     );
 };
+
 
 export default DMCAPolicyPage;
