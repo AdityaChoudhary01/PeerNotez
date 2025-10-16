@@ -1,3 +1,5 @@
+// note-sharing-app/client/src/pages/SignupPage.js
+
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
@@ -7,8 +9,11 @@ const SignupPage = () => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    // --- NEW STATE FOR CONSENT ---
+    const [agreedToTerms, setAgreedToTerms] = useState(false);
+    // ----------------------------
     const [error, setError] = useState('');
-    const [isSignedUp, setIsSignedUp] = useState(false); // New state for success message
+    const [isSignedUp, setIsSignedUp] = useState(false); 
     const { signup } = useAuth();
     const navigate = useNavigate();
 
@@ -16,10 +21,16 @@ const SignupPage = () => {
         e.preventDefault();
         setError('');
         
+        // --- CRITICAL CHECK ---
+        if (!agreedToTerms) {
+            setError('You must agree to the Terms of Service and Privacy Policy to create an account.');
+            return;
+        }
+        // ----------------------
+
         try {
             await signup(name, email, password);
             setIsSignedUp(true);
-            // Redirect to the login page after a 3-second delay
             setTimeout(() => {
                 navigate('/login');
             }, 3000); 
@@ -111,8 +122,23 @@ const SignupPage = () => {
                             </div>
                             
                             {error && <p className="auth-error">{error}</p>}
+
+                            {/* --- NEW CONSENT CHECKBOX --- */}
+                            <div className="form-group consent-group" style={{display: 'flex', alignItems: 'flex-start', gap: '10px', marginTop: '-0.5rem'}}>
+                                <input 
+                                    type="checkbox" 
+                                    id="terms-consent" 
+                                    checked={agreedToTerms}
+                                    onChange={(e) => setAgreedToTerms(e.target.checked)}
+                                    style={{marginTop: '5px', width: '20px', height: '20px', flexShrink: 0}}
+                                />
+                                <label htmlFor="terms-consent" style={{fontSize: '0.9rem', color: 'var(--subtle-text-color)', marginBottom: 0}}>
+                                    I agree to the <Link to="/terms" className="auth-link" target="_blank" rel="noopener noreferrer">Terms of Service</Link>, <Link to="/privacy" className="auth-link" target="_blank" rel="noopener noreferrer">Privacy Policy</Link>, and the <Link to="/dmca" className="auth-link" target="_blank" rel="noopener noreferrer">DMCA Policy</Link>.
+                                </label>
+                            </div>
+                            {/* ----------------------------- */}
                             
-                            <button type="submit" className="auth-btn">Sign Up</button>
+                            <button type="submit" className="auth-btn" disabled={!agreedToTerms}>Sign Up</button>
                             
                             <div className="auth-hint">
                                 Already have an account? <Link to="/login" className="auth-link">Log In</Link>
