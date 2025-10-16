@@ -9,7 +9,6 @@ const TermsOfServicePage = () => {
         <div className="content-page terms-of-service-wrapper">
             <Helmet>
                 <title>Terms of Service | PeerNotez</title>
-                <meta name="robots" content="noindex, follow" />
                 <meta name="description" content="The official Terms of Service and User Agreement for PeerNotez." />
             </Helmet>
             
@@ -74,5 +73,6 @@ const TermsOfServicePage = () => {
         </div>
     );
 };
+
 
 export default TermsOfServicePage;
