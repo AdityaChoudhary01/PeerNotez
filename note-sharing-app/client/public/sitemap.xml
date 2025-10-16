@@ -28,12 +28,12 @@
 <url>
   <loc>https://peernotez.netlify.app/search</loc>
   <lastmod>2025-10-11T15:20:00+00:00</lastmod>
-  <priority>0.9</priority>
+  <priority>0.6</priority>
 </url>
 <url>
   <loc>https://peernotez.netlify.app/supporters</loc>
   <lastmod>2025-10-11T15:20:00+00:00</lastmod>
-  <priority>0.6</priority>
+  <priority>0.7</priority>
 </url>
 
 <url>
@@ -58,4 +58,23 @@
   <priority>0.9</priority> 
 </url>
 
+
+<url>
+  <loc>https://peernotez.netlify.app/terms</loc>
+  <lastmod>2025-10-11T15:20:00+00:00</lastmod>
+  <priority>0.5</priority>
+</url>
+
+ <url>
+  <loc>https://peernotez.netlify.app/dmca</loc>
+  <lastmod>2025-10-11T15:20:00+00:00</lastmod>
+  <priority>0.5</priority>
+</url>
+
+ <url>
+  <loc>https://peernotez.netlify.app/privacy</loc>
+  <lastmod>2025-10-11T15:20:00+00:00</lastmod>
+  <priority>0.5</priority>
+</url>
 </urlset>
+
