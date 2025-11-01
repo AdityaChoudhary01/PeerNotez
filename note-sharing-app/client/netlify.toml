@@ -40,6 +40,15 @@ for = "/manifest.json"
   Cache-Control = "no-cache"
   Content-Type = "application/json"
 
+# Dynamic Sitemap
+[[headers]]
+for = "/sitemap-dynamic.xml"
+[headers.values]
+  Content-Type = "application/xml"
+  X-Robots-Tag = "all"
+  Access-Control-Allow-Origin = "*"
+  Cache-Control = "no-cache"
+
 [[headers]]
 # Static sitemap
 for = "/sitemap.xml"
