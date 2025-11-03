@@ -160,9 +160,7 @@ const ViewNotePage = () => {
             <Helmet>
                 <title>{note.title} | PeerNotez</title>
                 <meta name="description" content={`View and download notes on ${note.subject} from ${note.university}, uploaded by ${authorName}.`} />
-                // After (Corrected)
-<link 
-    rel="canonical" href={`https://peernotez.netlify.app/view/${noteId}`} 
+                <link rel="canonical" href={`https://peernotez.netlify.app/view/${noteId}`} 
 />
 
 
