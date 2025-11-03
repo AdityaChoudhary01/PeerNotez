@@ -160,7 +160,13 @@ const ViewNotePage = () => {
             <Helmet>
                 <title>{note.title} | PeerNotez</title>
                 <meta name="description" content={`View and download notes on ${note.subject} from ${note.university}, uploaded by ${authorName}.`} />
-                <link rel="canonical" href={window.location.href} />
+                // After (Corrected)
+<link 
+    rel="canonical" 
+    // Constructs the URL using the base domain and the specific noteId
+    href={`https://peernotez.netlify.app/view/${noteId}`} 
+/>
+
 
                 {/* Schema Markup (FIXED using dangerouslySetInnerHTML) */}
                 {note.numReviews > 0 && (
