@@ -13,6 +13,7 @@ const DMCAPolicyPage = () => {
             <Helmet>
                 <title>DMCA & Copyright Policy | PeerNotez</title>
                 <meta name="description" content="PeerNotez's official policy for handling copyright infringement claims (DMCA and Indian IT Act compliance)." />
+<link rel="canonical" href="https://peernotez.netlify.app/dmca" />
             </Helmet>
             
             <header className="about-header">
