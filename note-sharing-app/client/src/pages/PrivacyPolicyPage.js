@@ -11,6 +11,7 @@ const PrivacyPolicyPage = () => {
             <Helmet>
                 <title>Privacy Policy | PeerNotez</title>
                 <meta name="description" content="PeerNotez's official privacy policy, detailing how we collect, use, and protect your personal data." />
+<link rel="canonical" href="https://peernotez.netlify.app/privacy" />
             </Helmet>
             
             <header className="about-header">
