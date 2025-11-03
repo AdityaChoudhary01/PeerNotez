@@ -162,9 +162,7 @@ const ViewNotePage = () => {
                 <meta name="description" content={`View and download notes on ${note.subject} from ${note.university}, uploaded by ${authorName}.`} />
                 // After (Corrected)
 <link 
-    rel="canonical" 
-    // Constructs the URL using the base domain and the specific noteId
-    href={`https://peernotez.netlify.app/view/${noteId}`} 
+    rel="canonical" href={`https://peernotez.netlify.app/view/${noteId}`} 
 />
 
 
