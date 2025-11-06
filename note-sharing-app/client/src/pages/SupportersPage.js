@@ -80,6 +80,8 @@ const SupportersPage = () => {
                 <meta name="twitter:title" content="Our Valued Supporters | PeerNotez Wall of Fame" />
                 <meta name="twitter:description" content="Meet the incredible individuals who support PeerNotez and help us keep education free and accessible. Our Wall of Fame celebrates every generous contribution." />
                 <meta name="twitter:image" content="https://www.yourwebsite.com/social-share-image.jpg" /> {/* Optional */}
+<link rel="canonical" href="https://peernotez.netlify.app/supporters" />
+
             </Helmet>
 
             <header className="page-header">
