@@ -28,6 +28,8 @@ const LoginPage = () => {
             <Helmet>
                 <title>Login to PeerNotez | Access Your Notes</title>
                 <meta name="description" content="Log in to your PeerNotez account to access and share academic notes, study guides, and resources. Join our community of learners today." />
+<link rel="canonical" href="https://peernotez.netlify.app/login" />
+
             </Helmet>
             
             <div className="login-content-wrapper">
@@ -95,3 +97,4 @@ const LoginPage = () => {
 };
 
 export default LoginPage;
+
