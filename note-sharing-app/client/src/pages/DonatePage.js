@@ -11,6 +11,8 @@ const DonatePage = () => {
         <div className="donate-page-wrapper">
             <Helmet>
                 <title>Support PeerNotez | Help Us Grow</title>
+<link rel="canonical" href="https://peernotez.netlify.app/donate" />
+
             </Helmet>
 
             <header className="donate-hero-section">
@@ -106,5 +108,6 @@ const DonatePage = () => {
 };
 
 export default DonatePage;    
+
 
 
