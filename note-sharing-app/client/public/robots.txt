@@ -1,5 +1,7 @@
 User-agent: *
 Allow: /
 Sitemap: https://peernotez.netlify.app/sitemap.xml
-# Dynamic sitemap (add this)
+# Dynamic sitemap
 Sitemap: https://peernotez.netlify.app/sitemap-dynamic.xml
+# new static sitemap
+Sitemap: https://peernotez.netlify.app/static-sitemap.xml
