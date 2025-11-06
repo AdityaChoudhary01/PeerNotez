@@ -40,6 +40,8 @@ const ContactPage = () => {
         <div className="contact-page-wrapper">
             <Helmet>
                 <title>Contact Us | PeerNotez</title>
+<link rel="canonical" href="https://peernotez.netlify.app/contact" />
+
             </Helmet>
             
             <header className="page-header">
@@ -150,4 +152,5 @@ const ContactPage = () => {
 };
 
 export default ContactPage;
+
 
