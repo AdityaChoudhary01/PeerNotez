@@ -46,6 +46,8 @@ const SignupPage = () => {
             <div className="signup-page-container">
                 <Helmet>
                     <title>Sign Up Successful! | PeerNotez</title>
+<link rel="canonical" href="https://peernotez.netlify.app/signup" />
+
                 </Helmet>
                 <div className="signup-success-message">
                     <h2 className="success-title">Welcome to PeerNotez, {name}! 🎉</h2>
@@ -152,3 +154,4 @@ const SignupPage = () => {
 };
 
 export default SignupPage;
+
