@@ -10,6 +10,8 @@ const TermsOfServicePage = () => {
             <Helmet>
                 <title>Terms of Service | PeerNotez</title>
                 <meta name="description" content="The official Terms of Service and User Agreement for PeerNotez." />
+<link rel="canonical" href="https://peernotez.netlify.app/terms" />
+
             </Helmet>
             
             <header className="about-header">
@@ -76,3 +78,4 @@ const TermsOfServicePage = () => {
 
 
 export default TermsOfServicePage;
+
