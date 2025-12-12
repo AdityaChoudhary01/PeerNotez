@@ -148,7 +148,7 @@ const ViewNotePage = () => {
             "aggregateRating": {
                 "@type": "AggregateRating",
                 "ratingValue": (note.rating || 0).toFixed(1),
-                "reviewCount": note.numReviews
+                "reviewCount": note.numReviews || 0
             }
         },
         "about": note.subject,
@@ -242,3 +242,4 @@ const ViewNotePage = () => {
 };
 
 export default ViewNotePage;
+
