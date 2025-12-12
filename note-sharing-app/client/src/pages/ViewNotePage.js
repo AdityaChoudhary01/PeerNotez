@@ -1,3 +1,4 @@
+// src/pages/ViewNotePage.js
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
@@ -11,9 +12,10 @@ import AddToCollectionModal from '../components/notes/AddToCollectionModal';
 
 // Utility function: Converts bytes to human-readable format (KB, MB)
 const formatFileSize = (bytes) => {
-  if (!bytes) return '0 Bytes';
+  if (!bytes && bytes !== 0) return '0 Bytes';
   const k = 1024;
   const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  if (bytes === 0) return '0 Bytes';
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
 };
@@ -105,8 +107,9 @@ const ViewNotePage = () => {
       <div className="note-file-viewer-fallback">
         <i className="fas fa-file-download fallback-icon"></i>
         <p className="fallback-text">
-          {isLocalFile ? 'File preview not available for local files.' : 'This file type cannot be
-          previewed online.'}
+          {isLocalFile
+            ? 'File preview not available for local files.'
+            : 'This file type cannot be previewed online.'}
         </p>
         <a href={note.filePath} download className="note-download-fallback-btn">
           <i className="fas fa-download"></i> Download Note
