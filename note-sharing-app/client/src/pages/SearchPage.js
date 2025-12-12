@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useSearchParams } from 'react-router-dom';
+import { Helmet } from 'react-helmet';  
 import NoteCard from '../components/notes/NoteCard';
 import Pagination from '../components/common/Pagination'; // Import the Pagination component
 
@@ -40,6 +41,18 @@ const SearchPage = () => {
 
   return (
     <div>
+      <Helmet>
+        <title>{query ? `Search Results for "${query}"` : "All Notes"} | PeerNotez</title>
+        <meta 
+          name="description" 
+          content={query 
+            ? `Browse search results for "${query}" on PeerNotez.` 
+            : "Explore all notes available on PeerNotez."} 
+        />
+      <link rel="canonical" href="https://peernotez.netlify.app/search" />
+
+      </Helmet>
+
       <h1>{query ? `Search Results for "${query}"` : "All Notes"}</h1>
       {notes.length > 0 ? (
         <>
