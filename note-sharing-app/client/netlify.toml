@@ -81,3 +81,8 @@ from = "/*"
 to = "/index.html"
 status = 200
 # force is removed to avoid overriding existing files like JS/CSS/manifest
+# =======================================================
+# 3. Prerendering
+# =======================================================
+[prerender]
+  enabled = true
