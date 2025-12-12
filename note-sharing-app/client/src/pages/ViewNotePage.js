@@ -164,14 +164,12 @@ const ViewNotePage = () => {
 />
 
 
-                {/* Schema Markup (FIXED using dangerouslySetInnerHTML) */}
-                {note.numReviews > 0 && (
-                    <script type="application/ld+json"
-                        dangerouslySetInnerHTML={{
-                            __html: JSON.stringify(noteSchema)
-                        }}
-                    />
-                )}
+{/* ALWAYS RENDER THE BASE SCHEMA */}
+<script type="application/ld+json"
+    dangerouslySetInnerHTML={{
+        __html: JSON.stringify(noteSchema) // Render the schema always
+    }}
+/>
             </Helmet>
 
             <div className="note-details-card">
@@ -242,5 +240,6 @@ const ViewNotePage = () => {
 };
 
 export default ViewNotePage;
+
 
 
