@@ -159,7 +159,7 @@ const ViewNotePage = () => {
         <div className="note-view-page-wrapper">
             <Helmet>
                 <title>{note.title} | PeerNotez</title>
-                <meta name="description" content={`View and download notes on ${note.subject} from ${note.university}, uploaded by ${authorName}.`} />
+                <meta name="description" content={note.title || `View and download notes on ${note.subject} from ${note.university}, uploaded by ${authorName}.`} />
                 <link rel="canonical" href={`https://peernotez.netlify.app/view/${noteId}`} 
 />
 
@@ -242,4 +242,5 @@ const ViewNotePage = () => {
 };
 
 export default ViewNotePage;
+
 
