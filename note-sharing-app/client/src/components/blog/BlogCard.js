@@ -4,8 +4,12 @@ import { FaUser, FaEye, FaCalendarAlt } from 'react-icons/fa';
 import StarRating from '../common/StarRating';
 
 const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () => {} }) => {
-    const formattedDate = new Date(blog.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-    const views = blog.downloadCount.toLocaleString();
+    // FIX: Safely access createdAt with a fallback to current date if missing
+    const dateToFormat = blog.createdAt ? new Date(blog.createdAt) : new Date();
+    const formattedDate = dateToFormat.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    
+    // FIX: Add safety check (|| 0) to prevent crash if downloadCount is undefined
+    const views = (blog.downloadCount || 0).toLocaleString();
 
     return (
         <div className="blog-card blog-card-list">
@@ -28,8 +32,8 @@ const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () 
                 </div>
                 <div className="blog-rating-views">
                     <div className="blog-rating-display">
-                        <StarRating rating={blog.rating} readOnly={true} />
-                        <span>({blog.numReviews} reviews)</span>
+                        <StarRating rating={blog.rating || 0} readOnly={true} />
+                        <span>({blog.numReviews || 0} reviews)</span>
                     </div>
                     <span className="blog-views">
                         <FaEye className="meta-icon" /> {views} views
