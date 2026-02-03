@@ -8,7 +8,9 @@ import BlogCard from '../components/blog/BlogCard';
 import BlogReviews from '../components/blog/BlogReviews';
 import Pagination from '../components/common/Pagination';
 import StarRating from '../components/common/StarRating';
-import AuthorInfoBlock from '../components/common/AuthorInfoBlock'; // NEW IMPORT
+import AuthorInfoBlock from '../components/common/AuthorInfoBlock'; 
+// FIX 4: Import new RelatedBlogs component
+import RelatedBlogs from '../components/blog/RelatedBlogs'; 
 
 // --- FULL BLOG POST COMPONENT ---
 const FullBlogContent = ({ blog, onRefetch }) => {
@@ -62,13 +64,10 @@ const FullBlogContent = ({ blog, onRefetch }) => {
             <article className="blog-article-content">
                 <h1 className="article-title">{blog.title}</h1>
                 
-                {/* NEW: AuthorInfoBlock Integration */}
                 <AuthorInfoBlock author={blog.author} contentId={blog._id} contentType="blog" />
 
                 <div className="article-meta">
-                    {/* The author details here can be simplified or removed since AuthorInfoBlock is used */}
                     <div className="blog-author-details">
-                        {/* We keep the avatar/name display in the meta for context, but rely on the new block for follow logic */}
                         <img 
                             src={blog.author?.avatar || 'https://via.placeholder.com/44'} 
                             alt={`Avatar of ${authorName}`} 
@@ -91,6 +90,9 @@ const FullBlogContent = ({ blog, onRefetch }) => {
                     <ReactMarkdown>{blog.content}</ReactMarkdown>
                 </div>
             </article>
+
+            {/* FIX 4: Related Blogs (Topic Clusters) */}
+            <RelatedBlogs currentBlogId={blog._id} />
 
             {/* SEO: Internal Link Section (Retained) */}
             <section className="blog-internal-links note-feedback-section">
@@ -130,7 +132,8 @@ const BlogPage = () => {
         setLoading(true);
         try {
             const params = { page, search: searchTerm, sort: sortBy };
-            const { data } = await axios.get('/blogs', { params });
+            // FIX: Use full production URL
+            const { data } = await axios.get('https://peernotez.onrender.com/api/blogs', { params });
             setBlogs(data.blogs);
             setTotalPages(data.totalPages);
         } catch (error) {
@@ -145,7 +148,8 @@ const BlogPage = () => {
         if (!slug) return;
         setLoadingSingle(true);
         try {
-            const { data } = await axios.get(`/blogs/${slug}`);
+            // FIX: Use full production URL
+            const { data } = await axios.get(`https://peernotez.onrender.com/api/blogs/${slug}`);
             setSingleBlog(data);
         } catch (error) {
             console.error("Failed to fetch single blog post", error);
@@ -158,6 +162,8 @@ const BlogPage = () => {
     useEffect(() => {
         if (slug) {
             fetchSingleBlog();
+            // FIX: Scroll to top when switching articles (e.g. clicking related blog)
+            window.scrollTo(0, 0);
         } else {
             setSingleBlog(null);
             fetchBlogs();
@@ -172,7 +178,7 @@ const BlogPage = () => {
         fetchBlogs();
     };
     
-    // Schema.org WebPage Markup (Retained)
+    // Schema.org WebPage Markup
     const webpageSchema = {
         "@context": "https://schema.org",
         "@type": "WebPage",
