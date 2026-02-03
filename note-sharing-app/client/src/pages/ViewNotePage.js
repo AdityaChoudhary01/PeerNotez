@@ -133,10 +133,14 @@ const ViewNotePage = () => {
     // Calculate display file size
     const displayFileSize = formatFileSize(note.fileSize);
 
-    // 1. SEO FIX: Define description logic (Use new field or fallback)
+    // =========================================================
+    // FIX 2 (Enhanced): Smart Metadata Logic
+    // =========================================================
+    // 1. If we have a manual description (Fix 1), use it.
+    // 2. If not, generate a rich description using Title, Subject, and University.
     const seoDescription = note.description 
         ? note.description 
-        : `View and download notes on ${note.subject} from ${note.university}, uploaded by ${authorName}.`;
+        : `Download "${note.title}" - free lecture notes for ${note.course} (${note.subject}) at ${note.university}. Read reviews and study materials uploaded by ${authorName}.`;
 
     // Educational Resource Schema Markup
     const noteSchema = {
@@ -193,7 +197,7 @@ const ViewNotePage = () => {
                             Course: {note.course} | Subject: {note.subject} | University: {note.university}
                         </p>
 
-                        {/* 3. SEO FIX: Visible unique text content for Googlebot */}
+                        {/* 3. SEO FIX (Fix 1): Visible unique text content for Googlebot */}
                         {note.description && (
                             <div className="note-description-box" style={{ marginTop: '1.2rem', padding: '1.2rem', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', borderLeft: '3px solid #6a40f0' }}>
                                 <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem', color: '#fff' }}>About these notes:</h4>
