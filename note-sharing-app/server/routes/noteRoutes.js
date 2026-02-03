@@ -164,7 +164,7 @@ router.get('/', async (req, res) => {
             { title: { $regex: s, $options: 'i' } },
             { university: { $regex: s, $options: 'i' } },
             { course: { $regex: s, $options: 'i' } },
-            // ✅ SEO UPDATE: Include description in search
+            // ✅ SEO UPDATE (Fix 1): Include description in search
             { description: { $regex: s, $options: 'i' } }
         ];
         
@@ -213,7 +213,7 @@ router.get('/', async (req, res) => {
         sortOptions = { uploadDate: -1 };
     }
     
-    // ✅ SEO UPDATE: Added 'description' to selected fields
+    // ✅ SEO UPDATE (Fix 1): Added 'description' to selected fields
     const selectFields = 'title description university course subject year rating numReviews downloadCount uploadDate fileType fileName cloudinaryId filePath isFeatured'; 
     
     const count = await Note.countDocuments(query);
@@ -240,7 +240,7 @@ router.get('/mynotes', protect, async (req, res) => {
 
     const query = { user: req.user.id };
 
-    // ✅ SEO UPDATE: Added 'description'
+    // ✅ SEO UPDATE (Fix 1): Added 'description'
     const selectFields = 'title description university course subject year rating numReviews downloadCount uploadDate fileType fileName cloudinaryId filePath isFeatured'; 
 
     const totalNotes = await Note.countDocuments(query);
@@ -264,6 +264,35 @@ router.get('/mynotes', protect, async (req, res) => {
   }
 });
 
+// =========================================================================
+// ✅ FIX 4: NEW RELATED NOTES ROUTE (Must be before /:id)
+// =========================================================================
+// @route   GET /api/notes/related/:id
+router.get('/related/:id', async (req, res) => {
+    try {
+        const currentNote = await Note.findById(req.params.id);
+        if (!currentNote) return res.status(404).json({ message: 'Note not found' });
+
+        // Find notes with same subject OR course, excluding current one
+        const relatedNotes = await Note.find({
+            _id: { $ne: currentNote._id }, // Exclude current note
+            $or: [
+                { subject: currentNote.subject },
+                { course: currentNote.course }
+            ]
+        })
+        .select('title description university course subject year rating numReviews downloadCount uploadDate fileType fileName cloudinaryId filePath isFeatured') 
+        .populate('user', 'name avatar')
+        .limit(4) // Show 4 related notes
+        .sort({ rating: -1, downloadCount: -1 }); // Show best/most popular first
+
+        res.json(relatedNotes);
+    } catch (error) {
+        console.error('Error fetching related notes:', error);
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
+
 
 // =========================================================================
 // UPDATED POST/PUT/DELETE Routes
@@ -285,7 +314,7 @@ router.post('/upload', protect, uploadToMemory.single('file'), async (req, res) 
       });
     }
 
-    // ✅ SEO UPDATE: Extract 'description' from body
+    // ✅ SEO UPDATE (Fix 1): Extract 'description' from body
     const { title, description, university, course, subject, year } = req.body;
 
     const officeMimeTypes = [
@@ -338,7 +367,7 @@ router.post('/upload', protect, uploadToMemory.single('file'), async (req, res) 
     finalCloudinaryId = uploadResult.public_id;
     console.log('Cloudinary Upload Result (Secure URL):', uploadResult.secure_url);
 
-    // ✅ SEO UPDATE: Check for description existence
+    // ✅ SEO UPDATE (Fix 1): Check for description existence
     if (!title || !university || !course || !subject || !year || !description) {
       console.log('Error: Missing required text fields for note after file upload.');
       if (finalCloudinaryId) {
@@ -432,7 +461,6 @@ router.post('/:id/reviews', protect, async (req, res) => {
             }
 
             // ✅ SITEMAP UPDATE (Fix 3): Explicitly touch the Note's updatedAt field
-            // This ensures sitemapRoutes.js sees this note as "recently changed"
             note.updatedAt = new Date();
 
             await note.save();
@@ -480,7 +508,7 @@ router.put('/:id', protect, async (req, res) => {
       return res.status(401).json({ message: 'Not authorized to update this note' });
     }
 
-    // ✅ SEO UPDATE: Include description
+    // ✅ SEO UPDATE (Fix 1): Include description
     const { title, description, university, course, subject, year } = req.body;
     
     const updateFields = {};
@@ -620,7 +648,7 @@ router.get('/collections/:collectionId', protect, async (req, res) => {
         .select('name notes createdAt')
         .populate({
             path: 'notes',
-            // ✅ SEO UPDATE: Added description to population select for consistency
+            // ✅ SEO UPDATE (Fix 1): Added description to population select for consistency
             select: 'title description university course subject year rating numReviews downloadCount uploadDate fileType fileName filePath cloudinaryId isFeatured'
         })
         .lean(); 
