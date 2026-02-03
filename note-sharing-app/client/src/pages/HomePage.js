@@ -28,7 +28,7 @@ const HomePage = () => {
     const [featuredNotes, setFeaturedNotes] = useState([]);
     const [loadingFeatured, setLoadingFeatured] = useState(true);
 
-    // --- NEW STATE FOR FEATURED BLOGS ---
+    // --- State for featured blogs ---
     const [featuredBlogs, setFeaturedBlogs] = useState([]);
     const [loadingFeaturedBlogs, setLoadingFeaturedBlogs] = useState(true);
 
@@ -50,7 +50,7 @@ const HomePage = () => {
             setLoading(true);
             try {
                 const params = { ...filters, sort: sortBy, page: page };
-                const { data } = await axios.get('/notes', { params });
+                const { data } = await axios.get('https://peernotez.onrender.com/api/notes', { params });
                 setNotes(data.notes);
                 setPage(data.page);
                 setTotalPages(data.totalPages);
@@ -67,7 +67,7 @@ const HomePage = () => {
         const fetchFeaturedNotes = async () => {
             setLoadingFeatured(true);
             try {
-                const { data } = await axios.get('/notes', { params: { isFeatured: true, limit: 3 } });
+                const { data } = await axios.get('https://peernotez.onrender.com/api/notes', { params: { isFeatured: true, limit: 3 } });
                 setFeaturedNotes(data.notes);
             } catch (error) {
                 console.error("Failed to fetch featured notes", error);
@@ -82,7 +82,7 @@ const HomePage = () => {
         const fetchFeaturedBlogs = async () => {
             setLoadingFeaturedBlogs(true);
             try {
-                const { data } = await axios.get('/blogs', { params: { isFeatured: true, limit: 3 } });
+                const { data } = await axios.get('https://peernotez.onrender.com/api/blogs', { params: { isFeatured: true, limit: 3 } });
                 setFeaturedBlogs(data.blogs || []);
             } catch (error) {
                 console.error("Failed to fetch featured blogs", error);
@@ -98,7 +98,7 @@ const HomePage = () => {
         const fetchStats = async () => {
             setLoadingStats(true);
             try {
-                const { data } = await axios.get('/notes/stats');
+                const { data } = await axios.get('https://peernotez.onrender.com/api/notes/stats');
                 setStats(data);
             } catch (error) {
                 console.error("Failed to fetch statistics", error);
@@ -113,7 +113,7 @@ const HomePage = () => {
         const fetchTopContributors = async () => {
             setLoadingContributors(true);
             try {
-                const { data } = await axios.get('/users/top-contributors');
+                const { data } = await axios.get('https://peernotez.onrender.com/api/users/top-contributors');
                 setTopContributors(data.users);
             } catch (error) {
                 console.error("Failed to fetch top contributors", error);
@@ -157,7 +157,7 @@ const HomePage = () => {
     const schemaMarkup = {
         "@context": "https://schema.org",
         "@graph": [
-            // 1. WebSite Schema with Sitelinks Search Box
+            // 1. WebSite Schema (Required for Sitelinks Search Box)
             {
                 "@type": "WebSite",
                 "name": SITE_NAME,
@@ -165,26 +165,33 @@ const HomePage = () => {
                 "description": SITE_DESCRIPTION,
                 "potentialAction": {
                     "@type": "SearchAction",
-                    "target": `${SITE_URL}search?search={search_term_string}`,
+                    "target": {
+                        "@type": "EntryPoint",
+                        "urlTemplate": `${SITE_URL}search?search={search_term_string}`
+                    },
                     "query-input": "required name=search_term_string"
                 }
             },
-            // 2. Organization Schema
+            // 2. Organization Schema (For Knowledge Graph)
             {
                 "@type": "Organization",
                 "name": SITE_NAME,
                 "url": SITE_URL,
-                "logo": LOGO_URL,
+                "logo": {
+                    "@type": "ImageObject",
+                    "url": LOGO_URL
+                },
                 "sameAs": [
                     "https://www.instagram.com/aditya_choudhary__021/",
                     "https://www.linkedin.com/in/aditya-kumar-38093a304/"
                 ]
             },
-            // 3. WebApplication Schema (For the App download)
+            // 3. WebApplication Schema (For the App download rich result)
             {
                 "@type": "WebApplication",
                 "name": "PeerNotez App",
                 "url": SITE_URL,
+                "image": LOGO_URL,
                 "applicationCategory": "EducationalApplication",
                 "operatingSystem": "Android",
                 "offers": {
@@ -211,7 +218,9 @@ const HomePage = () => {
                 <meta property="og:url" content={SITE_URL} />
                 <meta property="og:image" content={LOGO_URL} />
                 
-                {/* JSON-LD Schema for Rich Results */}
+                {/* ✅ FIX: Use dangerouslySetInnerHTML to prevent React from escaping characters.
+                   This allows Google to read the JSON-LD correctly.
+                */}
                 <script type="application/ld+json">
                     {JSON.stringify(schemaMarkup)}
                 </script>
