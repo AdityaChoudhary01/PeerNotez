@@ -3,17 +3,13 @@ import axios from 'axios';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 import NoteCard from '../components/notes/NoteCard';
-import BlogCard from '../components/blog/BlogCard';
+import BlogCard from '../components/blog/BlogCard'; // <--- NEW IMPORT ADDED
 import FilterBar from '../components/common/FilterBar';
 import Pagination from '../components/common/Pagination';
 import { FaFilter, FaDownload, FaTimes, FaFeatherAlt } from 'react-icons/fa';
 
-// --- Constants ---
+// --- Download Link Constant ---
 const DOWNLOAD_LINK = 'https://github.com/AdityaChoudhary01/PeerNotez/releases/download/v1.0.3/PeerNotez.apk';
-const SITE_URL = "https://peernotez.netlify.app/";
-const LOGO_URL = "https://peernotez.netlify.app/logo192.png";
-const SITE_NAME = "PeerNotez";
-const SITE_DESCRIPTION = "PeerNotez is the ultimate platform for students to share handwritten notes, discover study materials, and collaborate with peers globally.";
 
 const HomePage = () => {
     // --- State for main notes grid ---
@@ -28,9 +24,10 @@ const HomePage = () => {
     const [featuredNotes, setFeaturedNotes] = useState([]);
     const [loadingFeatured, setLoadingFeatured] = useState(true);
 
-    // --- State for featured blogs ---
+    // --- NEW STATE FOR FEATURED BLOGS ---
     const [featuredBlogs, setFeaturedBlogs] = useState([]);
     const [loadingFeaturedBlogs, setLoadingFeaturedBlogs] = useState(true);
+    // ------------------------------------
 
     // --- State for dynamic content sections ---
     const [stats, setStats] = useState({ totalNotes: 0, totalUsers: 0, downloadsThisMonth: 0 });
@@ -41,8 +38,9 @@ const HomePage = () => {
     // --- State for mobile filter bar ---
     const [isFilterBarOpen, setIsFilterBarOpen] = useState(false);
 
-    // --- State for Fixed Download Button ---
+    // --- State for Fixed Download Button: Shows on every page load ---
     const [showAppButton, setShowAppButton] = useState(true); 
+
 
     // --- DATA FETCHING HOOKS ---
     useEffect(() => {
@@ -50,7 +48,7 @@ const HomePage = () => {
             setLoading(true);
             try {
                 const params = { ...filters, sort: sortBy, page: page };
-                const { data } = await axios.get('https://peernotez.onrender.com/api/notes', { params });
+                const { data } = await axios.get('/notes', { params });
                 setNotes(data.notes);
                 setPage(data.page);
                 setTotalPages(data.totalPages);
@@ -67,7 +65,7 @@ const HomePage = () => {
         const fetchFeaturedNotes = async () => {
             setLoadingFeatured(true);
             try {
-                const { data } = await axios.get('https://peernotez.onrender.com/api/notes', { params: { isFeatured: true, limit: 3 } });
+                const { data } = await axios.get('/notes', { params: { isFeatured: true, limit: 3 } });
                 setFeaturedNotes(data.notes);
             } catch (error) {
                 console.error("Failed to fetch featured notes", error);
@@ -78,11 +76,13 @@ const HomePage = () => {
         fetchFeaturedNotes();
     }, []);
 
+    // --- NEW EFFECT: Fetch Featured Blogs ---
     useEffect(() => {
         const fetchFeaturedBlogs = async () => {
             setLoadingFeaturedBlogs(true);
             try {
-                const { data } = await axios.get('https://peernotez.onrender.com/api/blogs', { params: { isFeatured: true, limit: 3 } });
+                // Assuming backend returns { blogs: [...] }
+                const { data } = await axios.get('/blogs', { params: { isFeatured: true, limit: 3 } });
                 setFeaturedBlogs(data.blogs || []);
             } catch (error) {
                 console.error("Failed to fetch featured blogs", error);
@@ -93,12 +93,13 @@ const HomePage = () => {
         };
         fetchFeaturedBlogs();
     }, []);
+    // ----------------------------------------
 
     useEffect(() => {
         const fetchStats = async () => {
             setLoadingStats(true);
             try {
-                const { data } = await axios.get('https://peernotez.onrender.com/api/notes/stats');
+                const { data } = await axios.get('/notes/stats');
                 setStats(data);
             } catch (error) {
                 console.error("Failed to fetch statistics", error);
@@ -113,7 +114,7 @@ const HomePage = () => {
         const fetchTopContributors = async () => {
             setLoadingContributors(true);
             try {
-                const { data } = await axios.get('https://peernotez.onrender.com/api/users/top-contributors');
+                const { data } = await axios.get('/users/top-contributors');
                 setTopContributors(data.users);
             } catch (error) {
                 console.error("Failed to fetch top contributors", error);
@@ -135,17 +136,29 @@ const HomePage = () => {
     };
     
     const toggleFilterBar = () => { setIsFilterBarOpen(!isFilterBarOpen); };
+
     const handleCloseButton = () => { setShowAppButton(false); };
 
     // --- Fixed Download Button Component ---
     const AppDownloadFixedButton = () => {
         if (!showAppButton) return null;
+
         return (
             <div className="fixed-download-button-wrapper">
-                <button className="fixed-download-close-btn" onClick={handleCloseButton} aria-label="Close">
+                <button 
+                    className="fixed-download-close-btn" 
+                    onClick={handleCloseButton}
+                    aria-label="Close download button"
+                >
                     <FaTimes />
                 </button>
-                <a href={DOWNLOAD_LINK} download className="fixed-download-button" onClick={() => setTimeout(handleCloseButton, 1000)}>
+                <a 
+                    href={DOWNLOAD_LINK} 
+                    download 
+                    className="fixed-download-button"
+                    aria-label="Download PeerNotez App"
+                    onClick={() => setTimeout(handleCloseButton, 1000)} 
+                >
                     <FaDownload className="download-icon" /> 
                     <span className="button-text">Get App</span>
                 </a>
@@ -153,77 +166,49 @@ const HomePage = () => {
         );
     };
 
-    // --- RICH RESULT SCHEMA CONFIGURATION ---
-    const schemaMarkup = {
-        "@context": "https://schema.org",
-        "@graph": [
-            // 1. WebSite Schema (Required for Sitelinks Search Box)
-            {
-                "@type": "WebSite",
-                "name": SITE_NAME,
-                "url": SITE_URL,
-                "description": SITE_DESCRIPTION,
-                "potentialAction": {
-                    "@type": "SearchAction",
-                    "target": {
-                        "@type": "EntryPoint",
-                        "urlTemplate": `${SITE_URL}search?search={search_term_string}`
-                    },
-                    "query-input": "required name=search_term_string"
-                }
-            },
-            // 2. Organization Schema (For Knowledge Graph)
-            {
-                "@type": "Organization",
-                "name": SITE_NAME,
-                "url": SITE_URL,
-                "logo": {
-                    "@type": "ImageObject",
-                    "url": LOGO_URL
-                },
-                "sameAs": [
-                    "https://www.instagram.com/aditya_choudhary__021/",
-                    "https://www.linkedin.com/in/aditya-kumar-38093a304/"
-                ]
-            },
-            // 3. WebApplication Schema (For the App download rich result)
-            {
-                "@type": "WebApplication",
-                "name": "PeerNotez App",
-                "url": SITE_URL,
-                "image": LOGO_URL,
-                "applicationCategory": "EducationalApplication",
-                "operatingSystem": "Android",
-                "offers": {
-                    "@type": "Offer",
-                    "price": "0",
-                    "priceCurrency": "USD"
-                }
-            }
-        ]
-    };
+    // --- MAIN RENDER LOGIC ---
 
     return (
         <div className="homepage-content">
             <AppDownloadFixedButton />
             
             <Helmet>
-                <title>{SITE_NAME} | Share and Discover Academic Notes</title>
-                <meta name="description" content={SITE_DESCRIPTION} />
-                <link rel="canonical" href={SITE_URL} />
-                
-                {/* Open Graph / Social Media */}
-                <meta property="og:title" content={`${SITE_NAME} | Share and Discover Academic Notes`} />
-                <meta property="og:description" content={SITE_DESCRIPTION} />
-                <meta property="og:url" content={SITE_URL} />
-                <meta property="og:image" content={LOGO_URL} />
-                
-                {/* ✅ FIX: Use dangerouslySetInnerHTML to prevent React from escaping characters.
-                   This allows Google to read the JSON-LD correctly.
-                */}
+                <title>PeerNotez | Share and Discover Academic Notes</title>
+                <meta
+                    name="description"
+                    content="Find, share, and explore academic notes across universities and courses. PeerNotez helps students collaborate and learn more effectively. Aditya, Aditya Choudhary"
+                />
+                <link rel="canonical" href="https://peernotez.netlify.app/" />
                 <script type="application/ld+json">
-                    {JSON.stringify(schemaMarkup)}
+                {`
+                {
+                    "@context": "https://schema.org",
+                    "@type": "WebSite",
+                    "name": "PeerNotez",
+                    "url": "https://peernotez.netlify.app/",
+                    "description": "PeerNotez helps students share and find academic notes globally."
+                }
+                `}
                 </script>
+                <script type="application/ld+json">
+                {`
+                {
+                    "@context": "https://schema.org",
+                    "@type": "Organization",
+                    "name": "PeerNotez",
+                    "url": "https://peernotez.netlify.app/",
+                    "logo": "https://peernotez.netlify.app/logo192.png",
+                    "sameAs": [
+                        "https://www.instagram.com/aditya_choudhary__021/",
+                        "https://www.linkedin.com/in/aditya-kumar-38093a304/"
+                    ]
+                }
+                `}
+                </script>
+                <meta property="og:title" content="PeerNotez | Share and Discover Academic Notes" />
+                <meta property="og:description" content="Find, share, and explore academic notes across universities and courses. PeerNotez helps students collaborate and learn more effectively." />
+                <meta property="og:url" content="https://peernotez.netlify.app/" />
+                <meta property="og:image" content="https://peernotez.netlify.app/logo192.png" />
             </Helmet>
 
             <section className="hero-banner">
@@ -300,16 +285,19 @@ const HomePage = () => {
 
             <hr/>
             
-            {/* FEATURED BLOGS SECTION */}
+            {/* ------------------------------------------------------------------- */}
+            {/* NEW SECTION: FEATURED BLOGS (Corrected Rendering Logic) */}
             <section className="featured-blog-section">
                 <h2><FaFeatherAlt /> Featured Insights</h2>
                 {loadingFeaturedBlogs ? (
                     <div>Loading featured blog posts...</div>
                 ) : featuredBlogs.length > 0 ? (
+                    // RENDER BLOGS USING BlogCard and blog-posts-grid
                     <div className="blog-posts-grid"> 
                         {featuredBlogs.map(blog => <BlogCard key={blog._id} blog={blog} />)}
                     </div>
                 ) : (
+                    // Fallback when no featured data is found
                     <p style={{textAlign: 'center'}}>No featured blog posts to show yet.</p>
                 )}
                 <div style={{textAlign: 'center', marginTop: '2rem'}}>
@@ -318,6 +306,7 @@ const HomePage = () => {
                     </Link>
                 </div>
             </section>
+            {/* ------------------------------------------------------------------- */}
 
             <hr/>
 
@@ -392,6 +381,9 @@ const HomePage = () => {
             </section>
 
             <hr/>
+
+            {/* REMOVED original simplified blog section, replaced by Featured Blogs above */}
+            {/* <section className="blog-section"> ... </section> */}
 
         </div>
     );
