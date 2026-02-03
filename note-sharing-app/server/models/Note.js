@@ -3,7 +3,6 @@ const Schema = mongoose.Schema;
 
 const reviewSchema = new Schema({
   user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-  // Fixed: Rating is now optional (allows for reply-only comments)
   rating: { type: Number, required: false, min: 1, max: 5 }, 
   comment: { type: String, required: true },
   parentReviewId: { type: Schema.Types.ObjectId, default: null } 
@@ -13,7 +12,6 @@ const reviewSchema = new Schema({
 
 const NoteSchema = new Schema({
   title: { type: String, required: true },
-  // SEO FIX: Added description field
   description: { 
     type: String, 
     required: true, 
@@ -52,9 +50,12 @@ const NoteSchema = new Schema({
     required: true,
     default: false
   }
+}, {
+  // FIX 3: Enable automatic timestamps (createdAt, updatedAt)
+  timestamps: true 
 });
 
-// Create text index for better search performance (Optional but recommended)
+// Create text index for better search performance
 NoteSchema.index({ title: 'text', description: 'text', subject: 'text' });
 
 module.exports = mongoose.model('Note', NoteSchema);
