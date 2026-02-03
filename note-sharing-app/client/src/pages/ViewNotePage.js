@@ -29,7 +29,8 @@ const ViewNotePage = () => {
 
     const fetchNote = useCallback(async () => {
         try {
-            const { data } = await axios.get(`/notes/${noteId}`);
+            // FIX: Use full production URL
+            const { data } = await axios.get(`https://peernotez.onrender.com/api/notes/${noteId}`);
             setNote(data);
         } catch (err) {
             console.error('Error fetching note:', err);
@@ -54,7 +55,8 @@ const ViewNotePage = () => {
         setIsSaving(true);
         try {
             const config = { headers: { Authorization: `Bearer ${token}` } };
-            const endpoint = `/users/save/${noteId}`;
+            // FIX: Use full production URL
+            const endpoint = `https://peernotez.onrender.com/api/users/save/${noteId}`;
 
             const { data } = await axios.put(endpoint, {}, config);
             alert(data.message);
@@ -131,12 +133,17 @@ const ViewNotePage = () => {
     // Calculate display file size
     const displayFileSize = formatFileSize(note.fileSize);
 
+    // 1. SEO FIX: Define description logic (Use new field or fallback)
+    const seoDescription = note.description 
+        ? note.description 
+        : `View and download notes on ${note.subject} from ${note.university}, uploaded by ${authorName}.`;
+
     // Educational Resource Schema Markup
     const noteSchema = {
         "@context": "https://schema.org",
         "@type": "Course",
         "name": note.title,
-        "description": `Academic notes for the course ${note.course} in subject ${note.subject} at ${note.university}.`,
+        "description": seoDescription, // Used here as well
         "provider": {
             "@type": "Organization",
             "name": "PeerNotez"
@@ -159,12 +166,11 @@ const ViewNotePage = () => {
         <div className="note-view-page-wrapper">
             <Helmet>
                 <title>{note.title} | PeerNotez</title>
-                <meta name="description" content={`View and download notes on ${note.subject} from ${note.university}, uploaded by ${authorName}.`} />
-                <link rel="canonical" href={`https://peernotez.netlify.app/view/${noteId}`} 
-/>
+                {/* 2. SEO FIX: Apply unique description to meta tag */}
+                <meta name="description" content={seoDescription} />
+                <link rel="canonical" href={`https://peernotez.netlify.app/view/${noteId}`} />
 
-
-                {/* Schema Markup (FIXED using dangerouslySetInnerHTML) */}
+                {/* Schema Markup */}
                 {note.numReviews > 0 && (
                     <script type="application/ld+json"
                         dangerouslySetInnerHTML={{
@@ -179,15 +185,23 @@ const ViewNotePage = () => {
                     <div className="note-header-info">
                         <h1 className="note-title">{note.title}</h1>
 
-                        {/* FIX: AuthorInfoBlock displays the avatar and name */}
                         <div className="author-info-line">
                             <AuthorInfoBlock author={note.user} contentId={noteId} contentType="note" />
                         </div>
 
-                        {/* Displays Course/Subject/University */}
                         <p className="note-subtitle-text">
                             Course: {note.course} | Subject: {note.subject} | University: {note.university}
                         </p>
+
+                        {/* 3. SEO FIX: Visible unique text content for Googlebot */}
+                        {note.description && (
+                            <div className="note-description-box" style={{ marginTop: '1.2rem', padding: '1.2rem', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', borderLeft: '3px solid #6a40f0' }}>
+                                <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem', color: '#fff' }}>About these notes:</h4>
+                                <p style={{ margin: 0, color: '#ccc', lineHeight: '1.6', fontSize: '1rem' }}>
+                                    {note.description}
+                                </p>
+                            </div>
+                        )}
                     </div>
 
                     <div className="note-actions">
