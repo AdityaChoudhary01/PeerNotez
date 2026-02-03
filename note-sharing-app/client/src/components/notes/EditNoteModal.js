@@ -6,6 +6,7 @@ const EditNoteModal = ({ note, token, onUpdate, onClose }) => {
   // State to manage form inputs
   const [formData, setFormData] = useState({
     title: '',
+    description: '', // Added description field
     university: '',
     course: '',
     subject: '',
@@ -15,10 +16,10 @@ const EditNoteModal = ({ note, token, onUpdate, onClose }) => {
 
   // When the 'note' prop changes, populate the form with its data
   useEffect(() => {
-     console.log('Step 2: EditNoteModal received note:', note); 
     if (note) {
       setFormData({
         title: note.title || '',
+        description: note.description || '', // Populate existing description
         university: note.university || '',
         course: note.course || '',
         subject: note.subject || '',
@@ -35,6 +36,12 @@ const EditNoteModal = ({ note, token, onUpdate, onClose }) => {
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validation: Ensure description is at least 20 chars
+    if (formData.description.length < 20) {
+        return alert('Description must be at least 20 characters long.');
+    }
+
     setLoading(true);
     const config = {
       headers: {
@@ -42,7 +49,8 @@ const EditNoteModal = ({ note, token, onUpdate, onClose }) => {
       },
     };
     try {
-      const { data } = await axios.put(`/notes/${note._id}`, formData, config);
+      // Use full production URL
+      const { data } = await axios.put(`https://peernotez.onrender.com/api/notes/${note._id}`, formData, config);
       alert('Note updated successfully!');
       onUpdate(data); // Pass the updated note back to the parent component
     } catch (error) {
@@ -64,6 +72,27 @@ const EditNoteModal = ({ note, token, onUpdate, onClose }) => {
             <label htmlFor="title">Title</label>
             <input type="text" id="title" name="title" value={formData.title} onChange={handleChange} required />
           </div>
+
+          {/* New Description Field */}
+          <div className="form-group">
+            <label htmlFor="description">Description</label>
+            <textarea 
+                id="description" 
+                name="description" 
+                value={formData.description} 
+                onChange={handleChange} 
+                required 
+                rows="4"
+                style={{ 
+                    width: '100%', 
+                    padding: '8px', 
+                    borderRadius: '4px', 
+                    border: '1px solid #ccc',
+                    fontFamily: 'inherit'
+                }}
+            />
+          </div>
+
           <div className="form-group">
             <label htmlFor="university">University</label>
             <input type="text" id="university" name="university" value={formData.university} onChange={handleChange} required />
