@@ -72,6 +72,15 @@ const ViewNotePage = () => {
         }
     };
 
+    // FIX 5: Function to handle download count increment
+    const handleDownload = async () => {
+        try {
+            await axios.put(`https://peernotez.onrender.com/api/notes/${noteId}/download`);
+        } catch (error) {
+            console.error('Failed to update download count', error);
+        }
+    };
+
     const renderFileViewer = () => {
         if (!note || !note.filePath) return null;
 
@@ -108,7 +117,13 @@ const ViewNotePage = () => {
                 <p className="fallback-text">
                     {isLocalFile ? "File preview not available for local files." : "This file type cannot be previewed online."}
                 </p>
-                <a href={note.filePath} download className="note-download-fallback-btn">
+                {/* FIX 5: Added onClick to increment count */}
+                <a 
+                    href={note.filePath} 
+                    download 
+                    className="note-download-fallback-btn"
+                    onClick={handleDownload}
+                >
                     <i className="fas fa-download"></i> Download Note
                 </a>
             </div>
@@ -231,7 +246,13 @@ const ViewNotePage = () => {
                             </button>
                         )}
                         {/* 3. Download Button (with formatted size) */}
-                        <a href={note.filePath} download className="note-action-download-btn download-btn">
+                        {/* FIX 5: Added onClick to increment count */}
+                        <a 
+                            href={note.filePath} 
+                            download 
+                            className="note-action-download-btn download-btn"
+                            onClick={handleDownload}
+                        >
                             <FaDownload /> Download ({displayFileSize})
                         </a>
                     </div>
