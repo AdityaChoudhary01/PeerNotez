@@ -6,7 +6,7 @@ const EditNoteModal = ({ note, token, onUpdate, onClose }) => {
   // State to manage form inputs
   const [formData, setFormData] = useState({
     title: '',
-    description: '', // Added description field
+    description: '', 
     university: '',
     course: '',
     subject: '',
@@ -19,7 +19,7 @@ const EditNoteModal = ({ note, token, onUpdate, onClose }) => {
     if (note) {
       setFormData({
         title: note.title || '',
-        description: note.description || '', // Populate existing description
+        description: note.description || '', 
         university: note.university || '',
         course: note.course || '',
         subject: note.subject || '',
@@ -49,10 +49,9 @@ const EditNoteModal = ({ note, token, onUpdate, onClose }) => {
       },
     };
     try {
-      // Use full production URL
       const { data } = await axios.put(`https://peernotez.onrender.com/api/notes/${note._id}`, formData, config);
       alert('Note updated successfully!');
-      onUpdate(data); // Pass the updated note back to the parent component
+      onUpdate(data); 
     } catch (error) {
       console.error('Failed to update note', error);
       alert('Failed to update note. Please try again.');
@@ -61,7 +60,7 @@ const EditNoteModal = ({ note, token, onUpdate, onClose }) => {
     }
   };
 
-  if (!note) return null; // Don't render if no note is being edited
+  if (!note) return null; 
 
   return (
     <div className="modal-overlay">
@@ -73,7 +72,7 @@ const EditNoteModal = ({ note, token, onUpdate, onClose }) => {
             <input type="text" id="title" name="title" value={formData.title} onChange={handleChange} required />
           </div>
 
-          {/* New Description Field */}
+          {/* Description Field - Removed Inline Styles */}
           <div className="form-group">
             <label htmlFor="description">Description</label>
             <textarea 
@@ -83,13 +82,6 @@ const EditNoteModal = ({ note, token, onUpdate, onClose }) => {
                 onChange={handleChange} 
                 required 
                 rows="4"
-                style={{ 
-                    width: '100%', 
-                    padding: '8px', 
-                    borderRadius: '4px', 
-                    border: '1px solid #ccc',
-                    fontFamily: 'inherit'
-                }}
             />
           </div>
 
