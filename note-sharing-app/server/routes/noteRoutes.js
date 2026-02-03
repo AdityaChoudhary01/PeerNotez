@@ -164,7 +164,7 @@ router.get('/', async (req, res) => {
             { title: { $regex: s, $options: 'i' } },
             { university: { $regex: s, $options: 'i' } },
             { course: { $regex: s, $options: 'i' } },
-            // ✅ UPDATED: Include description in search
+            // ✅ SEO UPDATE: Include description in search
             { description: { $regex: s, $options: 'i' } }
         ];
         
@@ -213,7 +213,7 @@ router.get('/', async (req, res) => {
         sortOptions = { uploadDate: -1 };
     }
     
-    // ✅ UPDATED: Added 'description' to selected fields
+    // ✅ SEO UPDATE: Added 'description' to selected fields
     const selectFields = 'title description university course subject year rating numReviews downloadCount uploadDate fileType fileName cloudinaryId filePath isFeatured'; 
     
     const count = await Note.countDocuments(query);
@@ -240,7 +240,7 @@ router.get('/mynotes', protect, async (req, res) => {
 
     const query = { user: req.user.id };
 
-    // ✅ UPDATED: Added 'description'
+    // ✅ SEO UPDATE: Added 'description'
     const selectFields = 'title description university course subject year rating numReviews downloadCount uploadDate fileType fileName cloudinaryId filePath isFeatured'; 
 
     const totalNotes = await Note.countDocuments(query);
@@ -285,7 +285,7 @@ router.post('/upload', protect, uploadToMemory.single('file'), async (req, res) 
       });
     }
 
-    // ✅ UPDATED: Extract 'description' from body
+    // ✅ SEO UPDATE: Extract 'description' from body
     const { title, description, university, course, subject, year } = req.body;
 
     const officeMimeTypes = [
@@ -338,7 +338,7 @@ router.post('/upload', protect, uploadToMemory.single('file'), async (req, res) 
     finalCloudinaryId = uploadResult.public_id;
     console.log('Cloudinary Upload Result (Secure URL):', uploadResult.secure_url);
 
-    // ✅ UPDATED: Check for description existence
+    // ✅ SEO UPDATE: Check for description existence
     if (!title || !university || !course || !subject || !year || !description) {
       console.log('Error: Missing required text fields for note after file upload.');
       if (finalCloudinaryId) {
@@ -431,6 +431,10 @@ router.post('/:id/reviews', protect, async (req, res) => {
                 updateNoteReviewStats(note); 
             }
 
+            // ✅ SITEMAP UPDATE (Fix 3): Explicitly touch the Note's updatedAt field
+            // This ensures sitemapRoutes.js sees this note as "recently changed"
+            note.updatedAt = new Date();
+
             await note.save();
             res.status(201).json({ message: 'Comment added successfully!', review: reviewData });
         } else {
@@ -476,7 +480,7 @@ router.put('/:id', protect, async (req, res) => {
       return res.status(401).json({ message: 'Not authorized to update this note' });
     }
 
-    // ✅ UPDATED: Include description
+    // ✅ SEO UPDATE: Include description
     const { title, description, university, course, subject, year } = req.body;
     
     const updateFields = {};
@@ -616,7 +620,7 @@ router.get('/collections/:collectionId', protect, async (req, res) => {
         .select('name notes createdAt')
         .populate({
             path: 'notes',
-            // ✅ UPDATED: Added description to population select for consistency
+            // ✅ SEO UPDATE: Added description to population select for consistency
             select: 'title description university course subject year rating numReviews downloadCount uploadDate fileType fileName filePath cloudinaryId isFeatured'
         })
         .lean(); 
