@@ -1,8 +1,9 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
+
 const reviewSchema = new Schema({
   user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-  // 👇 CHANGE REQUIRED TO FALSE
+  // Fixed: Rating is now optional (allows for reply-only comments)
   rating: { type: Number, required: false, min: 1, max: 5 }, 
   comment: { type: String, required: true },
   parentReviewId: { type: Schema.Types.ObjectId, default: null } 
@@ -12,6 +13,13 @@ const reviewSchema = new Schema({
 
 const NoteSchema = new Schema({
   title: { type: String, required: true },
+  // SEO FIX: Added description field
+  description: { 
+    type: String, 
+    required: true, 
+    trim: true,
+    minlength: [20, 'Description must be at least 20 characters long'] 
+  },
   university: { type: String, required: true, trim: true },
   course: { type: String, required: true, trim: true },
   subject: { type: String, required: true, trim: true },
@@ -39,12 +47,14 @@ const NoteSchema = new Schema({
     required: true,
     default: 0
   },
-  // --- ADD THIS NEW FIELD ---
   isFeatured: {
     type: Boolean,
     required: true,
     default: false
   }
 });
+
+// Create text index for better search performance (Optional but recommended)
+NoteSchema.index({ title: 'text', description: 'text', subject: 'text' });
 
 module.exports = mongoose.model('Note', NoteSchema);
