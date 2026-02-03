@@ -8,6 +8,8 @@ import useAuth from '../hooks/useAuth';
 import AuthorInfoBlock from '../components/common/AuthorInfoBlock';
 import { FaBookmark, FaDownload, FaList } from 'react-icons/fa';
 import AddToCollectionModal from '../components/notes/AddToCollectionModal';
+// FIX 4: Import the new RelatedNotes component
+import RelatedNotes from '../components/notes/RelatedNotes'; 
 
 // Utility function: Converts bytes to human-readable format (KB, MB)
 const formatFileSize = (bytes) => {
@@ -40,6 +42,8 @@ const ViewNotePage = () => {
 
     useEffect(() => {
         fetchNote();
+        // FIX 4: Scroll to top when switching between related notes
+        window.scrollTo(0, 0);
     }, [noteId, refetchIndex, fetchNote]);
 
     const handleRefetch = () => {
@@ -242,6 +246,10 @@ const ViewNotePage = () => {
                     {renderFileViewer()}
                 </div>
             </div>
+
+            {/* FIX 4: Related Notes (Topic Clusters) */}
+            {/* Added logic to only show if we have a note loaded */}
+            {note && <RelatedNotes currentNoteId={noteId} />}
 
             <div className="note-feedback-section">
                 <Reviews noteId={noteId} reviews={note.reviews || []} onReviewAdded={handleRefetch} />
