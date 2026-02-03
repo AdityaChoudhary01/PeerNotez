@@ -1,10 +1,17 @@
-import React, { useState, useRef } from 'react'; // Import useRef
+import React, { useState, useRef } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
 
 const UploadPage = () => {
-    const [formData, setFormData] = useState({ title: '', university: '', course: '', subject: '', year: '' });
+    const [formData, setFormData] = useState({ 
+        title: '', 
+        description: '', 
+        university: '', 
+        course: '', 
+        subject: '', 
+        year: '' 
+    });
     const [file, setFile] = useState(null);
     const [uploading, setUploading] = useState(false);
     const { token } = useAuth();
@@ -23,6 +30,10 @@ const UploadPage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!file) return alert('Please select a file.');
+
+        if (formData.description.length < 20) {
+            return alert('Please provide a description or summary of at least 20 characters. This helps students find your notes.');
+        }
 
         setUploading(true);
         const data = new FormData();
@@ -44,16 +55,43 @@ const UploadPage = () => {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="upload-form">
-        <h1 className="visually-hidden">
-  Upload Your Study Notes – Help Fellow Students Learn and Succeed
-</h1>
+        // FIXED: Added 'form-container' class here. 
+        // This links the form to your App.css styles for textareas/inputs.
+        <form onSubmit={handleSubmit} className="upload-form form-container">
+            <h1 className="visually-hidden">
+                Upload Your Study Notes – Help Fellow Students Learn and Succeed
+            </h1>
 
-            <h2>Upload Your Notes</h2> {/* This h2 will now match image 2 */}
+            <h2>Upload Your Notes</h2>
+            
             <div className="form-group">
                 <label htmlFor="title">Note Title</label>
-                <input id="title" name="title" type="text" onChange={handleChange} placeholder="e.g., Quantum Mechanics Chapter 3" required />
+                <input 
+                    id="title" 
+                    name="title" 
+                    type="text" 
+                    onChange={handleChange} 
+                    placeholder="e.g., Quantum Mechanics Chapter 3" 
+                    required 
+                />
             </div>
+
+            {/* FIXED: Removed inline styles. 'form-container' class on the form now handles the styling. */}
+            <div className="form-group">
+                <label htmlFor="description">Description / Summary</label>
+                <textarea 
+                    id="description" 
+                    name="description" 
+                    onChange={handleChange} 
+                    placeholder="Describe the contents... e.g. 'Detailed handwritten notes covering Schrödinger's equation and wave functions.'" 
+                    required 
+                    rows="4" 
+                />
+                <small style={{ color: 'var(--subtle-text-color)', display: 'block', marginTop: '5px', fontSize: '0.85rem' }}>
+                    Writing a good description helps your notes appear in Google Search results.
+                </small>
+            </div>
+
             <div className="form-group">
                 <label htmlFor="university">University</label>
                 <input id="university" name="university" type="text" onChange={handleChange} placeholder="e.g., Harvard University" required />
@@ -72,21 +110,18 @@ const UploadPage = () => {
             </div>
             <div className="form-group">
                 <label htmlFor="file">File (PDF, DOC, Image, etc.)</label>
-                <div className="file-input-wrapper"> {/* New wrapper for custom file input */}
-                    {/* Hidden actual file input */}
+                <div className="file-input-wrapper">
                     <input
                         id="file"
                         name="file"
                         type="file"
                         onChange={handleFileChange}
-                        ref={fileInputRef} // Attach ref
+                        ref={fileInputRef}
                         required
                     />
-                    {/* Custom button to trigger file input */}
                     <label htmlFor="file" className="custom-file-upload">
                         Choose File
                     </label>
-                    {/* Display selected file name */}
                     <span className="file-name-display">
                         {file ? file.name : 'No file chosen'}
                     </span>
