@@ -1,5 +1,12 @@
 User-agent: *
 Allow: /
+# Prevent Google from trying to index private/irrelevant pages
+Disallow: /admin
+Disallow: /profile
+Disallow: /upload
+Disallow: /my-blogs
+Disallow: /feed
+
 Sitemap: https://peernotez.netlify.app/sitemap.xml
 # Dynamic sitemap
 Sitemap: https://peernotez.netlify.app/sitemap-dynamic.xml
