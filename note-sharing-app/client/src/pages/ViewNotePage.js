@@ -155,6 +155,8 @@ const ViewNotePage = () => {
     // =========================================================
     // FIX 2 (Enhanced): Smart Metadata Logic
     // =========================================================
+    // 1. If we have a manual description (Fix 1), use it.
+    // 2. If not, generate a rich description using Title, Subject, and University.
     const seoDescription = note.description 
         ? note.description 
         : `Download "${note.title}" - free lecture notes for ${note.course} (${note.subject}) at ${note.university}. Read reviews and study materials uploaded by ${authorName}.`;
@@ -164,19 +166,12 @@ const ViewNotePage = () => {
         "@context": "https://schema.org",
         "@type": "Course",
         "name": note.title,
-        "description": seoDescription,
+        "description": seoDescription, // Used here as well
         "provider": {
             "@type": "Organization",
-            "name": "PeerNotez",
-            "sameAs": "https://peernotez.netlify.app"
+            "name": "PeerNotez"
         },
-        "about": note.subject,
-        "inLanguage": "en"
-    };
-
-    // Only add aggregateRating if there are actually reviews
-    if (note.numReviews > 0) {
-        noteSchema.hasPart = {
+        "hasPart": {
             "@type": "LearningResource",
             "name": note.title,
             "url": window.location.href,
@@ -185,14 +180,10 @@ const ViewNotePage = () => {
                 "ratingValue": (note.rating || 0).toFixed(1),
                 "reviewCount": note.numReviews
             }
-        };
-    } else {
-        noteSchema.hasPart = {
-            "@type": "LearningResource",
-            "name": note.title,
-            "url": window.location.href
-        };
-    }
+        },
+        "about": note.subject,
+        "inLanguage": "en"
+    };
 
     return (
         <div className="note-view-page-wrapper">
@@ -202,12 +193,14 @@ const ViewNotePage = () => {
                 <meta name="description" content={seoDescription} />
                 <link rel="canonical" href={`https://peernotez.netlify.app/view/${noteId}`} />
 
-                {/* Schema Markup - Using dangerouslySetInnerHTML to prevent escaping issues */}
-                <script type="application/ld+json"
-                    dangerouslySetInnerHTML={{
-                        __html: JSON.stringify(noteSchema)
-                    }}
-                />
+                {/* Schema Markup */}
+                {note.numReviews > 0 && (
+                    <script type="application/ld+json"
+                        dangerouslySetInnerHTML={{
+                            __html: JSON.stringify(noteSchema)
+                        }}
+                    />
+                )}
             </Helmet>
 
             <div className="note-details-card">
