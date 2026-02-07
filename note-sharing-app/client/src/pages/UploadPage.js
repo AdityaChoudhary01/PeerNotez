@@ -2,11 +2,19 @@ import React, { useState, useRef } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
-import { FaCloudUploadAlt, FaFileAlt, FaUniversity, FaBook, FaLayerGroup, FaCalendarAlt } from 'react-icons/fa';
+import { FaCloudUploadAlt, FaFileAlt, FaUniversity, FaBook, FaLayerGroup, FaCalendarAlt, FaAlignLeft } from 'react-icons/fa';
 import useAuth from '../hooks/useAuth';
 
 const UploadPage = () => {
-    const [formData, setFormData] = useState({ title: '', university: '', course: '', subject: '', year: '' });
+    // RESTORED: Added description to formData
+    const [formData, setFormData] = useState({ 
+        title: '', 
+        university: '', 
+        course: '', 
+        subject: '', 
+        year: '', 
+        description: '' 
+    });
     const [file, setFile] = useState(null);
     const [uploading, setUploading] = useState(false);
     const { token } = useAuth();
@@ -14,7 +22,6 @@ const UploadPage = () => {
 
     const fileInputRef = useRef(null);
 
-    // --- INTERNAL CSS: HOLOGRAPHIC THEME ---
     const styles = {
         wrapper: {
             paddingTop: '2rem',
@@ -33,7 +40,6 @@ const UploadPage = () => {
             backdropFilter: 'blur(20px)',
             borderRadius: '24px',
             border: '1px solid rgba(255, 255, 255, 0.1)',
-            // Padding handled via CSS class for response
             boxShadow: '0 25px 50px rgba(0,0,0,0.4)',
             color: '#fff'
         },
@@ -81,6 +87,20 @@ const UploadPage = () => {
             outline: 'none',
             transition: 'all 0.3s ease',
             fontFamily: 'inherit'
+        },
+        textarea: {
+            width: '100%',
+            padding: '12px 16px',
+            background: 'rgba(0, 0, 0, 0.2)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: '12px',
+            color: '#fff',
+            fontSize: '1rem',
+            outline: 'none',
+            transition: 'all 0.3s ease',
+            fontFamily: 'inherit',
+            minHeight: '100px',
+            resize: 'vertical'
         },
         fileWrapper: {
             display: 'flex',
@@ -201,7 +221,6 @@ const UploadPage = () => {
                     />
                 </div>
 
-                {/* Grid Row 1 */}
                 <div className="form-row-grid">
                     <div style={styles.formGroup} className="form-group">
                         <label htmlFor="university" style={styles.label}>
@@ -237,7 +256,6 @@ const UploadPage = () => {
                     </div>
                 </div>
 
-                {/* Grid Row 2 */}
                 <div className="form-row-grid subject-year-grid">
                     <div style={styles.formGroup} className="form-group">
                         <label htmlFor="subject" style={styles.label}>
@@ -271,6 +289,22 @@ const UploadPage = () => {
                             style={styles.input}
                         />
                     </div>
+                </div>
+
+                {/* RESTORED: Description Field */}
+                <div style={styles.formGroup} className="form-group">
+                    <label htmlFor="description" style={styles.label}>
+                        <FaAlignLeft style={{color: '#00d4ff'}} /> Description (Optional)
+                    </label>
+                    <textarea 
+                        id="description" 
+                        name="description" 
+                        onChange={handleChange} 
+                        onFocus={handleFocus}
+                        onBlur={handleBlur}
+                        placeholder="Provide a brief overview of what these notes cover..." 
+                        style={styles.textarea}
+                    />
                 </div>
 
                 <div style={styles.formGroup} className="form-group">
@@ -312,46 +346,16 @@ const UploadPage = () => {
                 </button>
             </form>
 
-            {/* RESPONSIVE STYLES */}
             <style>{`
-                /* Default Desktop Styles */
-                .upload-form-card {
-                    padding: 3rem;
-                }
-                .form-row-grid {
-                    display: grid;
-                    grid-template-columns: 1fr 1fr;
-                    gap: 1.5rem;
-                }
-                .subject-year-grid {
-                    grid-template-columns: 2fr 1fr;
-                }
+                .upload-form-card { padding: 3rem; }
+                .form-row-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+                .subject-year-grid { grid-template-columns: 2fr 1fr; }
 
-                /* Mobile/Tablet Styles (Max Width 768px) */
                 @media (max-width: 768px) {
-                    /* Wrapper Padding */
-                    .upload-page-wrapper {
-                        padding-left: 0.5rem !important;
-                        padding-right: 0.5rem !important;
-                    }
-
-                    /* Card Padding - Much tighter on mobile */
-                    .upload-form-card {
-                        padding: 1rem !important; 
-                        border-radius: 16px !important;
-                    }
-
-                    /* Input Margins - Reduce vertical spacing */
-                    .form-group {
-                        margin-bottom: 1rem !important;
-                    }
-
-                    /* Stack Columns and remove Gap */
-                    .form-row-grid, 
-                    .subject-year-grid {
-                        grid-template-columns: 1fr !important;
-                        gap: 0 !important; 
-                    }
+                    .upload-page-wrapper { padding-left: 0.5rem !important; padding-right: 0.5rem !important; }
+                    .upload-form-card { padding: 1rem !important; border-radius: 16px !important; }
+                    .form-group { margin-bottom: 1rem !important; }
+                    .form-row-grid, .subject-year-grid { grid-template-columns: 1fr !important; gap: 0 !important; }
                 }
             `}</style>
         </div>
@@ -359,4 +363,3 @@ const UploadPage = () => {
 };
 
 export default UploadPage;
-
