@@ -8,7 +8,6 @@ Disallow: /my-blogs
 Disallow: /feed
 
 # Dynamic sitemap
-Sitemap: https://peernotez.netlify.app/sitemap-dynamic.xml
-# new static sitemap
 Sitemap: https://peernotez.netlify.app/sitemap.xml
+# new static sitemap
 Sitemap: https://peernotez.netlify.app/static-sitemap.xml
