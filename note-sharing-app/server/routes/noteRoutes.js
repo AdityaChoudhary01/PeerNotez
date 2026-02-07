@@ -4,12 +4,12 @@ const multer = require('multer');
 const { cloudinary } = require('../config/cloudinary');
 const Note = require('../models/Note');
 const User = require('../models/User'); 
-const Collection = require('../models/Collection'); 
+const Collection = require('../models/Collection'); // NEW: Import Collection model
 const { protect } = require('../middleware/authMiddleware');
 const { admin } = require('../middleware/adminMiddleware');
 const path = require('path');
 const { Readable } = require('stream');
-const indexingService = require('../utils/indexingService'); 
+const indexingService = require('../utils/indexingService'); // For SEO/Indexing
 
 // -------------------------------------------------------------------------
 // Multer setup to store files in memory temporarily
@@ -39,6 +39,7 @@ const createInQuery = (param) => {
     
     // Function to safely escape regex special characters in each search term
     const escapeRegex = (string) => {
+        // Escape characters like . * + ? ^ $ { } ( ) | [ ] \
         return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     };
 
@@ -51,10 +52,14 @@ const createInQuery = (param) => {
         return null;
     }
     
-    // 2. Handle Multi-Value Search
+    // 2. Handle Multi-Value Search (The most likely fix)
     if (values.length > 1) {
+        // Escape each term, then join them with the OR operator (|)
+        // E.g., ['Web development', 'aws'] -> 'Web development|aws'
         const safeValues = values.map(escapeRegex);
         const regexPattern = safeValues.join('|');
+        
+        // Use $regex for a case-insensitive OR substring match
         return { $regex: regexPattern, $options: 'i' };
 
     } else {
@@ -124,7 +129,23 @@ router.get('/users/top-contributors', async (req, res) => {
     }
 });
 
-// @route GET /api/notes/blog-posts (Mock data)
+// 🚀 ADDED ROUTE: GET NOTES BY USER (For Public Profile Page)
+// @route   GET /api/notes/user/:userId
+// @desc    Get all notes by a specific user
+router.get('/user/:userId', async (req, res) => {
+    try {
+        const notes = await Note.find({ user: req.params.userId })
+            .select('title university course subject year rating numReviews downloadCount uploadDate fileType fileName cloudinaryId filePath isFeatured')
+            .populate('user', 'name avatar')
+            .sort({ uploadDate: -1 });
+        res.json({ notes });
+    } catch (error) {
+        console.error('Error fetching user notes:', error);
+        res.status(500).json({ message: 'Error fetching user notes' });
+    }
+});
+
+// @route GET /api/notes/blog-posts (Mock data, should be removed)
 router.get('/blog-posts', (req, res) => {
     const mockPosts = [
         { id: 1, title: "The Best Note-Taking Strategies for University", summary: "Learn how to optimize your study habits with these proven note-taking techniques.", slug: "best-note-taking-strategies" },
@@ -140,16 +161,25 @@ router.get('/', async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 12;
     const page = Number(req.query.page) || 1;
-    let { search, title, university, course, subject, year, sort, isFeatured } = req.query; 
+    let { search, title, university, course, subject, year, sort, isFeatured } = req.query; // Use 'let' for modification
 
-    // Decode parameters if needed
-    if (subject && subject.includes('%2C')) subject = decodeURIComponent(subject);
-    if (university && university.includes('%2C')) university = decodeURIComponent(university);
-    if (course && course.includes('%2C')) course = decodeURIComponent(course);
+    // CRITICAL FIX 1: Decode the parameter if it looks like it was encoded
+    if (subject && subject.includes('%2C')) {
+        subject = decodeURIComponent(subject);
+    }
+    // Optional: Decode others in case of spaces, though the comma is the main issue
+    if (university && university.includes('%2C')) {
+        university = decodeURIComponent(university);
+    }
+    if (course && course.includes('%2C')) {
+        course = decodeURIComponent(course);
+    }
+
 
     const andConditions = [];
     
     // --- ADVANCED FILTER SETUP ---
+    // Now pass the decoded 'subject' string to createInQuery
     const universityQuery = createInQuery(university);
     const courseQuery = createInQuery(course);
     const subjectQuery = createInQuery(subject); 
@@ -160,15 +190,14 @@ router.get('/', async (req, res) => {
     if (search && search.trim() !== '' && search.trim() !== '0') {
       const s = search.trim();
         
+        // Fields for Global Search
         const globalSearchFields = [
             { title: { $regex: s, $options: 'i' } },
             { university: { $regex: s, $options: 'i' } },
             { course: { $regex: s, $options: 'i' } },
-            // ✅ SEO UPDATE (Fix 1): Include description in search
-            { description: { $regex: s, $options: 'i' } }
         ];
         
-        // Conditional Subject Search (prevents conflict)
+        // CRITICAL FIX: Conditional Subject Search (prevents conflict)
         if (!isSubjectFilterActive) {
             globalSearchFields.push({ subject: { $regex: s, $options: 'i' } });
         }
@@ -176,10 +205,24 @@ router.get('/', async (req, res) => {
       andConditions.push({ $or: globalSearchFields });
     }
     
+    // --------------------------------------------
     // --- ADVANCED FILTERING LOGIC ---
-    if (universityQuery) andConditions.push({ university: universityQuery });
-    if (courseQuery) andConditions.push({ course: courseQuery });
-    if (subjectQuery) andConditions.push({ subject: subjectQuery });
+    // --------------------------------------------
+    
+    // University
+    if (universityQuery) {
+        andConditions.push({ university: universityQuery });
+    }
+
+    // Course
+    if (courseQuery) {
+        andConditions.push({ course: courseQuery });
+    }
+
+    // Subject (Uses the subjectQuery built from the decoded string)
+    if (subjectQuery) {
+        andConditions.push({ subject: subjectQuery });
+    }
     
     if (title && title.trim() !== '' && title.trim() !== '0') {
         andConditions.push({ title: { $regex: title.trim(), $options: 'i' } });
@@ -197,6 +240,7 @@ router.get('/', async (req, res) => {
     }
     // --- END ADVANCED FILTERING LOGIC ---
 
+
     let query = {};
     if (andConditions.length === 1) {
       query = andConditions[0];
@@ -207,14 +251,15 @@ router.get('/', async (req, res) => {
     console.log('MongoDB query:', JSON.stringify(query, null, 2));
 
     let sortOptions = { uploadDate: -1 };
+    // ... existing sort logic ...
     if (sort === 'highestRated') sortOptions = { rating: -1 };
     if (sort === 'mostDownloaded') sortOptions = { downloadCount: -1 };
     if (isFeatured) {
         sortOptions = { uploadDate: -1 };
     }
     
-    // ✅ SEO UPDATE (Fix 1): Added 'description' to selected fields
-    const selectFields = 'title description university course subject year rating numReviews downloadCount uploadDate fileType fileName cloudinaryId filePath isFeatured'; 
+    // 🛑 FIX APPLIED HERE: Added 'isFeatured' to the selected fields.
+    const selectFields = 'title university course subject year rating numReviews downloadCount uploadDate fileType fileName cloudinaryId filePath isFeatured'; 
     
     const count = await Note.countDocuments(query);
     const notes = await Note.find(query)
@@ -240,13 +285,13 @@ router.get('/mynotes', protect, async (req, res) => {
 
     const query = { user: req.user.id };
 
-    // ✅ SEO UPDATE (Fix 1): Added 'description'
-    const selectFields = 'title description university course subject year rating numReviews downloadCount uploadDate fileType fileName cloudinaryId filePath isFeatured'; 
+    // 🛑 FIX APPLIED HERE: Added 'isFeatured' to the selected fields.
+    const selectFields = 'title university course subject year rating numReviews downloadCount uploadDate fileType fileName cloudinaryId filePath isFeatured'; // ADDED all file metadata fields
 
     const totalNotes = await Note.countDocuments(query);
 
     const notes = await Note.find(query)
-      .select(selectFields)
+      .select(selectFields) // Applied explicit selection
       .sort({ uploadDate: -1 })
       .limit(limit)
       .skip(limit * (page - 1));
@@ -262,35 +307,6 @@ router.get('/mynotes', protect, async (req, res) => {
     console.error('Error fetching my notes (noteRoutes):', error);
     res.status(500).json({ message: 'Server Error occurred while fetching your notes.' });
   }
-});
-
-// =========================================================================
-// ✅ FIX 4: NEW RELATED NOTES ROUTE (Must be before /:id)
-// =========================================================================
-// @route   GET /api/notes/related/:id
-router.get('/related/:id', async (req, res) => {
-    try {
-        const currentNote = await Note.findById(req.params.id);
-        if (!currentNote) return res.status(404).json({ message: 'Note not found' });
-
-        // Find notes with same subject OR course, excluding current one
-        const relatedNotes = await Note.find({
-            _id: { $ne: currentNote._id }, // Exclude current note
-            $or: [
-                { subject: currentNote.subject },
-                { course: currentNote.course }
-            ]
-        })
-        .select('title description university course subject year rating numReviews downloadCount uploadDate fileType fileName cloudinaryId filePath isFeatured') 
-        .populate('user', 'name avatar')
-        .limit(4) // Show 4 related notes
-        .sort({ rating: -1, downloadCount: -1 }); // Show best/most popular first
-
-        res.json(relatedNotes);
-    } catch (error) {
-        console.error('Error fetching related notes:', error);
-        res.status(500).json({ message: 'Server Error' });
-    }
 });
 
 
@@ -314,8 +330,7 @@ router.post('/upload', protect, uploadToMemory.single('file'), async (req, res) 
       });
     }
 
-    // ✅ SEO UPDATE (Fix 1): Extract 'description' from body
-    const { title, description, university, course, subject, year } = req.body;
+    const { title, university, course, subject, year } = req.body;
 
     const officeMimeTypes = [
       'application/msword',
@@ -366,20 +381,20 @@ router.post('/upload', protect, uploadToMemory.single('file'), async (req, res) 
     finalFilePath = uploadResult.secure_url;
     finalCloudinaryId = uploadResult.public_id;
     console.log('Cloudinary Upload Result (Secure URL):', uploadResult.secure_url);
+    console.log('Cloudinary Public ID:', uploadResult.public_id);
 
-    // ✅ SEO UPDATE (Fix 1): Check for description existence
-    if (!title || !university || !course || !subject || !year || !description) {
+
+    if (!title || !university || !course || !subject || !year) {
       console.log('Error: Missing required text fields for note after file upload.');
       if (finalCloudinaryId) {
         await cloudinary.uploader.destroy(finalCloudinaryId, { resource_type: resourceType });
         console.warn(`Cleaned up orphaned Cloudinary asset: ${finalCloudinaryId} due to missing note details.`);
       }
-      return res.status(400).json({ message: 'Please provide all required fields: title, description, university, course, subject, and year.' });
+      return res.status(400).json({ message: 'Please provide all required fields: title, university, course, subject, and year.' });
     }
 
     const newNote = new Note({
       title,
-      description, // ✅ Saved
       university,
       course,
       subject,
@@ -394,7 +409,7 @@ router.post('/upload', protect, uploadToMemory.single('file'), async (req, res) 
 
     const savedNote = await newNote.save();
     
-    // Increment user's noteCount (for Gamification)
+    // NEW: Increment user's noteCount (for Gamification)
     await req.user.updateOne({ $inc: { noteCount: 1 } });
     
     await indexingService.urlUpdated(savedNote._id.toString(), 'note'); // Use ID and type 'note'
@@ -404,9 +419,19 @@ router.post('/upload', protect, uploadToMemory.single('file'), async (req, res) 
   } catch (error) {
     console.error('--- START SERVER-SIDE ERROR LOG (Conditional Upload) ---');
     console.error('Note upload failed:', error);
-    
+    console.error('Error name:', error.name);
+    console.error('Error message:', error.message);
+    if (error.stack) {
+      console.error('Error stack:', error.stack);
+    }
+    if (error.response && error.response.data) {
+      console.error('Error response data (if applicable):', error.response.data);
+    }
+    console.error('--- END SERVER-SIDE ERROR LOG (Conditional Upload) ---');
+
     if (file && finalCloudinaryId) {
         try {
+            const isOfficeDoc = ['application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'].includes(file.mimetype);
             const resourceTypeForDeletion = (file.mimetype.startsWith('image/') || file.mimetype === 'application/pdf') ? 'image' : 'raw';
             await cloudinary.uploader.destroy(finalCloudinaryId, { resource_type: resourceTypeForDeletion });
             console.warn(`Cleaned up Cloudinary asset: ${finalCloudinaryId} after failed DB save.`);
@@ -430,12 +455,15 @@ router.post('/:id/reviews', protect, async (req, res) => {
             let finalRating;
 
             if (parentReviewId) {
-                // Set rating to undefined for replies to skip 'min: 1' validation
+                // FIX: Set rating to undefined for replies. 
+                // This ensures Mongoose skips the 'min: 1' validation.
                 finalRating = undefined;
+                
             } else {
                 // Top-Level Review Logic
                 finalRating = Number(rating) || 0;
 
+                // Check for existing top-level review
                 const alreadyReviewedTopLevel = note.reviews.some(
                     r => r.user.toString() === req.user.id.toString() && !r.parentReviewId
                 );
@@ -444,24 +472,24 @@ router.post('/:id/reviews', protect, async (req, res) => {
                 }
             }
 
+            // Create the base review object
             const reviewData = { 
                 user: req.user.id, 
                 comment,
-                parentReviewId: parentReviewId || null 
+                parentReviewId: parentReviewId || null // Set parent ID for nested comments
             };
             
+            // Only include the rating field if it is not undefined (i.e., only for top-level reviews)
             if (finalRating !== undefined) {
                  reviewData.rating = finalRating;
             }
 
             note.reviews.push(reviewData);
 
+            // Only update stats if this is a top-level comment with a valid rating (>= 1)
             if (!parentReviewId && finalRating >= 1) {
-                updateNoteReviewStats(note); 
+                updateNoteReviewStats(note); // Use the new function
             }
-
-            // ✅ SITEMAP UPDATE (Fix 3): Explicitly touch the Note's updatedAt field
-            note.updatedAt = new Date();
 
             await note.save();
             res.status(201).json({ message: 'Comment added successfully!', review: reviewData });
@@ -469,6 +497,7 @@ router.post('/:id/reviews', protect, async (req, res) => {
             res.status(404).json({ message: 'Note not found' });
         }
     } catch (error) {
+        // IMPROVED ERROR HANDLING: Catch Mongoose validation errors
         if (error.name === 'ValidationError') {
             return res.status(400).json({ 
                 message: "Validation Failed: " + error.message, 
@@ -508,12 +537,9 @@ router.put('/:id', protect, async (req, res) => {
       return res.status(401).json({ message: 'Not authorized to update this note' });
     }
 
-    // ✅ SEO UPDATE (Fix 1): Include description
-    const { title, description, university, course, subject, year } = req.body;
-    
+    const { title, university, course, subject, year } = req.body;
     const updateFields = {};
     if (title !== undefined) updateFields.title = title;
-    if (description !== undefined) updateFields.description = description; // ✅ Added
     if (university !== undefined) updateFields.university = university;
     if (course !== undefined) updateFields.course = course;
     if (subject !== undefined) updateFields.subject = subject;
@@ -565,7 +591,7 @@ router.delete('/:id', protect, async (req, res) => {
             return res.status(401).json({ message: 'Not authorized to delete this note' });
         }
 
-        // Decrement user's noteCount (for Gamification)
+        // NEW: Decrement user's noteCount (for Gamification)
         await req.user.updateOne({ $inc: { noteCount: -1 } });
         
         await User.updateMany(
@@ -574,12 +600,13 @@ router.delete('/:id', protect, async (req, res) => {
         );
         console.log(`Cleaned up note ID ${note._id} from all users' savedNotes lists.`);
 
-        // Clean up from Collections
+        // NEW: Also clean up from Collections
         await Collection.updateMany(
             { notes: note._id },
             { $pull: { notes: note._id } }
         );
         console.log(`Cleaned up note ID ${note._id} from all collections.`);
+
 
         if (note.cloudinaryId) {
             const resourceTypeForDeletion = (note.fileType && (note.fileType.startsWith('image/') || note.fileType === 'application/pdf')) ? 'image' : 'raw';
@@ -600,7 +627,7 @@ router.delete('/:id', protect, async (req, res) => {
 });
 
 // =========================================================================
-// COLLECTION ROUTES
+// NEW: COLLECTION ROUTES
 // =========================================================================
 
 // @route   POST /api/notes/collections
@@ -637,21 +664,25 @@ router.get('/collections', protect, async (req, res) => {
     }
 });
 
+
+
+
 // @route   GET /api/notes/collections/:collectionId
 // @desc    Get a single user collection with populated notes
 router.get('/collections/:collectionId', protect, async (req, res) => {
     try {
+        // Find the collection by ID and verify ownership (req.user.id)
         const collection = await Collection.findOne({
             _id: req.params.collectionId,
             user: req.user.id
         })
-        .select('name notes createdAt')
+        .select('name notes createdAt') // Select fields needed for the collection wrapper
         .populate({
             path: 'notes',
-            // ✅ SEO UPDATE (Fix 1): Added description to population select for consistency
-            select: 'title description university course subject year rating numReviews downloadCount uploadDate fileType fileName filePath cloudinaryId isFeatured'
+            // Select the note fields required for the client-side NoteCard component
+            select: 'title university course subject year rating numReviews downloadCount uploadDate fileType fileName filePath cloudinaryId isFeatured'
         })
-        .lean(); 
+        .lean(); // Use .lean() to return a plain JS object, preventing 500 errors
 
         if (!collection) {
             return res.status(404).json({ message: 'Collection not found or access denied.' });
@@ -660,6 +691,7 @@ router.get('/collections/:collectionId', protect, async (req, res) => {
         res.json(collection);
     } catch (error) {
         console.error('Error fetching single collection:', error);
+        // Handle invalid ID format gracefully
         if (error.kind === 'ObjectId') {
              return res.status(400).json({ message: 'Invalid Collection ID format.' });
         }
@@ -673,18 +705,21 @@ router.put('/collections/:collectionId/add/:noteId', protect, async (req, res) =
     try {
         const { collectionId, noteId } = req.params;
 
+        // Check if the note exists
         const noteExists = await Note.exists({ _id: noteId });
         if (!noteExists) {
           return res.status(404).json({ message: 'Note not found.' });
         }
 
         const collection = await Collection.findOneAndUpdate(
+            // Match by ID, ensure user owns it, and note is NOT already present ($ne)
             { _id: collectionId, user: req.user.id, notes: { $ne: noteId } },
             { $push: { notes: noteId } },
             { new: true }
         );
 
         if (!collection) {
+            // If not found, it's either: 1. Collection DNE, 2. User DNE, 3. Note already added.
             const checkCollectionOwnership = await Collection.findOne({ _id: collectionId, user: req.user.id });
             if (!checkCollectionOwnership) {
                 return res.status(404).json({ message: 'Collection not found or access denied.' });
@@ -705,25 +740,19 @@ router.put('/collections/:collectionId/add/:noteId', protect, async (req, res) =
 router.put('/collections/:collectionId/remove/:noteId', protect, async (req, res) => {
     try {
         const { collectionId, noteId } = req.params;
-        
         const collection = await Collection.findOneAndUpdate(
             { _id: collectionId, user: req.user.id },
-            { $pull: { notes: noteId } }, 
-            { new: true } 
+            { $pull: { notes: noteId } },
+            { new: true }
         );
 
         if (!collection) {
-            const checkOwnership = await Collection.findById(collectionId);
-            if (!checkOwnership) {
-                 return res.status(404).json({ message: 'Collection not found.' });
-            }
-            return res.status(401).json({ message: 'Access denied or note already removed.' });
+            return res.status(404).json({ message: 'Collection not found or access denied.' });
         }
-        
         res.json({ message: 'Note removed from collection.', collection });
     } catch (error) {
         console.error('Error removing note from collection:', error);
-        res.status(500).json({ message: 'Failed to remove note from collection. Check server logs.' });
+        res.status(500).json({ message: 'Failed to remove note from collection.' });
     }
 });
 
@@ -736,10 +765,11 @@ router.put('/collections/:collectionId', protect, async (req, res) => {
     }
 
     try {
+        // Find the collection by ID and ensure user owns it, then update the name
         const collection = await Collection.findOneAndUpdate(
             { _id: req.params.collectionId, user: req.user.id },
             { name: name.trim() },
-            { new: true, runValidators: true }
+            { new: true, runValidators: true } // {new: true} returns the updated document
         );
 
         if (!collection) {
@@ -771,6 +801,20 @@ router.delete('/collections/:collectionId', protect, async (req, res) => {
         res.status(500).json({ message: 'Failed to delete collection.' });
     }
 });
+
+// @route   GET /api/notes/user/:userId
+// PLACE THIS ABOVE router.get('/:id')
+router.get('/user/:userId', async (req, res) => {
+    try {
+        const notes = await Note.find({ user: req.params.userId })
+            .select('title university course subject year rating numReviews downloadCount uploadDate fileType fileName cloudinaryId filePath isFeatured')
+            .populate('user', 'name avatar')
+            .sort({ uploadDate: -1 });
+        res.json({ notes });
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching user notes' });
+    }
+}); 
 
 // @route   GET /api/notes/:id
 // @desc    Get a single note by ID
