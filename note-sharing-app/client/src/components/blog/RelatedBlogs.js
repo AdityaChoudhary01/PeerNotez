@@ -44,7 +44,7 @@ const RelatedBlogs = ({ currentBlogId }) => {
         const fetchRelated = async () => {
             try {
                 // Changed to relative path to use the proxy (same as other components)
-                const { data } = await axios.get(`https://peernotez.onrender.com/api/blogs/related/${currentBlogId}`);
+                const { data } = await axios.get(`https://peernotez.vercel.app/api/blogs/related/${currentBlogId}`);
                 setBlogs(data);
             } catch (error) {
                 console.error('Error fetching related blogs:', error);
