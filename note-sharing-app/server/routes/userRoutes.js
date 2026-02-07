@@ -506,4 +506,23 @@ router.get('/:id/following', async (req, res) => {
     }
 });
 
+
+// @route   GET /api/users/search
+router.get('/search', async (req, res) => {
+    const { q } = req.query;
+    try {
+        if (!q) return res.json({ users: [] });
+        
+        const users = await User.find({
+            name: { $regex: q, $options: 'i' } // Case-insensitive partial match
+        })
+        .select('name avatar _id')
+        .limit(10);
+        
+        res.json({ users });
+    } catch (err) {
+        res.status(500).json({ message: "Error searching users" });
+    }
+});
+
 module.exports = router;
