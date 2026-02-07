@@ -25,23 +25,34 @@ router.get('/sitemap.xml', async (req, res) => {
 
         // 2. Note Pages
         notes.forEach(n => {
-            xml += `  <url><loc>${BASE_URL}/view/${n._id}</loc><lastmod>${(n.updatedAt || n.createdAt).toISOString().split('T')[0]}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>\n`;
+            // SAFE DATE CHECK: Fallback to current date if DB date is missing
+            const dateObj = n.updatedAt || n.createdAt || new Date();
+            const dateStr = dateObj instanceof Date ? dateObj.toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+            
+            xml += `  <url><loc>${BASE_URL}/view/${n._id}</loc><lastmod>${dateStr}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>\n`;
         });
         
         // 3. Blog Pages
         blogs.forEach(b => {
-            xml += `  <url><loc>${BASE_URL}/blogs/${b.slug}</loc><lastmod>${(b.updatedAt || b.createdAt).toISOString().split('T')[0]}</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>\n`;
+            const dateObj = b.updatedAt || b.createdAt || new Date();
+            const dateStr = dateObj instanceof Date ? dateObj.toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+
+            xml += `  <url><loc>${BASE_URL}/blogs/${b.slug}</loc><lastmod>${dateStr}</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>\n`;
         });
 
         // 4. User Profiles
         users.forEach(u => {
-            xml += `  <url><loc>${BASE_URL}/profile/${u._id}</loc><lastmod>${(u.updatedAt || u.createdAt).toISOString().split('T')[0]}</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>\n`;
+            const dateObj = u.updatedAt || u.createdAt || new Date();
+            const dateStr = dateObj instanceof Date ? dateObj.toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+
+            xml += `  <url><loc>${BASE_URL}/profile/${u._id}</loc><lastmod>${dateStr}</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>\n`;
         });
 
         xml += '</urlset>';
         res.header('Content-Type', 'application/xml').send(xml);
     } catch (err) {
-        res.status(500).end();
+        console.error("Sitemap Generation Error:", err); // This will show you exactly what failed in Render logs
+        res.status(500).json({ error: "Internal Server Error", details: err.message });
     }
 });
 
