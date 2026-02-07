@@ -462,5 +462,48 @@ router.put('/:id/role', protect, admin, async (req, res) => {
     }
 });
 
+// ==========================================================
+// USER LIST ROUTES (Followers & Following)
+// ==========================================================
+
+// @route   GET /api/users/:id/followers
+// @desc    Get populated list of a user's followers
+// @access  Public
+router.get('/:id/followers', async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id)
+            .populate('followers', 'name avatar') // Only fetch name and avatar
+            .select('followers');
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        res.json({ users: user.followers });
+    } catch (error) {
+        console.error('Error fetching followers list:', error);
+        res.status(500).json({ message: 'Server error: Could not fetch followers.' });
+    }
+});
+
+// @route   GET /api/users/:id/following
+// @desc    Get populated list of users a specific user is following
+// @access  Public
+router.get('/:id/following', async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id)
+            .populate('following', 'name avatar') // Only fetch name and avatar
+            .select('following');
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        res.json({ users: user.following });
+    } catch (error) {
+        console.error('Error fetching following list:', error);
+        res.status(500).json({ message: 'Server error: Could not fetch following list.' });
+    }
+});
 
 module.exports = router;
