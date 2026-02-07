@@ -1,14 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 import NoteCard from '../components/notes/NoteCard';
-import BlogCard from '../components/blog/BlogCard'; // <--- NEW IMPORT ADDED
+import BlogCard from '../components/blog/BlogCard';
 import FilterBar from '../components/common/FilterBar';
 import Pagination from '../components/common/Pagination';
-import { FaFilter, FaDownload, FaTimes, FaFeatherAlt } from 'react-icons/fa';
+import { FaFilter, FaDownload, FaTimes, FaFeatherAlt, FaRocket, FaGlobe, FaStar, FaUserAstronaut, FaArrowRight } from 'react-icons/fa';
 
-// --- Download Link Constant ---
 const DOWNLOAD_LINK = 'https://github.com/AdityaChoudhary01/PeerNotez/releases/download/v1.0.3/PeerNotez.apk';
 
 const HomePage = () => {
@@ -23,26 +22,230 @@ const HomePage = () => {
     // --- State for featured content ---
     const [featuredNotes, setFeaturedNotes] = useState([]);
     const [loadingFeatured, setLoadingFeatured] = useState(true);
-
-    // --- NEW STATE FOR FEATURED BLOGS ---
     const [featuredBlogs, setFeaturedBlogs] = useState([]);
     const [loadingFeaturedBlogs, setLoadingFeaturedBlogs] = useState(true);
-    // ------------------------------------
 
-    // --- State for dynamic content sections ---
+    // --- State for dynamic content ---
     const [stats, setStats] = useState({ totalNotes: 0, totalUsers: 0, downloadsThisMonth: 0 });
     const [loadingStats, setLoadingStats] = useState(true);
     const [topContributors, setTopContributors] = useState([]);
     const [loadingContributors, setLoadingContributors] = useState(true);
     
-    // --- State for mobile filter bar ---
     const [isFilterBarOpen, setIsFilterBarOpen] = useState(false);
+    const [showAppButton, setShowAppButton] = useState(true);
 
-    // --- State for Fixed Download Button: Shows on every page load ---
-    const [showAppButton, setShowAppButton] = useState(true); 
+    // --- 3D TILT STATE ---
+    const heroRef = useRef(null);
+    const [tilt, setTilt] = useState({ x: 0, y: 0 });
 
+    // --- INTERNAL CSS: HOLOGRAPHIC HOMEPAGE ---
+    const styles = {
+        heroSection: {
+            minHeight: '85vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            position: 'relative',
+            marginTop: '-50px',
+            marginBottom: '4rem',
+            perspective: '1000px'
+        },
+        heroCard: {
+            textAlign: 'center',
+            zIndex: 10,
+            transform: `rotateX(${tilt.y}deg) rotateY(${tilt.x}deg)`,
+            transition: 'transform 0.1s ease-out',
+            padding: '4rem 2rem',
+            background: 'rgba(255, 255, 255, 0.03)',
+            borderRadius: '30px',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            backdropFilter: 'blur(10px)',
+            boxShadow: '0 25px 50px rgba(0,0,0,0.3)',
+            maxWidth: '1000px',
+            width: '90%'
+        },
+        heroTitle: {
+            fontSize: 'clamp(2.5rem, 5vw, 4.5rem)',
+            fontWeight: '800',
+            background: 'linear-gradient(to right, #00d4ff, #ff00cc)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            marginBottom: '1.5rem',
+            lineHeight: 1.2
+        },
+        heroSubtitle: {
+            fontSize: '1.2rem',
+            color: 'rgba(255, 255, 255, 0.8)',
+            maxWidth: '700px',
+            margin: '0 auto 2.5rem',
+            lineHeight: 1.6
+        },
+        btnGroup: {
+            display: 'flex',
+            gap: '1.5rem',
+            justifyContent: 'center',
+            flexWrap: 'wrap'
+        },
+        primaryBtn: {
+            padding: '14px 32px',
+            borderRadius: '50px',
+            background: 'linear-gradient(135deg, #00d4ff 0%, #333399 100%)',
+            color: '#fff',
+            textDecoration: 'none',
+            fontWeight: '700',
+            fontSize: '1.1rem',
+            boxShadow: '0 0 20px rgba(0, 212, 255, 0.4)',
+            transition: 'transform 0.3s',
+            // FIX: Added flex properties to center text/icons
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+        },
+        secondaryBtn: {
+            padding: '14px 32px',
+            borderRadius: '50px',
+            background: 'rgba(255, 255, 255, 0.1)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            color: '#fff',
+            textDecoration: 'none',
+            fontWeight: '700',
+            fontSize: '1.1rem',
+            backdropFilter: 'blur(5px)',
+            transition: 'background 0.3s',
+            // FIX: Added flex properties to center text/icons
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+        },
+        sectionHeader: {
+            textAlign: 'center',
+            marginBottom: '3rem',
+            position: 'relative'
+        },
+        sectionTitle: {
+            fontSize: '2.5rem',
+            fontWeight: '700',
+            color: '#fff',
+            display: 'inline-block',
+            paddingBottom: '10px',
+            borderBottom: '2px solid #00d4ff'
+        },
+        statsGrid: {
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+            gap: '2rem',
+            marginBottom: '5rem'
+        },
+        statCard: {
+            background: 'rgba(255, 255, 255, 0.05)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: '20px',
+            padding: '2rem',
+            textAlign: 'center',
+            backdropFilter: 'blur(10px)',
+            transition: 'transform 0.3s'
+        },
+        statNumber: {
+            fontSize: '3rem',
+            fontWeight: '800',
+            background: 'linear-gradient(to bottom, #fff, #a0a0a0)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            marginBottom: '0.5rem'
+        },
+        gridContainer: {
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+            gap: '2rem',
+            marginBottom: '4rem'
+        },
+        contributorCard: {
+            background: 'rgba(255, 255, 255, 0.03)',
+            borderRadius: '16px',
+            padding: '1.5rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '1rem',
+            border: '1px solid rgba(255, 255, 255, 0.05)',
+            transition: 'background 0.3s'
+        },
+        fixedBtnWrapper: {
+            position: 'fixed',
+            bottom: '30px',
+            right: '30px',
+            zIndex: 9999,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px'
+        },
+        fixedBtn: {
+            background: 'rgba(15, 12, 41, 0.85)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(0, 212, 255, 0.5)',
+            color: '#fff',
+            padding: '12px 24px',
+            borderRadius: '50px',
+            textDecoration: 'none',
+            fontWeight: 'bold',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            boxShadow: '0 0 20px rgba(0, 212, 255, 0.3)',
+            transition: 'transform 0.3s'
+        },
+        closeFixedBtn: {
+            background: 'rgba(255, 0, 85, 0.2)',
+            border: 'none',
+            color: '#fff',
+            borderRadius: '50%',
+            width: '30px',
+            height: '30px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+        },
+        filterToggle: {
+            display: 'block',
+            margin: '0 auto 2rem',
+            padding: '10px 20px',
+            background: 'rgba(255,255,255,0.1)',
+            border: '1px solid rgba(255,255,255,0.2)',
+            color: '#fff',
+            borderRadius: '30px',
+            cursor: 'pointer',
+            fontSize: '1rem'
+        },
+        controlsHeader: {
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            marginBottom: '2rem',
+            background: 'rgba(0,0,0,0.2)',
+            padding: '1rem',
+            borderRadius: '16px'
+        },
+        select: {
+            background: 'rgba(0,0,0,0.3)',
+            border: '1px solid rgba(255,255,255,0.2)',
+            color: '#fff',
+            padding: '8px 16px',
+            borderRadius: '8px',
+            outline: 'none',
+            cursor: 'pointer'
+        }
+    };
 
-    // --- DATA FETCHING HOOKS ---
+    const handleMouseMove = (e) => {
+        if (!heroRef.current) return;
+        const { left, top, width, height } = heroRef.current.getBoundingClientRect();
+        const x = (e.clientX - left - width / 2) / 30;
+        const y = -(e.clientY - top - height / 2) / 30;
+        setTilt({ x, y });
+    };
+    const handleMouseLeave = () => setTilt({ x: 0, y: 0 });
+
     useEffect(() => {
         const fetchNotes = async () => {
             setLoading(true);
@@ -52,288 +255,163 @@ const HomePage = () => {
                 setNotes(data.notes);
                 setPage(data.page);
                 setTotalPages(data.totalPages);
-            } catch (error) {
-                console.error("Failed to fetch notes", error);
-            } finally {
-                setLoading(false);
-            }
+            } catch (error) { console.error("Failed to fetch notes", error); } 
+            finally { setLoading(false); }
         };
         fetchNotes();
     }, [filters, sortBy, page]);
 
     useEffect(() => {
-        const fetchFeaturedNotes = async () => {
-            setLoadingFeatured(true);
+        const fetchData = async () => {
             try {
-                const { data } = await axios.get('/notes', { params: { isFeatured: true, limit: 3 } });
-                setFeaturedNotes(data.notes);
-            } catch (error) {
-                console.error("Failed to fetch featured notes", error);
-            } finally {
+                const notesRes = await axios.get('/notes', { params: { isFeatured: true, limit: 3 } });
+                setFeaturedNotes(notesRes.data.notes);
                 setLoadingFeatured(false);
-            }
-        };
-        fetchFeaturedNotes();
-    }, []);
 
-    // --- NEW EFFECT: Fetch Featured Blogs ---
-    useEffect(() => {
-        const fetchFeaturedBlogs = async () => {
-            setLoadingFeaturedBlogs(true);
-            try {
-                // Assuming backend returns { blogs: [...] }
-                const { data } = await axios.get('/blogs', { params: { isFeatured: true, limit: 3 } });
-                setFeaturedBlogs(data.blogs || []);
-            } catch (error) {
-                console.error("Failed to fetch featured blogs", error);
-                setFeaturedBlogs([]);
-            } finally {
+                const blogsRes = await axios.get('/blogs', { params: { isFeatured: true, limit: 3 } });
+                setFeaturedBlogs(blogsRes.data.blogs || []);
                 setLoadingFeaturedBlogs(false);
-            }
-        };
-        fetchFeaturedBlogs();
-    }, []);
-    // ----------------------------------------
 
-    useEffect(() => {
-        const fetchStats = async () => {
-            setLoadingStats(true);
-            try {
-                const { data } = await axios.get('/notes/stats');
-                setStats(data);
-            } catch (error) {
-                console.error("Failed to fetch statistics", error);
-            } finally {
+                const statsRes = await axios.get('/notes/stats');
+                setStats(statsRes.data);
                 setLoadingStats(false);
-            }
-        };
-        fetchStats();
-    }, []);
 
-    useEffect(() => {
-        const fetchTopContributors = async () => {
-            setLoadingContributors(true);
-            try {
-                const { data } = await axios.get('/users/top-contributors');
-                setTopContributors(data.users);
-            } catch (error) {
-                console.error("Failed to fetch top contributors", error);
-            } finally {
+                const contribRes = await axios.get('/users/top-contributors');
+                setTopContributors(contribRes.data.users);
                 setLoadingContributors(false);
-            }
+            } catch (err) { console.error(err); }
         };
-        fetchTopContributors();
+        fetchData();
     }, []);
 
-    // --- UTILITY FUNCTIONS ---
     const handleFilterSubmit = (newFilters) => {
-        const activeFilters = Object.fromEntries(
-            Object.entries(newFilters).filter(([_, value]) => value !== '')
-        );
-        setPage(1); 
-        setFilters(activeFilters); 
+        const activeFilters = Object.fromEntries(Object.entries(newFilters).filter(([_, v]) => v !== ''));
+        setPage(1);
+        setFilters(activeFilters);
         setIsFilterBarOpen(false);
     };
-    
-    const toggleFilterBar = () => { setIsFilterBarOpen(!isFilterBarOpen); };
-
-    const handleCloseButton = () => { setShowAppButton(false); };
-
-    // --- Fixed Download Button Component ---
-    const AppDownloadFixedButton = () => {
-        if (!showAppButton) return null;
-
-        return (
-            <div className="fixed-download-button-wrapper">
-                <button 
-                    className="fixed-download-close-btn" 
-                    onClick={handleCloseButton}
-                    aria-label="Close download button"
-                >
-                    <FaTimes />
-                </button>
-                <a 
-                    href={DOWNLOAD_LINK} 
-                    download 
-                    className="fixed-download-button"
-                    aria-label="Download PeerNotez App"
-                    onClick={() => setTimeout(handleCloseButton, 1000)} 
-                >
-                    <FaDownload className="download-icon" /> 
-                    <span className="button-text">Get App</span>
-                </a>
-            </div>
-        );
-    };
-
-    // --- MAIN RENDER LOGIC ---
 
     return (
         <div className="homepage-content">
-            <AppDownloadFixedButton />
-            
             <Helmet>
                 <title>PeerNotez | Share and Discover Academic Notes</title>
-                <meta
-                    name="description"
-                    content="Find, share, and explore academic notes across universities and courses. PeerNotez helps students collaborate and learn more effectively. Aditya, Aditya Choudhary"
-                />
-                <link rel="canonical" href="https://peernotez.netlify.app/" />
-                <script type="application/ld+json">
-                {`
-                {
-                    "@context": "https://schema.org",
-                    "@type": "WebSite",
-                    "name": "PeerNotez",
-                    "url": "https://peernotez.netlify.app/",
-                    "description": "PeerNotez helps students share and find academic notes globally."
-                }
-                `}
-                </script>
-                <script type="application/ld+json">
-                {`
-                {
-                    "@context": "https://schema.org",
-                    "@type": "Organization",
-                    "name": "PeerNotez",
-                    "url": "https://peernotez.netlify.app/",
-                    "logo": "https://peernotez.netlify.app/logo192.png",
-                    "sameAs": [
-                        "https://www.instagram.com/aditya_choudhary__021/",
-                        "https://www.linkedin.com/in/aditya-kumar-38093a304/"
-                    ]
-                }
-                `}
-                </script>
-                <meta property="og:title" content="PeerNotez | Share and Discover Academic Notes" />
-                <meta property="og:description" content="Find, share, and explore academic notes across universities and courses. PeerNotez helps students collaborate and learn more effectively." />
-                <meta property="og:url" content="https://peernotez.netlify.app/" />
-                <meta property="og:image" content="https://peernotez.netlify.app/logo192.png" />
+                <meta name="description" content="Find, share, and explore academic notes across universities and courses." />
             </Helmet>
 
-            <section className="hero-banner">
-                <div className="hero-content">
-                    <h1 className="hero-title">Empower Your Learning with PeerNotez</h1>
-                    <p className="hero-subtitle">Access a vast, community-driven library of academic notes from universities worldwide. Search, share, and succeed.</p>
-                    <div className="hero-actions">
-                        <Link to="/search" className="hero-cta-button primary">Explore Notes</Link>
-                        <Link to="/upload" className="hero-cta-button secondary">Contribute Now</Link>
+            {showAppButton && (
+                <div style={styles.fixedBtnWrapper}>
+                    <button onClick={() => setShowAppButton(false)} style={styles.closeFixedBtn}><FaTimes /></button>
+                    <a href={DOWNLOAD_LINK} download style={styles.fixedBtn}>
+                        <FaDownload /> Get App
+                    </a>
+                </div>
+            )}
+
+            <section 
+                style={styles.heroSection} 
+                onMouseMove={handleMouseMove} 
+                onMouseLeave={handleMouseLeave} 
+                ref={heroRef}
+            >
+                <div style={styles.heroCard}>
+                    <h1 style={styles.heroTitle}>Empower Your Learning<br />with PeerNotez</h1>
+                    <p style={styles.heroSubtitle}>Access a vast, community-driven library of academic notes from universities worldwide. Search, share, and succeed together.</p>
+                    <div style={styles.btnGroup}>
+                        <Link to="/search" style={styles.primaryBtn} onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'} onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}>Explore Notes</Link>
+                        <Link to="/upload" style={styles.secondaryBtn}>Contribute Now</Link>
                     </div>
                 </div>
+                <div style={{
+                    position: 'absolute', top: '10%', left: '5%', width: '300px', height: '300px', 
+                    background: 'radial-gradient(circle, rgba(255, 0, 204, 0.2), transparent 70%)', 
+                    filter: 'blur(50px)', zIndex: 0 
+                }} />
+                <div style={{
+                    position: 'absolute', bottom: '10%', right: '5%', width: '400px', height: '400px', 
+                    background: 'radial-gradient(circle, rgba(0, 212, 255, 0.2), transparent 70%)', 
+                    filter: 'blur(50px)', zIndex: 0 
+                }} />
             </section>
 
-            <hr/>
-
-            <section className="stats-section">
-                {loadingStats ? (
-                    <div>Loading stats...</div>
-                ) : (
-                    <div className="stats-container">
-                        <div className="stat-card">
-                            <h3>{stats.totalNotes.toLocaleString()}+</h3>
-                            <p>Notes Available</p>
+            {!loadingStats && (
+                <div style={styles.statsGrid}>
+                    {[
+                        { icon: <FaRocket />, val: stats.totalNotes, label: 'Notes Available', color: '#ff00cc' },
+                        { icon: <FaGlobe />, val: stats.totalUsers, label: 'Students Empowered', color: '#00d4ff' },
+                        { icon: <FaDownload />, val: stats.downloadsThisMonth, label: 'Downloads This Month', color: '#ffcc00' }
+                    ].map((item, idx) => (
+                        <div key={idx} style={styles.statCard} onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-10px)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
+                            <div style={{fontSize: '2rem', color: item.color, marginBottom: '10px'}}>{item.icon}</div>
+                            <div style={styles.statNumber}>{item.val.toLocaleString()}+</div>
+                            <div style={{color: 'rgba(255,255,255,0.7)'}}>{item.label}</div>
                         </div>
-                        <div className="stat-card">
-                            <h3>{stats.totalUsers.toLocaleString()}+</h3>
-                            <p>Students Empowered</p>
-                        </div>
-                        <div className="stat-card">
-                            <h3>{stats.downloadsThisMonth.toLocaleString()}+</h3>
-                            <p>Downloads This Month</p>
-                        </div>
-                    </div>
-                )}
-            </section>
-
-            <hr/>
-
-            <section className="how-it-works-section">
-                <h2 className="section-title">A Seamless Way to Share and Learn</h2>
-                <div className="steps-container">
-                    <div className="step-card">
-                        <span className="step-icon">1</span>
-                        <h3>Discover</h3>
-                        <p>Effortlessly find millions of notes using our advanced search and filter options.</p>
-                    </div>
-                    <div className="step-card">
-                        <span className="step-icon">2</span>
-                        <h3>Contribute</h3>
-                        <p>Upload your academic notes to a global community and earn recognition.</p>
-                    </div>
-                    <div className="step-card">
-                        <span className="step-icon">3</span>
-                        <h3>Succeed</h3>
-                        <p>Empower your studies by accessing high-quality content and engaging with peers.</p>
-                    </div>
+                    ))}
                 </div>
-            </section>
+            )}
 
-            <hr/>
-
-            <section className="featured-notes-section">
-                <h2>⭐ Editor's Picks</h2>
+            <section style={{marginBottom: '5rem'}}>
+                <div style={styles.sectionHeader}>
+                    <h2 style={styles.sectionTitle}>⭐ Editor's Picks</h2>
+                </div>
                 {loadingFeatured ? (
-                    <div>Loading featured notes...</div>
+                    <div style={{textAlign: 'center'}}>Loading...</div>
                 ) : featuredNotes.length > 0 ? (
-                    <div className="notes-grid">
+                    <div style={styles.gridContainer}>
                         {featuredNotes.map(note => <NoteCard key={note._id} note={note} />)}
                     </div>
                 ) : (
-                    <p style={{textAlign: 'center'}}>No featured notes have been selected yet.</p>
+                    <p style={{textAlign: 'center', color: 'rgba(255,255,255,0.5)'}}>No featured notes available.</p>
                 )}
             </section>
 
-            <hr/>
-            
-            {/* ------------------------------------------------------------------- */}
-            {/* NEW SECTION: FEATURED BLOGS (Corrected Rendering Logic) */}
-            <section className="featured-blog-section">
-                <h2><FaFeatherAlt /> Featured Insights</h2>
+            <section style={{marginBottom: '5rem'}}>
+                <div style={styles.sectionHeader}>
+                    <h2 style={styles.sectionTitle}><FaFeatherAlt /> Featured Insights</h2>
+                </div>
                 {loadingFeaturedBlogs ? (
-                    <div>Loading featured blog posts...</div>
+                    <div style={{textAlign: 'center'}}>Loading...</div>
                 ) : featuredBlogs.length > 0 ? (
-                    // RENDER BLOGS USING BlogCard and blog-posts-grid
-                    <div className="blog-posts-grid"> 
+                    <div style={styles.gridContainer}>
                         {featuredBlogs.map(blog => <BlogCard key={blog._id} blog={blog} />)}
                     </div>
                 ) : (
-                    // Fallback when no featured data is found
-                    <p style={{textAlign: 'center'}}>No featured blog posts to show yet.</p>
+                    <p style={{textAlign: 'center', color: 'rgba(255,255,255,0.5)'}}>No blogs to show.</p>
                 )}
-                <div style={{textAlign: 'center', marginTop: '2rem'}}>
-                    <Link to="/blogs" className="hero-cta-button secondary" style={{maxWidth: '300px', margin: '0 auto'}}>
-                        View All Blogs &rarr;
+                <div style={{textAlign: 'center'}}>
+                    <Link to="/blogs" style={{...styles.secondaryBtn, fontSize: '0.9rem', padding: '10px 24px'}}>
+                        View All Blogs <FaArrowRight style={{marginLeft: '5px'}}/>
                     </Link>
                 </div>
             </section>
-            {/* ------------------------------------------------------------------- */}
 
-            <hr/>
+            <section style={{marginBottom: '5rem'}} id="notes-library">
+                <div style={styles.sectionHeader}>
+                    <h1 style={styles.sectionTitle}>Library</h1>
+                </div>
 
-            {/* Filter Bar Toggle Button for Mobile */}
-            <div className="filter-toggle-container">
-                <button 
-                    className="filter-toggle-btn" 
-                    onClick={toggleFilterBar}
-                >
-                    {isFilterBarOpen ? 'Hide Filters' : 'Show Filters'}
-                    <FaFilter className="filter-icon" />
-                </button>
-            </div>
+                <div className="mobile-filter-toggle">
+                    <button 
+                        style={styles.filterToggle} 
+                        onClick={() => setIsFilterBarOpen(!isFilterBarOpen)}
+                    >
+                        {isFilterBarOpen ? 'Hide Filters' : 'Show Filters'} <FaFilter />
+                    </button>
+                </div>
 
-            {/* Main Notes Section with Filter and Sort */}
-            <section className="all-notes-section">
-                <h1>Find Notes</h1>
-                <FilterBar
-                    onFilterSubmit={handleFilterSubmit}
-                    className={isFilterBarOpen ? 'filter-bar open' : 'filter-bar'}
-                />
+                <div style={{display: isFilterBarOpen || window.innerWidth > 768 ? 'block' : 'none'}}>
+                    <FilterBar onFilterSubmit={handleFilterSubmit} />
+                </div>
 
-                <div className="notes-header">
-                    <h2>All Notes</h2>
-                    <div className="sort-container">
-                        <label htmlFor="sort-select">Sort by:</label>
-                        <select id="sort-select" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+                <div style={styles.controlsHeader}>
+                    <h3 style={{margin: 0, color: '#fff'}}>All Notes</h3>
+                    <div style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
+                        <label htmlFor="sort-select" style={{color: 'rgba(255,255,255,0.7)'}}>Sort by:</label>
+                        <select 
+                            id="sort-select" 
+                            value={sortBy} 
+                            onChange={(e) => setSortBy(e.target.value)}
+                            style={styles.select}
+                        >
                             <option value="uploadDate">Most Recent</option>
                             <option value="highestRated">Highest Rated</option>
                             <option value="mostDownloaded">Most Downloaded</option>
@@ -342,10 +420,10 @@ const HomePage = () => {
                 </div>
 
                 {loading ? (
-                    <div>Loading notes...</div>
+                    <div style={{textAlign: 'center'}}>Loading library...</div>
                 ) : notes.length > 0 ? (
                     <>
-                        <div className="notes-grid">
+                        <div style={styles.gridContainer}>
                             {notes.map(note => <NoteCard key={note._id} note={note} />)}
                         </div>
                         <Pagination 
@@ -355,36 +433,38 @@ const HomePage = () => {
                         />
                     </>
                 ) : (
-                    <p style={{textAlign: 'center', marginTop: '2rem'}}>No notes found matching your criteria.</p>
+                    <p style={{textAlign: 'center', marginTop: '2rem', color: 'rgba(255,255,255,0.5)'}}>No notes found matching your criteria.</p>
                 )}
             </section>
 
-            <hr/>
-
-            <section className="top-contributors-section">
-                <h2>Our Top Note-Takers</h2>
+            <section>
+                <div style={styles.sectionHeader}>
+                    <h2 style={styles.sectionTitle}><FaUserAstronaut /> Top Contributors</h2>
+                </div>
                 {loadingContributors ? (
-                    <div>Loading...</div>
+                    <div style={{textAlign: 'center'}}>Loading...</div>
                 ) : topContributors.length > 0 ? (
-                    <div className="contributors-list">
+                    <div style={styles.gridContainer}>
                         {topContributors.map(contributor => (
-                            <div key={contributor._id} className="contributor-card">
-                                <img src={contributor.avatar} alt={contributor.name} />
-                                <h4>{contributor.name}</h4>
-                                <p>{contributor.noteCount} notes uploaded</p>
+                            <div key={contributor._id} style={styles.contributorCard}>
+                                <img 
+                                    src={contributor.avatar} 
+                                    alt={contributor.name} 
+                                    style={{width: '60px', height: '60px', borderRadius: '50%', border: '2px solid #00d4ff'}}
+                                />
+                                <div>
+                                    <h4 style={{margin: '0 0 5px 0', color: '#fff'}}>{contributor.name}</h4>
+                                    <p style={{margin: 0, fontSize: '0.9rem', color: 'rgba(255,255,255,0.6)'}}>
+                                        <FaStar color="#ffcc00"/> {contributor.noteCount} notes
+                                    </p>
+                                </div>
                             </div>
                         ))}
                     </div>
                 ) : (
-                    <p>No contributors to show yet.</p>
+                    <p style={{textAlign: 'center', color: 'rgba(255,255,255,0.5)'}}>No contributors to show yet.</p>
                 )}
             </section>
-
-            <hr/>
-
-            {/* REMOVED original simplified blog section, replaced by Featured Blogs above */}
-            {/* <section className="blog-section"> ... </section> */}
-
         </div>
     );
 };
