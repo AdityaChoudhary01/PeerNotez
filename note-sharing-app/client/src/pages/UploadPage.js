@@ -22,6 +22,16 @@ const UploadPage = () => {
 
     const fileInputRef = useRef(null);
 
+    // NEW: Validation logic to disable button until all fields are filled
+    const isFormValid = 
+        formData.title.trim() !== '' &&
+        formData.university.trim() !== '' &&
+        formData.course.trim() !== '' &&
+        formData.subject.trim() !== '' &&
+        formData.year.trim() !== '' &&
+        formData.description.trim() !== '' &&
+        file !== null;
+
     const styles = {
         wrapper: {
             paddingTop: '2rem',
@@ -136,13 +146,13 @@ const UploadPage = () => {
             padding: '14px',
             marginTop: '1.5rem',
             borderRadius: '50px',
-            background: 'linear-gradient(135deg, #00d4ff 0%, #333399 100%)',
-            color: '#fff',
+            background: isFormValid ? 'linear-gradient(135deg, #00d4ff 0%, #333399 100%)' : 'rgba(255, 255, 255, 0.1)',
+            color: isFormValid ? '#fff' : 'rgba(255, 255, 255, 0.3)',
             border: 'none',
             fontSize: '1.1rem',
             fontWeight: '700',
-            cursor: 'pointer',
-            boxShadow: '0 4px 15px rgba(0, 212, 255, 0.3)',
+            cursor: isFormValid ? 'pointer' : 'not-allowed',
+            boxShadow: isFormValid ? '0 4px 15px rgba(0, 212, 255, 0.3)' : 'none',
             transition: 'transform 0.2s, opacity 0.2s',
             display: 'flex',
             alignItems: 'center',
@@ -169,7 +179,7 @@ const UploadPage = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!file) return alert('Please select a file.');
+        if (!file || !isFormValid) return;
 
         setUploading(true);
         const data = new FormData();
@@ -291,10 +301,10 @@ const UploadPage = () => {
                     </div>
                 </div>
 
-                {/* RESTORED: Description Field */}
+                {/* RESTORED: Description Field - Optional removed from label */}
                 <div style={styles.formGroup} className="form-group">
                     <label htmlFor="description" style={styles.label}>
-                        <FaAlignLeft style={{color: '#00d4ff'}} /> Description (Optional)
+                        <FaAlignLeft style={{color: '#00d4ff'}} /> Description
                     </label>
                     <textarea 
                         id="description" 
@@ -304,6 +314,7 @@ const UploadPage = () => {
                         onBlur={handleBlur}
                         placeholder="Provide a brief overview of what these notes cover..." 
                         style={styles.textarea}
+                        required
                     />
                 </div>
 
@@ -337,10 +348,10 @@ const UploadPage = () => {
 
                 <button 
                     type="submit" 
-                    disabled={uploading}
-                    style={{...styles.submitBtn, opacity: uploading ? 0.7 : 1, cursor: uploading ? 'wait' : 'pointer'}}
-                    onMouseEnter={(e) => !uploading && (e.target.style.transform = 'translateY(-2px)')}
-                    onMouseLeave={(e) => !uploading && (e.target.style.transform = 'translateY(0)')}
+                    disabled={!isFormValid || uploading}
+                    style={{...styles.submitBtn, opacity: (!isFormValid || uploading) ? 0.7 : 1, cursor: uploading ? 'wait' : (isFormValid ? 'pointer' : 'not-allowed')}}
+                    onMouseEnter={(e) => isFormValid && !uploading && (e.target.style.transform = 'translateY(-2px)')}
+                    onMouseLeave={(e) => isFormValid && !uploading && (e.target.style.transform = 'translateY(0)')}
                 >
                     {uploading ? 'Uploading...' : <><FaCloudUploadAlt /> Upload Note</>}
                 </button>
