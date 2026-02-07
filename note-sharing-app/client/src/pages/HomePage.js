@@ -165,7 +165,9 @@ const HomePage = () => {
             alignItems: 'center',
             gap: '1rem',
             border: '1px solid rgba(255, 255, 255, 0.05)',
-            transition: 'background 0.3s'
+            transition: 'all 0.3s ease',
+            textDecoration: 'none', // Critical for Link
+            cursor: 'pointer'
         },
         fixedBtnWrapper: {
             position: 'fixed',
@@ -295,7 +297,41 @@ const HomePage = () => {
         <div className="homepage-content">
             <Helmet>
                 <title>PeerNotez | Share and Discover Academic Notes</title>
-                <meta name="description" content="Find, share, and explore academic notes across universities and courses." />
+                <meta
+                    name="description"
+                    content="Find, share, and explore academic notes across universities and courses. PeerNotez helps students collaborate and learn more effectively. Aditya, Aditya Choudhary"
+                />
+                <link rel="canonical" href="https://peernotez.netlify.app/" />
+                <script type="application/ld+json">
+                {`
+                {
+                    "@context": "https://schema.org",
+                    "@type": "WebSite",
+                    "name": "PeerNotez",
+                    "url": "https://peernotez.netlify.app/",
+                    "description": "PeerNotez helps students share and find academic notes globally."
+                }
+                `}
+                </script>
+                <script type="application/ld+json">
+                {`
+                {
+                    "@context": "https://schema.org",
+                    "@type": "Organization",
+                    "name": "PeerNotez",
+                    "url": "https://peernotez.netlify.app/",
+                    "logo": "https://peernotez.netlify.app/logo192.png",
+                    "sameAs": [
+                        "https://www.instagram.com/aditya_choudhary__021/",
+                        "https://www.linkedin.com/in/aditya-kumar-38093a304/"
+                    ]
+                }
+                `}
+                </script>
+                <meta property="og:title" content="PeerNotez | Share and Discover Academic Notes" />
+                <meta property="og:description" content="Find, share, and explore academic notes across universities and courses. PeerNotez helps students collaborate and learn more effectively." />
+                <meta property="og:url" content="https://peernotez.netlify.app/" />
+                <meta property="og:image" content="https://peernotez.netlify.app/logo192.png" />
             </Helmet>
 
             {showAppButton && (
@@ -448,11 +484,25 @@ const HomePage = () => {
                 ) : topContributors.length > 0 ? (
                     <div style={styles.gridContainer}>
                         {topContributors.map(contributor => (
-                            <div key={contributor._id} style={styles.contributorCard}>
+                            <Link 
+                                to={`/profile/${contributor._id}`} 
+                                key={contributor._id} 
+                                style={styles.contributorCard}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
+                                    e.currentTarget.style.transform = 'translateY(-5px)';
+                                    e.currentTarget.style.borderColor = 'rgba(0, 212, 255, 0.3)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)';
+                                    e.currentTarget.style.transform = 'translateY(0)';
+                                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.05)';
+                                }}
+                            >
                                 <img 
                                     src={contributor.avatar} 
                                     alt={contributor.name} 
-                                    style={{width: '60px', height: '60px', borderRadius: '50%', border: '2px solid #00d4ff'}}
+                                    style={{width: '60px', height: '60px', borderRadius: '50%', border: '2px solid #00d4ff', objectFit: 'cover'}}
                                 />
                                 <div>
                                     <h4 style={{margin: '0 0 5px 0', color: '#fff'}}>{contributor.name}</h4>
@@ -460,7 +510,7 @@ const HomePage = () => {
                                         <FaStar color="#ffcc00"/> {contributor.noteCount} notes
                                     </p>
                                 </div>
-                            </div>
+                            </Link>
                         ))}
                     </div>
                 ) : (
