@@ -42,7 +42,7 @@ for = "/manifest.json"
 
 # Dynamic Sitemap
 [[headers]]
-for = "/sitemap-dynamic.xml"
+for = "/sitemap.xml"
 [headers.values]
   Content-Type = "application/xml"
   X-Robots-Tag = "all"
@@ -51,7 +51,7 @@ for = "/sitemap-dynamic.xml"
 
 [[headers]]
 # Static sitemap
-for = "/sitemap.xml"
+for = "/static-sitemap.xml"
 [headers.values]
   Content-Type = "application/xml"
   X-Robots-Tag = "all"
