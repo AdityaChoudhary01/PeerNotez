@@ -1,14 +1,11 @@
 const { google } = require('googleapis');
 
 // Construct the JWT client using environment variables
-const jwtClient = new google.auth.JWT(
-  process.env.GOOGLE_CLIENT_EMAIL,
-  null,
-  // Fix for private key newline characters
-  process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
-  ['https://www.googleapis.com/auth/indexing'],
-  null
-);
+const jwtClient = new google.auth.JWT({
+  email: process.env.GOOGLE_CLIENT_EMAIL,
+  key: process.env.GOOGLE_PRIVATE_KEY ? process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n') : null,
+  scopes: ['https://www.googleapis.com/auth/indexing']
+});
 
 /**
  * Notifies Google that a URL has been updated or created.
