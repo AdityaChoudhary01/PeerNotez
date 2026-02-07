@@ -824,19 +824,6 @@ router.delete('/collections/:collectionId', protect, async (req, res) => {
     }
 });
 
-// @route   GET /api/notes/user/:userId
-// PLACE THIS ABOVE router.get('/:id')
-router.get('/user/:userId', async (req, res) => {
-    try {
-        const notes = await Note.find({ user: req.params.userId })
-            .select('title university course subject year rating numReviews downloadCount uploadDate fileType fileName cloudinaryId filePath isFeatured')
-            .populate('user', 'name avatar')
-            .sort({ uploadDate: -1 });
-        res.json({ notes });
-    } catch (error) {
-        res.status(500).json({ message: 'Error fetching user notes' });
-    }
-}); 
 
 // @route   GET /api/notes/:id
 // @desc    Get a single note by ID
