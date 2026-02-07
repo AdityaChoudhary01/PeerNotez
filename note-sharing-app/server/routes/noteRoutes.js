@@ -441,11 +441,21 @@ router.post('/upload', protect, uploadToMemory.single('file'), async (req, res) 
 
     const savedNote = await newNote.save();
     
-    indexingService.urlUpdated(savedNote._id.toString(), 'note');
     // Increment user's noteCount (for Gamification)
     await req.user.updateOne({ $inc: { noteCount: 1 } });
     
-    console.log('Note saved to DB successfully!');
+  // 4. ✅ BEST OPTION FOR VERCEL: Await SEO Notification
+    // We await this BEFORE the final response to prevent "Socket Hang Up"
+    try {
+      await indexingService.urlUpdated(savedNote._id.toString(), 'note');
+      console.log(`✅ SEO Success: Google notified for note ${savedNote._id}`);
+    } catch (seoErr) {
+      // If SEO fails, we just log it. We don't want to crash the whole upload for the user.
+      console.error('⚠️ SEO Background Error:', seoErr.message);
+    }
+
+    // 5. Final Response
+    console.log('🚀 Note upload process complete!');
     res.status(201).json(savedNote);
 
   } catch (error) {
@@ -603,9 +613,9 @@ router.put('/:id/toggle-featured', protect, admin, async (req, res) => {
   }
 });
 
-// @route   DELETE /api/notes/:id
-// @desc    Delete a note (only by owner or Admin), and clean up from saved lists
-// @access  Private (Owner or Admin)
+// @route    DELETE /api/notes/:id
+// @desc     Delete a note (only by owner or Admin), and clean up from saved lists
+// @access   Private (Owner or Admin)
 router.delete('/:id', protect, async (req, res) => {
     try {
         const note = await Note.findById(req.params.id);
@@ -615,44 +625,50 @@ router.delete('/:id', protect, async (req, res) => {
             return res.status(401).json({ message: 'Not authorized to delete this note' });
         }
 
-        // NEW: Decrement user's noteCount (for Gamification)
+        // 1. Gamification: Decrement user's noteCount
         await req.user.updateOne({ $inc: { noteCount: -1 } });
         
-        await User.updateMany(
-            { savedNotes: note._id },
-            { $pull: { savedNotes: note._id } }
-        );
-        console.log(`Cleaned up note ID ${note._id} from all users' savedNotes lists.`);
+        // 2. Clean up References (Saved Notes & Collections)
+        await Promise.all([
+            User.updateMany(
+                { savedNotes: note._id },
+                { $pull: { savedNotes: note._id } }
+            ),
+            Collection.updateMany(
+                { notes: note._id },
+                { $pull: { notes: note._id } }
+            )
+        ]);
+        console.log(`Cleaned up note ID ${note._id} from users and collections.`);
 
-        // NEW: Also clean up from Collections
-        await Collection.updateMany(
-            { notes: note._id },
-            { $pull: { notes: note._id } }
-        );
-        console.log(`Cleaned up note ID ${note._id} from all collections.`);
-
-
+        // 3. Delete from Cloudinary
         if (note.cloudinaryId) {
             const resourceTypeForDeletion = (note.fileType && (note.fileType.startsWith('image/') || note.fileType === 'application/pdf')) ? 'image' : 'raw';
-
             await cloudinary.uploader.destroy(note.cloudinaryId, { resource_type: resourceTypeForDeletion });
             console.log(`Deleted Cloudinary asset: ${note.cloudinaryId}`);
-        } else {
-            console.warn(`File deletion failed: Could not determine storage service for note ID ${note._id}. FilePath: ${note.filePath}`);
         }
-        
-        // --- START AUTOMATIC INDEXING ---
-    // Notify Google BEFORE deleting from your DB so we still have the ID
-    indexingService.urlDeleted(req.params.id, 'note');
-    // --- END AUTOMATIC INDEXING ---
+
+        // 4. ✅ SEO UPDATE: Await Google Indexing Deletion
+        // We do this BEFORE the database deletion to ensure we have the context
+        try {
+            await indexingService.urlDeleted(req.params.id, 'note');
+            console.log(`✅ SEO Success: Google notified of deletion for ${req.params.id}`);
+        } catch (seoErr) {
+            // Log the error but continue—don't let a Google API hiccup stop the DB deletion
+            console.error('⚠️ SEO Deletion Background Error:', seoErr.message);
+        }
+
+        // 5. Delete from Database
         await note.deleteOne();
+        
+        // 6. Final Response
         res.json({ message: 'Note removed successfully' });
+
     } catch (error) {
-        console.error('Error deleting note (noteRoutes):', error);
+        console.error('🔴 Error deleting note (noteRoutes):', error);
         res.status(500).json({ message: 'Server Error occurred while deleting the note.' });
     }
 });
-
 // =========================================================================
 // NEW: COLLECTION ROUTES
 // =========================================================================
@@ -787,28 +803,38 @@ router.put('/collections/:collectionId/remove/:noteId', protect, async (req, res
 // @desc    Update (Rename) a collection
 router.put('/collections/:collectionId', protect, async (req, res) => {
     const { name } = req.body;
+
+    // Validation
     if (!name || name.trim() === '') {
         return res.status(400).json({ message: 'New collection name is required.' });
     }
 
     try {
-        // Find the collection by ID and ensure user owns it, then update the name
+        // We use findOneAndUpdate to ensure the user owns the collection
+        // before allowing a rename.
         const collection = await Collection.findOneAndUpdate(
             { _id: req.params.collectionId, user: req.user.id },
             { name: name.trim() },
-            { new: true, runValidators: true } // {new: true} returns the updated document
+            { new: true, runValidators: true }
         );
 
         if (!collection) {
             return res.status(404).json({ message: 'Collection not found or access denied.' });
         }
-        res.json({ message: `Collection renamed to ${collection.name}`, collection });
+
+        // Vercel Tip: Always log important database mutations for your Runtime Logs
+        console.log(`✅ Collection ${req.params.collectionId} renamed by user ${req.user.id}`);
+
+        res.json({ 
+            message: `Collection renamed to ${collection.name}`, 
+            collection 
+        });
+
     } catch (error) {
-        console.error('Error renaming collection:', error);
+        console.error('🔴 Error renaming collection:', error);
         res.status(500).json({ message: 'Failed to rename collection.' });
     }
 });
-
 // @route   DELETE /api/notes/collections/:collectionId
 // @desc    Delete a collection
 router.delete('/collections/:collectionId', protect, async (req, res) => {
