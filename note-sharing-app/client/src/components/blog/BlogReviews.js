@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import axios from 'axios';
 import useAuth from '../../hooks/useAuth';
 import StarRating from '../common/StarRating';
@@ -57,7 +57,8 @@ const styles = {
     authorName: {
         fontWeight: '700',
         color: '#fff',
-        fontSize: '1rem'
+        fontSize: '1rem',
+        textDecoration: 'none' // Added for clean Links
     },
     date: {
         fontSize: '0.8rem',
@@ -166,14 +167,20 @@ const ReplyCard = ({ reply, postId, onReviewAdded, user, token }) => {
   return (
     <div style={{...styles.reviewCard, ...styles.replyCard}}>
       <div style={styles.authorHeader}>
-        <img
-          src={reply.user?.avatar || 'https://via.placeholder.com/40'}
-          alt={reply.user?.name || 'Deleted User'}
-          style={{...styles.avatar, width: '35px', height: '35px'}}
-        />
+        {/* CLICKABLE AVATAR */}
+        <Link to={`/profile/${reply.user?._id}`}>
+            <img
+            src={reply.user?.avatar || 'https://via.placeholder.com/40'}
+            alt={reply.user?.name || 'Deleted User'}
+            style={{...styles.avatar, width: '35px', height: '35px'}}
+            />
+        </Link>
         <div style={styles.authorInfo}>
           <div style={styles.authorName}>
-            {reply.user?.name || 'Deleted User'}
+            {/* CLICKABLE USERNAME */}
+            <Link to={`/profile/${reply.user?._id}`} style={styles.authorName}>
+                {reply.user?.name || 'Deleted User'}
+            </Link>
             {reply.parentUser?.name && (
               <span style={styles.replyingTo}> @{reply.parentUser.name}</span>
             )}
@@ -265,13 +272,19 @@ const CommentThread = ({ comment, postId, onReviewAdded, user, token }) => {
       {/* Main Top-Level Comment */}
       <div style={styles.reviewCard}>
         <div style={styles.authorHeader}>
-          <img
-            src={comment.user?.avatar || 'https://via.placeholder.com/45'}
-            alt={comment.user?.name || 'Deleted User'}
-            style={styles.avatar}
-          />
+          {/* CLICKABLE AVATAR */}
+          <Link to={`/profile/${comment.user?._id}`}>
+            <img
+                src={comment.user?.avatar || 'https://via.placeholder.com/45'}
+                alt={comment.user?.name || 'Deleted User'}
+                style={styles.avatar}
+            />
+          </Link>
           <div style={styles.authorInfo}>
-            <strong style={styles.authorName}>{comment.user?.name || 'Deleted User'}</strong>
+            {/* CLICKABLE USERNAME */}
+            <Link to={`/profile/${comment.user?._id}`} style={styles.authorName}>
+                <strong style={styles.authorName}>{comment.user?.name || 'Deleted User'}</strong>
+            </Link>
             <span style={styles.date}>{formatDate(comment.createdAt)}</span>
           </div>
         </div>
@@ -339,8 +352,8 @@ const BlogReviews = ({ blogId, reviews, onReviewAdded }) => {
   const [loading, setLoading] = useState(false);
   const { user, token } = useAuth();
 
-  // --- THREAD BUILDING LOGIC ---
-  const buildCommentThreads = (flatReviews) => {
+  // --- THREAD BUILDING LOGIC (Using useCallback to resolve ESLint warning) ---
+  const buildCommentThreads = useCallback((flatReviews) => {
     const map = {};
     const rootComments = [];
 
@@ -373,7 +386,7 @@ const BlogReviews = ({ blogId, reviews, onReviewAdded }) => {
     });
 
     return rootComments;
-  };
+  }, []);
 
   const commentThreads = buildCommentThreads(reviews);
   const alreadyReviewedTopLevel = reviews.some(r => r.user?._id === user?._id && !r.parentReviewId);
