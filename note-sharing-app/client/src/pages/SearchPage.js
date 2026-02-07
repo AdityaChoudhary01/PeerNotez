@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
-import { FaSearch, FaRegFolderOpen } from 'react-icons/fa';
+import { FaSearch, FaRegFolderOpen, FaUserAstronaut, FaBookOpen, FaFeatherAlt } from 'react-icons/fa';
 import NoteCard from '../components/notes/NoteCard';
+import BlogCard from '../components/blog/BlogCard'; // IMPORTED: Your BlogCard component
 import Pagination from '../components/common/Pagination';
 
 const SearchPage = () => {
     const [notes, setNotes] = useState([]);
+    const [users, setUsers] = useState([]); 
+    const [blogs, setBlogs] = useState([]); 
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
@@ -54,9 +57,41 @@ const SearchPage = () => {
             color: 'rgba(255, 255, 255, 0.7)',
             fontSize: '1.1rem'
         },
+        sectionHeading: {
+            color: '#00d4ff',
+            fontSize: '1.2rem',
+            fontWeight: '700',
+            marginBottom: '1.5rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            textTransform: 'uppercase',
+            letterSpacing: '1px',
+            marginTop: '3rem'
+        },
+        userList: {
+            display: 'flex',
+            gap: '1rem',
+            flexWrap: 'wrap',
+            marginBottom: '3rem',
+            maxWidth: '1400px',
+            margin: '0 auto 3rem'
+        },
+        userCard: {
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            padding: '10px 20px',
+            background: 'rgba(255, 255, 255, 0.05)',
+            borderRadius: '50px',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            textDecoration: 'none',
+            color: '#fff',
+            transition: '0.3s ease'
+        },
         grid: {
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', // Slightly wider for BlogCards
             gap: '2rem',
             maxWidth: '1400px',
             margin: '0 auto'
@@ -82,46 +117,102 @@ const SearchPage = () => {
 
     useEffect(() => {
         setLoading(true);
-        const fetchNotes = async () => {
+        const fetchUniversalResults = async () => {
             try {
-                const { data } = await axios.get(
-                    `/notes?search=${query ? encodeURIComponent(query.trim()) : ''}&page=${page}&limit=${limit}`
-                );
-                setNotes(data.notes || []);
-                setTotalPages(data.totalPages);
+                const searchQuery = query ? encodeURIComponent(query.trim()) : '';
+                
+                const [notesRes, usersRes, blogsRes] = await Promise.all([
+                    axios.get(`/notes?search=${searchQuery}&page=${page}&limit=${limit}`),
+                    axios.get(`/users/search?q=${searchQuery}`),
+                    axios.get(`/blogs?search=${searchQuery}&limit=6`) 
+                ]);
+
+                setNotes(notesRes.data.notes || []);
+                setTotalPages(notesRes.data.totalPages || 0);
+                setUsers(usersRes.data.users || []);
+                setBlogs(blogsRes.data.blogs || []);
+                
             } catch (error) {
-                console.error("Failed to fetch search results", error);
+                console.error("Failed to fetch universal results", error);
                 setNotes([]);
+                setUsers([]);
+                setBlogs([]);
             } finally {
                 setLoading(false);
             }
         };
-        fetchNotes();
+        fetchUniversalResults();
     }, [query, page]);
 
     return (
         <div style={styles.wrapper}>
             <Helmet>
-                <title>{query ? `Search: ${query}` : 'All Notes'} | PeerNotez</title>
-                <meta name="description" content={`Search results for ${query || 'notes'} on PeerNotez.`} />
+                <title>{query ? `Search: ${query}` : 'Universal Search'} | PeerNotez</title>
+                <meta name="description" content={`Search results for ${query || 'notes, authors, and blogs'} on PeerNotez.`} />
                 <link rel="canonical" href="https://peernotez.netlify.app/search" />
             </Helmet>
 
             <header style={styles.header}>
                 <h1 style={styles.title}>
-                    <FaSearch /> {query ? `Results for "${query}"` : "Explore All Notes"}
+                    <FaSearch /> {query ? `Results for "${query}"` : "Global Search"}
                 </h1>
                 <p style={styles.subtitle}>
-                    {loading ? 'Searching...' : `Found ${notes.length} note${notes.length !== 1 ? 's' : ''} on this page`}
+                    {loading ? 'Searching universe...' : `Found ${notes.length} notes, ${blogs.length} articles, and ${users.length} authors`}
                 </p>
             </header>
 
             {loading ? (
-                <div style={styles.loadingState}>Searching the archives...</div>
+                <div style={styles.loadingState}>Connecting to the knowledge base...</div>
             ) : (
-                <>
+                <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+                    
+                    {/* --- USERS / AUTHORS SECTION --- */}
+                    {users.length > 0 && (
+                        <>
+                            <h2 style={styles.sectionHeading}><FaUserAstronaut /> Matching Authors</h2>
+                            <div style={styles.userList}>
+                                {users.map(user => (
+                                    <Link 
+                                        to={`/profile/${user._id}`} 
+                                        key={user._id} 
+                                        style={styles.userCard}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.background = 'rgba(0, 212, 255, 0.1)';
+                                            e.currentTarget.style.borderColor = '#00d4ff';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                                            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                                        }}
+                                    >
+                                        <img 
+                                            src={user.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${user.name}`} 
+                                            alt={user.name} 
+                                            style={{width: '30px', height: '30px', borderRadius: '50%'}} 
+                                        />
+                                        <span>{user.name}</span>
+                                    </Link>
+                                ))}
+                            </div>
+                        </>
+                    )}
+
+                    {/* --- BLOGS SECTION --- */}
+                    {blogs.length > 0 && (
+                        <>
+                            <h2 style={styles.sectionHeading}><FaFeatherAlt /> Recommended Articles</h2>
+                            <div style={styles.grid}>
+                                {blogs.map(blog => (
+                                    <BlogCard key={blog._id} blog={blog} />
+                                ))}
+                            </div>
+                        </>
+                    )}
+
+                    {/* --- NOTES SECTION --- */}
                     {notes.length > 0 ? (
                         <>
+                            <h2 style={styles.sectionHeading}><FaBookOpen /> Matching Notes</h2>
                             <div style={styles.grid}>
                                 {notes.map(note => (
                                     <NoteCard key={note._id} note={note} />
@@ -137,13 +228,15 @@ const SearchPage = () => {
                             )}
                         </>
                     ) : (
-                        <div style={styles.emptyState}>
-                            <FaRegFolderOpen style={{fontSize: '3rem', marginBottom: '1rem', opacity: 0.5}} />
-                            <p>No notes found matching your criteria.</p>
-                            <p style={{fontSize: '0.9rem', marginTop: '0.5rem', opacity: 0.7}}>Try checking your spelling or using different keywords.</p>
-                        </div>
+                        users.length === 0 && blogs.length === 0 && (
+                            <div style={styles.emptyState}>
+                                <FaRegFolderOpen style={{fontSize: '3rem', marginBottom: '1rem', opacity: 0.5}} />
+                                <p>No notes, authors, or articles found matching your criteria.</p>
+                                <p style={{fontSize: '0.9rem', marginTop: '0.5rem', opacity: 0.7}}>Try searching by subject, university, or a specific name.</p>
+                            </div>
+                        )
                     )}
-                </>
+                </div>
             )}
         </div>
     );
