@@ -6,8 +6,9 @@ import Reviews from '../components/notes/Reviews';
 import StarRating from '../components/common/StarRating';
 import useAuth from '../hooks/useAuth';
 import AuthorInfoBlock from '../components/common/AuthorInfoBlock';
-import { FaBookmark, FaDownload, FaList, FaExclamationTriangle, FaSpinner, FaFileAlt } from 'react-icons/fa';
+import { FaBookmark, FaDownload, FaList, FaExclamationTriangle, FaSpinner, FaFileAlt, FaInfoCircle } from 'react-icons/fa';
 import AddToCollectionModal from '../components/notes/AddToCollectionModal';
+import RelatedNotes from '../components/notes/RelatedNotes'; // RESTORED IMPORT
 
 // Utility function: Converts bytes to human-readable format (KB, MB)
 const formatFileSize = (bytes) => {
@@ -67,6 +68,17 @@ const ViewNotePage = () => {
             color: 'rgba(255, 255, 255, 0.7)',
             fontSize: '1rem',
             lineHeight: 1.6
+        },
+        // RESTORED DESCRIPTION STYLE
+        descriptionBox: {
+            background: 'rgba(255, 255, 255, 0.05)',
+            padding: '1.5rem',
+            borderRadius: '16px',
+            marginTop: '1.5rem',
+            borderLeft: '4px solid #00d4ff',
+            lineHeight: '1.7',
+            color: 'rgba(255, 255, 255, 0.9)',
+            fontSize: '1.05rem'
         },
         actionsBar: {
             display: 'flex',
@@ -265,20 +277,17 @@ const ViewNotePage = () => {
     const displayFileSize = formatFileSize(note.fileSize);
 
     // =========================================================
-    // FIX 2 (Enhanced): Smart Metadata Logic
+    // MERGED SEO LOGIC: Smart Metadata & Schema
     // =========================================================
-    // 1. If we have a manual description (Fix 1), use it.
-    // 2. If not, generate a rich description using Title, Subject, and University.
     const seoDescription = note.description 
         ? note.description 
         : `Download "${note.title}" - free lecture notes for ${note.course} (${note.subject}) at ${note.university}. Read reviews and study materials uploaded by ${authorName}.`;
 
-    // Educational Resource Schema Markup
     const noteSchema = {
         "@context": "https://schema.org",
         "@type": "Course",
         "name": note.title,
-        "description": seoDescription, // Used here as well
+        "description": seoDescription,
         "provider": {
             "@type": "Organization",
             "name": "PeerNotez"
@@ -298,14 +307,11 @@ const ViewNotePage = () => {
     };
 
     return (
-        <div className="note-view-page-wrapper">
+        <div style={styles.wrapper} className="view-note-wrapper">
             <Helmet>
                 <title>{note.title} | PeerNotez</title>
-                {/* 2. SEO FIX: Apply unique description to meta tag */}
                 <meta name="description" content={seoDescription} />
                 <link rel="canonical" href={`https://peernotez.netlify.app/view/${noteId}`} />
-
-                {/* Schema Markup */}
                 {note.numReviews > 0 && (
                     <script type="application/ld+json"
                         dangerouslySetInnerHTML={{
@@ -326,6 +332,16 @@ const ViewNotePage = () => {
                             Course: <strong style={{color: '#fff'}}>{note.course}</strong> | Subject: <strong style={{color: '#fff'}}>{note.subject}</strong> | University: <strong style={{color: '#fff'}}>{note.university}</strong>
                         </p>
                     </div>
+
+                    {/* RESTORED: Description UI Section */}
+                    {note.description && (
+                        <div style={styles.descriptionBox}>
+                            <h4 style={{display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', color: '#00d4ff', fontSize: '0.9rem', textTransform: 'uppercase'}}>
+                                <FaInfoCircle /> About these notes
+                            </h4>
+                            {note.description}
+                        </div>
+                    )}
 
                     <div style={styles.ratingContainer}>
                         <StarRating rating={note.rating} readOnly={true} />
@@ -373,7 +389,10 @@ const ViewNotePage = () => {
                 {renderFileViewer()}
             </div>
 
-            <div style={{marginTop: '2rem'}}>
+            {/* ADDED: Related Notes Section */}
+            <RelatedNotes currentNoteId={noteId} />
+
+            <div style={{marginTop: '3rem'}}>
                 <Reviews noteId={noteId} reviews={note.reviews || []} onReviewAdded={handleRefetch} />
             </div>
 
@@ -395,7 +414,7 @@ const ViewNotePage = () => {
                         padding-right: 0.5rem !important;
                     }
                     .view-note-card {
-                        padding: 1.25rem !important; /* Significantly reduced from 2.5rem */
+                        padding: 1.25rem !important;
                         border-radius: 16px !important;
                         margin-bottom: 2rem !important;
                     }
@@ -409,10 +428,10 @@ const ViewNotePage = () => {
                     }
                     .view-note-actions button,
                     .view-note-actions a {
-                        width: 100%; /* Full width buttons on mobile */
+                        width: 100%;
                     }
                     .viewer-container-responsive {
-                        min-height: 300px !important; /* Reduce viewer height on mobile */
+                        min-height: 300px !important;
                     }
                     .viewer-container-responsive iframe {
                         height: 400px !important;
