@@ -6,10 +6,8 @@ import Reviews from '../components/notes/Reviews';
 import StarRating from '../components/common/StarRating';
 import useAuth from '../hooks/useAuth';
 import AuthorInfoBlock from '../components/common/AuthorInfoBlock';
-import { FaBookmark, FaDownload, FaList } from 'react-icons/fa';
+import { FaBookmark, FaDownload, FaList, FaExclamationTriangle, FaSpinner, FaFileAlt } from 'react-icons/fa';
 import AddToCollectionModal from '../components/notes/AddToCollectionModal';
-// FIX 4: Import the new RelatedNotes component
-import RelatedNotes from '../components/notes/RelatedNotes'; 
 
 // Utility function: Converts bytes to human-readable format (KB, MB)
 const formatFileSize = (bytes) => {
@@ -24,15 +22,140 @@ const ViewNotePage = () => {
     const [note, setNote] = useState(null);
     const [error, setError] = useState('');
     const [isSaving, setIsSaving] = useState(false);
-    const [isModalOpen, setIsModalOpen] = useState(false); // State for Collection Modal
+    const [isModalOpen, setIsModalOpen] = useState(false); 
     const [refetchIndex, setRefetchIndex] = useState(0);
     const { noteId } = useParams();
     const { token, isAuthenticated } = useAuth();
 
+    // --- INTERNAL CSS: HOLOGRAPHIC THEME ---
+    const styles = {
+        wrapper: {
+            paddingTop: '2rem',
+            paddingBottom: '5rem',
+            minHeight: '80vh',
+            maxWidth: '1200px',
+            margin: '0 auto',
+            paddingLeft: '1rem',
+            paddingRight: '1rem'
+        },
+        card: {
+            background: 'rgba(255, 255, 255, 0.03)',
+            backdropFilter: 'blur(20px)',
+            borderRadius: '24px',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            padding: '2.5rem',
+            marginBottom: '3rem',
+            boxShadow: '0 15px 40px rgba(0,0,0,0.2)',
+            color: '#fff'
+        },
+        header: {
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '1.5rem',
+            marginBottom: '2rem'
+        },
+        title: {
+            fontSize: 'clamp(1.8rem, 5vw, 2.5rem)', // Responsive font size
+            fontWeight: '800',
+            background: 'linear-gradient(to right, #00d4ff, #ff00cc)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            marginBottom: '0.5rem',
+            wordBreak: 'break-word' // Prevent overflow on small screens
+        },
+        subtitle: {
+            color: 'rgba(255, 255, 255, 0.7)',
+            fontSize: '1rem',
+            lineHeight: 1.6
+        },
+        actionsBar: {
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: '1rem',
+            marginTop: '1rem',
+            borderTop: '1px solid rgba(255,255,255,0.1)',
+            paddingTop: '1.5rem'
+        },
+        btn: {
+            padding: '10px 20px',
+            borderRadius: '12px',
+            border: 'none',
+            cursor: 'pointer',
+            fontSize: '0.95rem',
+            fontWeight: '600',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            transition: 'all 0.3s ease',
+            textDecoration: 'none',
+            flex: '1 1 auto', // Allow buttons to grow/shrink nicely
+            justifyContent: 'center'
+        },
+        primaryBtn: {
+            background: 'linear-gradient(135deg, #00d4ff 0%, #333399 100%)',
+            color: '#fff',
+            boxShadow: '0 4px 15px rgba(0, 212, 255, 0.3)'
+        },
+        secondaryBtn: {
+            background: 'rgba(255, 255, 255, 0.1)',
+            color: '#fff',
+            border: '1px solid rgba(255, 255, 255, 0.1)'
+        },
+        downloadBtn: {
+            background: 'rgba(0, 255, 170, 0.15)',
+            color: '#00ffaa',
+            border: '1px solid rgba(0, 255, 170, 0.3)'
+        },
+        ratingContainer: {
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            marginTop: '1rem',
+            background: 'rgba(255,255,255,0.05)',
+            padding: '10px 15px',
+            borderRadius: '12px',
+            width: 'fit-content'
+        },
+        viewerContainer: {
+            marginTop: '2rem',
+            background: '#000',
+            borderRadius: '12px',
+            overflow: 'hidden',
+            border: '1px solid rgba(255,255,255,0.1)',
+            minHeight: '500px',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center'
+        },
+        iframe: {
+            width: '100%',
+            height: '800px',
+            border: 'none'
+        },
+        image: {
+            maxWidth: '100%',
+            height: 'auto',
+            display: 'block'
+        },
+        fallbackViewer: {
+            textAlign: 'center',
+            padding: '3rem',
+            color: 'rgba(255,255,255,0.6)'
+        },
+        centerMessage: {
+            textAlign: 'center',
+            padding: '5rem',
+            color: 'rgba(255, 255, 255, 0.6)',
+            fontSize: '1.2rem',
+            background: 'rgba(255,255,255,0.02)',
+            borderRadius: '20px',
+            border: '1px dashed rgba(255,255,255,0.1)'
+        }
+    };
+
     const fetchNote = useCallback(async () => {
         try {
-            // FIX: Use full production URL
-            const { data } = await axios.get(`https://peernotez.onrender.com/api/notes/${noteId}`);
+            const { data } = await axios.get(`/notes/${noteId}`);
             setNote(data);
         } catch (err) {
             console.error('Error fetching note:', err);
@@ -42,8 +165,6 @@ const ViewNotePage = () => {
 
     useEffect(() => {
         fetchNote();
-        // FIX 4: Scroll to top when switching between related notes
-        window.scrollTo(0, 0);
     }, [noteId, refetchIndex, fetchNote]);
 
     const handleRefetch = () => {
@@ -59,8 +180,7 @@ const ViewNotePage = () => {
         setIsSaving(true);
         try {
             const config = { headers: { Authorization: `Bearer ${token}` } };
-            // FIX: Use full production URL
-            const endpoint = `https://peernotez.onrender.com/api/users/save/${noteId}`;
+            const endpoint = `/users/save/${noteId}`;
 
             const { data } = await axios.put(endpoint, {}, config);
             alert(data.message);
@@ -69,15 +189,6 @@ const ViewNotePage = () => {
             alert('Failed to save note. It might already be saved or an error occurred.');
         } finally {
             setIsSaving(false);
-        }
-    };
-
-    // FIX 5: Function to handle download count increment
-    const handleDownload = async () => {
-        try {
-            await axios.put(`https://peernotez.onrender.com/api/notes/${noteId}/download`);
-        } catch (error) {
-            console.error('Failed to update download count', error);
         }
     };
 
@@ -95,61 +206,62 @@ const ViewNotePage = () => {
         ) {
             if (fileType.startsWith('image/')) {
                 return (
-                    <div className="note-image-viewer-container">
-                        <img src={note.filePath} alt={note.title} className="note-image" />
+                    <div style={{...styles.viewerContainer, background: 'transparent', border: 'none'}}>
+                        <img src={note.filePath} alt={note.title} style={styles.image} />
                     </div>
                 );
             } else {
                 return (
-                    <iframe
-                        src={googleDocsViewerUrl}
-                        className="note-file-viewer-iframe"
-                        title={note.title}
-                        allowFullScreen
-                    ></iframe>
+                    <div style={styles.viewerContainer} className="viewer-container-responsive">
+                        <iframe
+                            src={googleDocsViewerUrl}
+                            style={styles.iframe}
+                            title={note.title}
+                            allowFullScreen
+                        ></iframe>
+                    </div>
                 );
             }
         }
 
         return (
-            <div className="note-file-viewer-fallback">
-                <i className="fas fa-file-download fallback-icon"></i>
-                <p className="fallback-text">
-                    {isLocalFile ? "File preview not available for local files." : "This file type cannot be previewed online."}
-                </p>
-                {/* FIX 5: Added onClick to increment count */}
-                <a 
-                    href={note.filePath} 
-                    download 
-                    className="note-download-fallback-btn"
-                    onClick={handleDownload}
-                >
-                    <i className="fas fa-download"></i> Download Note
-                </a>
+            <div style={styles.viewerContainer} className="viewer-container-responsive">
+                <div style={styles.fallbackViewer}>
+                    <FaFileAlt style={{fontSize: '3rem', marginBottom: '1rem', opacity: 0.5}} />
+                    <p style={{marginBottom: '1.5rem'}}>
+                        {isLocalFile ? "File preview not available for local files." : "This file type cannot be previewed online."}
+                    </p>
+                    <a 
+                        href={note.filePath} 
+                        download 
+                        style={{...styles.btn, ...styles.downloadBtn, display: 'inline-flex', width: 'auto'}}
+                    >
+                        <FaDownload /> Download Note
+                    </a>
+                </div>
             </div>
         );
     };
 
     if (error) {
         return (
-            <div className="note-view-page-wrapper error-state">
-                <i className="fas fa-exclamation-triangle error-icon"></i>
-                <p className="error-message">{error}</p>
+            <div style={{...styles.centerMessage, marginTop: '2rem'}}>
+                <FaExclamationTriangle style={{fontSize: '2rem', color: '#ff0055', marginBottom: '1rem'}} />
+                <p>{error}</p>
             </div>
         );
     }
 
     if (!note) {
         return (
-            <div className="note-view-page-wrapper loading-state">
-                <i className="fas fa-spinner fa-spin loading-icon"></i>
-                <p className="loading-message">Loading note details...</p>
+            <div style={{...styles.centerMessage, marginTop: '2rem'}}>
+                <FaSpinner className="fa-spin" style={{fontSize: '2rem', color: '#00d4ff', marginBottom: '1rem'}} />
+                <p>Loading note details...</p>
             </div>
         );
     }
 
     const authorName = note.user?.name || 'Anonymous';
-    // Calculate display file size
     const displayFileSize = formatFileSize(note.fileSize);
 
     // =========================================================
@@ -203,80 +315,68 @@ const ViewNotePage = () => {
                 )}
             </Helmet>
 
-            <div className="note-details-card">
-                <div className="note-header-wrapper">
-                    <div className="note-header-info">
-                        <h1 className="note-title">{note.title}</h1>
-
-                        <div className="author-info-line">
+            <div style={styles.card} className="view-note-card">
+                <div style={styles.header} className="view-note-header">
+                    <div>
+                        <h1 style={styles.title}>{note.title}</h1>
+                        <div style={{marginBottom: '1rem'}}>
                             <AuthorInfoBlock author={note.user} contentId={noteId} contentType="note" />
                         </div>
-
-                        <p className="note-subtitle-text">
-                            Course: {note.course} | Subject: {note.subject} | University: {note.university}
+                        <p style={styles.subtitle}>
+                            Course: <strong style={{color: '#fff'}}>{note.course}</strong> | Subject: <strong style={{color: '#fff'}}>{note.subject}</strong> | University: <strong style={{color: '#fff'}}>{note.university}</strong>
                         </p>
-
-                        {/* 3. SEO FIX (Fix 1): Visible unique text content for Googlebot */}
-                        {note.description && (
-                            <div className="note-description-box" style={{ marginTop: '1.2rem', padding: '1.2rem', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', borderLeft: '3px solid #6a40f0' }}>
-                                <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '1.1rem', color: '#fff' }}>About these notes:</h4>
-                                <p style={{ margin: 0, color: '#ccc', lineHeight: '1.6', fontSize: '1rem' }}>
-                                    {note.description}
-                                </p>
-                            </div>
-                        )}
                     </div>
 
-                    <div className="note-actions">
-                        {/* 1. Add to Collection Button */}
+                    <div style={styles.ratingContainer}>
+                        <StarRating rating={note.rating} readOnly={true} />
+                        <span style={{fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)'}}>{note.numReviews} Reviews</span>
+                    </div>
+
+                    <div style={styles.actionsBar} className="view-note-actions">
                         {isAuthenticated && (
                             <button
                                 onClick={() => setIsModalOpen(true)}
-                                className="note-action-save-btn secondary-btn"
+                                style={{...styles.btn, ...styles.secondaryBtn}}
                                 disabled={isSaving}
+                                onMouseEnter={(e) => e.target.style.background = 'rgba(255,255,255,0.2)'}
+                                onMouseLeave={(e) => e.target.style.background = 'rgba(255,255,255,0.1)'}
                             >
                                 <FaList /> Add to Collection
                             </button>
                         )}
-                        {/* 2. Save Note Button */}
+                        
                         {isAuthenticated && (
-                            <button onClick={handleSaveNote} disabled={isSaving} className="note-action-save-btn primary-btn">
+                            <button 
+                                onClick={handleSaveNote} 
+                                disabled={isSaving} 
+                                style={{...styles.btn, ...styles.primaryBtn}}
+                                onMouseEnter={(e) => e.target.style.transform = 'translateY(-2px)'}
+                                onMouseLeave={(e) => e.target.style.transform = 'translateY(0)'}
+                            >
                                 <FaBookmark />
                                 {isSaving ? ' Saving...' : ' Save Note'}
                             </button>
                         )}
-                        {/* 3. Download Button (with formatted size) */}
-                        {/* FIX 5: Added onClick to increment count */}
+                        
                         <a 
                             href={note.filePath} 
                             download 
-                            className="note-action-download-btn download-btn"
-                            onClick={handleDownload}
+                            style={{...styles.btn, ...styles.downloadBtn}}
+                            onMouseEnter={(e) => e.target.style.background = 'rgba(0, 255, 170, 0.25)'}
+                            onMouseLeave={(e) => e.target.style.background = 'rgba(0, 255, 170, 0.15)'}
                         >
                             <FaDownload /> Download ({displayFileSize})
                         </a>
                     </div>
                 </div>
 
-                <div className="note-rating-container">
-                    <StarRating rating={note.rating} readOnly={true} />
-                    <span className="note-rating-count">{note.numReviews} Reviews</span>
-                </div>
-
-                <div className="note-file-viewer-container">
-                    {renderFileViewer()}
-                </div>
+                {renderFileViewer()}
             </div>
 
-            {/* FIX 4: Related Notes (Topic Clusters) */}
-            {/* Added logic to only show if we have a note loaded */}
-            {note && <RelatedNotes currentNoteId={noteId} />}
-
-            <div className="note-feedback-section">
+            <div style={{marginTop: '2rem'}}>
                 <Reviews noteId={noteId} reviews={note.reviews || []} onReviewAdded={handleRefetch} />
             </div>
 
-            {/* Collection Modal */}
             {isAuthenticated && isModalOpen && (
                 <AddToCollectionModal
                     noteId={noteId}
@@ -284,6 +384,41 @@ const ViewNotePage = () => {
                     onClose={() => setIsModalOpen(false)}
                 />
             )}
+
+            {/* RESPONSIVE STYLES */}
+            <style>{`
+                /* Mobile Styles */
+                @media (max-width: 768px) {
+                    .view-note-wrapper {
+                        padding-top: 1rem !important;
+                        padding-left: 0.5rem !important;
+                        padding-right: 0.5rem !important;
+                    }
+                    .view-note-card {
+                        padding: 1.25rem !important; /* Significantly reduced from 2.5rem */
+                        border-radius: 16px !important;
+                        margin-bottom: 2rem !important;
+                    }
+                    .view-note-header {
+                        gap: 1rem !important;
+                        margin-bottom: 1.5rem !important;
+                    }
+                    .view-note-actions {
+                        flex-direction: column;
+                        gap: 0.8rem !important;
+                    }
+                    .view-note-actions button,
+                    .view-note-actions a {
+                        width: 100%; /* Full width buttons on mobile */
+                    }
+                    .viewer-container-responsive {
+                        min-height: 300px !important; /* Reduce viewer height on mobile */
+                    }
+                    .viewer-container-responsive iframe {
+                        height: 400px !important;
+                    }
+                }
+            `}</style>
         </div>
     );
 };
