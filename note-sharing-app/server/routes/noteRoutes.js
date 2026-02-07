@@ -129,22 +129,6 @@ router.get('/users/top-contributors', async (req, res) => {
     }
 });
 
-// 🚀 ADDED ROUTE: GET NOTES BY USER (For Public Profile Page)
-// @route   GET /api/notes/user/:userId
-// @desc    Get all notes by a specific user
-router.get('/user/:userId', async (req, res) => {
-    try {
-        const notes = await Note.find({ user: req.params.userId })
-            .select('title university course subject year rating numReviews downloadCount uploadDate fileType fileName cloudinaryId filePath isFeatured')
-            .populate('user', 'name avatar')
-            .sort({ uploadDate: -1 });
-        res.json({ notes });
-    } catch (error) {
-        console.error('Error fetching user notes:', error);
-        res.status(500).json({ message: 'Error fetching user notes' });
-    }
-});
-
 // @route GET /api/notes/blog-posts (Mock data, should be removed)
 router.get('/blog-posts', (req, res) => {
     const mockPosts = [
@@ -154,6 +138,37 @@ router.get('/blog-posts', (req, res) => {
     ];
     res.json({ posts: mockPosts });
 });
+
+
+// ✅ FIX 4: NEW RELATED NOTES ROUTE (Must be before /:id)
+// =========================================================================
+// @route   GET /api/notes/related/:id
+router.get('/related/:id', async (req, res) => {
+    try {
+        const currentNote = await Note.findById(req.params.id);
+        if (!currentNote) return res.status(404).json({ message: 'Note not found' });
+
+        // Find notes with same subject OR course, excluding current one
+        const relatedNotes = await Note.find({
+            _id: { $ne: currentNote._id }, // Exclude current note
+            $or: [
+                { subject: currentNote.subject },
+                { course: currentNote.course }
+            ]
+        })
+        .select('title description university course subject year rating numReviews downloadCount uploadDate fileType fileName cloudinaryId filePath isFeatured') 
+        .populate('user', 'name avatar')
+        .limit(4) // Show 4 related notes
+        .sort({ rating: -1, downloadCount: -1 }); // Show best/most popular first
+
+        res.json(relatedNotes);
+    } catch (error) {
+        console.error('Error fetching related notes:', error);
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
+
+
 
 // @route   GET /api/notes
 // @desc    Get all notes with search and advanced filters
@@ -276,6 +291,23 @@ router.get('/', async (req, res) => {
   }
 });
 
+
+// 🚀 ADDED ROUTE: GET NOTES BY USER (For Public Profile Page)
+// @route   GET /api/notes/user/:userId
+// @desc    Get all notes by a specific user
+router.get('/user/:userId', async (req, res) => {
+    try {
+        const notes = await Note.find({ user: req.params.userId })
+            .select('title university course subject year rating numReviews downloadCount uploadDate fileType fileName cloudinaryId filePath isFeatured')
+            .populate('user', 'name avatar')
+            .sort({ uploadDate: -1 });
+        res.json({ notes });
+    } catch (error) {
+        console.error('Error fetching user notes:', error);
+        res.status(500).json({ message: 'Error fetching user notes' });
+    }
+});
+
 // @route   GET /api/notes/mynotes
 // @desc    Get notes for the logged-in user with pagination
 router.get('/mynotes', protect, async (req, res) => {
@@ -309,11 +341,9 @@ router.get('/mynotes', protect, async (req, res) => {
   }
 });
 
-
 // =========================================================================
 // UPDATED POST/PUT/DELETE Routes
 // =========================================================================
-
 
 // @route   POST /api/notes/upload
 // @desc    Upload a new note
