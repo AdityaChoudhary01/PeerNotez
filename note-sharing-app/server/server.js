@@ -64,9 +64,8 @@ const connectDB = async () => {
     if (isConnected) return;
 
     try {
+        // REMOVED deprecated options to clean up Vercel logs
         const db = await mongoose.connect(process.env.MONGO_URI, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
             maxPoolSize: 10,
             serverSelectionTimeoutMS: 5000,
             socketTimeoutMS: 45000,
@@ -109,7 +108,6 @@ app.use((err, req, res, next) => {
 });
 
 // --- Vercel Export Configuration ---
-// Export the app for Vercel's serverless handler
 module.exports = app;
 
 // Only start the standalone server if running locally
