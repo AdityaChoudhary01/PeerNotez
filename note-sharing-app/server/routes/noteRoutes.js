@@ -557,9 +557,8 @@ router.put('/:id/download', async (req, res) => {
     res.status(500).json({ message: 'Server Error occurred while updating download count.' });
   }
 });
-
-// @route   PUT /api/notes/:id
-// @desc    Update a note (only by owner)
+// @route    PUT /api/notes/:id
+// @desc     Update a note (only by owner)
 router.put('/:id', protect, async (req, res) => {
   try {
     const note = await Note.findById(req.params.id);
@@ -577,18 +576,30 @@ router.put('/:id', protect, async (req, res) => {
     if (subject !== undefined) updateFields.subject = subject;
     if (year !== undefined) updateFields.year = year;
 
-    const updatedNote = await Note.findByIdAndUpdate(req.params.id, updateFields, { new: true });
-    // --- START AUTOMATIC INDEXING ---
-    indexingService.urlUpdated(updatedNote._id.toString(), 'note');
+    const updatedNote = await Note.findByIdAndUpdate(
+      req.params.id, 
+      { $set: updateFields }, 
+      { new: true, runValidators: true }
+    );
+
+    console.log(`✅ Note ${updatedNote._id} updated in Database.`);
+
+    // --- START AUTOMATIC INDEXING (Vercel Optimized) ---
+    // We MUST await this so Vercel keeps the function alive to finish the Google API call
+    try {
+      await indexingService.urlUpdated(updatedNote._id.toString(), 'note');
+      console.log(`✅ SEO Success: Google notified of update for note: ${updatedNote._id}`);
+    } catch (seoErr) {
+      console.error('⚠️ SEO Indexing failed, but note was updated:', seoErr.message);
+    }
     // --- END AUTOMATIC INDEXING ---
 
     res.json(updatedNote);
   } catch (error) {
-    console.error('Error updating note (noteRoutes):', error);
+    console.error('🔴 Error updating note (noteRoutes):', error);
     res.status(500).json({ message: 'Server Error occurred while updating the note.' });
   }
 });
-
 // @route   PUT /api/notes/:id/toggle-featured
 // @desc    Toggle a note's featured status (Admin only)
 // @access  Private/Admin
@@ -660,7 +671,7 @@ router.delete('/:id', protect, async (req, res) => {
 
         // 5. Delete from Database
         await note.deleteOne();
-        
+        console.log(`✅ Note ${req.params.id} removed from MongoDB.`);
         // 6. Final Response
         res.json({ message: 'Note removed successfully' });
 
