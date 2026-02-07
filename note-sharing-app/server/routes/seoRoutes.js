@@ -6,7 +6,7 @@ const User = require('../models/User');
 
 const BASE_URL = 'https://peernotez.netlify.app';
 
-router.get('/sitemap.xml', async (req, res) => {
+router.get('/sitemap-dynamic.xml', async (req, res) => {
     try {
         const [blogs, notes, users] = await Promise.all([
             Blog.find({}).select('slug updatedAt createdAt').lean(),
