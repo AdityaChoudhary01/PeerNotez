@@ -55,14 +55,14 @@ const HomePage = () => {
             zIndex: 10,
             transform: `rotateX(${tilt.y}deg) rotateY(${tilt.x}deg)`,
             transition: 'transform 0.1s ease-out',
-            padding: '4rem 2rem',
+            padding: '4rem 1.5rem', // Updated padding
             background: 'rgba(255, 255, 255, 0.03)',
             borderRadius: '30px',
             border: '1px solid rgba(255, 255, 255, 0.1)',
             backdropFilter: 'blur(10px)',
             boxShadow: '0 25px 50px rgba(0,0,0,0.3)',
             maxWidth: '1000px',
-            width: '90%'
+            width: '95%' // Increased width for smaller side gaps
         },
         heroTitle: {
             fontSize: 'clamp(2.5rem, 5vw, 4.5rem)',
@@ -96,7 +96,6 @@ const HomePage = () => {
             fontSize: '1.1rem',
             boxShadow: '0 0 20px rgba(0, 212, 255, 0.4)',
             transition: 'transform 0.3s',
-            // FIX: Added flex properties to center text/icons
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center'
@@ -112,7 +111,6 @@ const HomePage = () => {
             fontSize: '1.1rem',
             backdropFilter: 'blur(5px)',
             transition: 'background 0.3s',
-            // FIX: Added flex properties to center text/icons
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center'
@@ -183,13 +181,15 @@ const HomePage = () => {
             backdropFilter: 'blur(10px)',
             border: '1px solid rgba(0, 212, 255, 0.5)',
             color: '#fff',
-            padding: '12px 24px',
-            borderRadius: '50px',
+            padding: '12px', // Icon centered padding
+            borderRadius: '50%', // Circle shape
+            width: '50px',
+            height: '50px',
             textDecoration: 'none',
             fontWeight: 'bold',
             display: 'flex',
             alignItems: 'center',
-            gap: '10px',
+            justifyContent: 'center',
             boxShadow: '0 0 20px rgba(0, 212, 255, 0.3)',
             transition: 'transform 0.3s'
         },
@@ -301,13 +301,15 @@ const HomePage = () => {
             {showAppButton && (
                 <div style={styles.fixedBtnWrapper}>
                     <button onClick={() => setShowAppButton(false)} style={styles.closeFixedBtn}><FaTimes /></button>
-                    <a href={DOWNLOAD_LINK} download style={styles.fixedBtn}>
-                        <FaDownload /> Get App
+                    {/* Updated: Text removed, only icon shown */}
+                    <a href={DOWNLOAD_LINK} download style={styles.fixedBtn} title="Download App">
+                        <FaDownload />
                     </a>
                 </div>
             )}
 
             <section 
+                className="hero-section-responsive"
                 style={styles.heroSection} 
                 onMouseMove={handleMouseMove} 
                 onMouseLeave={handleMouseLeave} 
@@ -465,6 +467,31 @@ const HomePage = () => {
                     <p style={{textAlign: 'center', color: 'rgba(255,255,255,0.5)'}}>No contributors to show yet.</p>
                 )}
             </section>
+
+            {/* Added: Responsive styles for top margin and side gaps */}
+            <style>{`
+                @media (max-width: 768px) {
+                    .hero-section-responsive {
+                        margin-top: 2rem !important; /* Fixed: Added gap from top */
+                        padding: 0 10px !important;
+                    }
+                    
+                    .hero-section-responsive > div:first-of-type {
+                        width: 99.9% !important; /* Fixed: Reduced side gaps */
+                        padding: 6rem 1rem !important;
+                    }
+
+                    h1 {
+                        font-size: 2rem !important;
+                        padding: 0 10px;
+                    }
+                    
+                    p {
+                        font-size: 1rem !important;
+                        padding: 0 5px;
+                    }
+                }
+            `}</style>
         </div>
     );
 };
