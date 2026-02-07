@@ -231,7 +231,7 @@ const SignupPage = () => {
             <main style={styles.container}>
                 <Helmet>
                     <title>Registration Successful | PeerNotez</title>
-                    <meta name="robots" content="noindex" />
+                    <link rel="canonical" href="https://peernotez.netlify.app/signup" />
                 </Helmet>
                 <div style={{...styles.splitLayout, maxWidth: '600px', minHeight: 'auto'}}>
                     <article style={styles.successBox}>
@@ -396,3 +396,4 @@ const SignupPage = () => {
 };
 
 export default SignupPage;
+
