@@ -12,7 +12,7 @@ const RelatedNotes = ({ currentNoteId }) => {
             setLoading(true);
             try {
                 // Using relative path to stay consistent with your other components
-                const { data } = await axios.get(`https://peernotez.onrender.com/api/notes/related/${currentNoteId}`);
+                const { data } = await axios.get(`/notes/related/${currentNoteId}`);
                 setNotes(data);
             } catch (error) {
                 console.error('Error fetching related notes:', error);
