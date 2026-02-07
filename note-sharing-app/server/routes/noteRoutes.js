@@ -624,60 +624,49 @@ router.put('/:id/toggle-featured', protect, admin, async (req, res) => {
   }
 });
 
-// @route    DELETE /api/notes/:id
-// @desc     Delete a note (only by owner or Admin), and clean up from saved lists
-// @access   Private (Owner or Admin)
 router.delete('/:id', protect, async (req, res) => {
     try {
+        console.log(`🗑️ Starting delete process for Note: ${req.params.id}`);
+        
         const note = await Note.findById(req.params.id);
         if (!note) return res.status(404).json({ message: 'Note not found' });
 
         if (note.user.toString() !== req.user.id && req.user.role !== 'admin') {
-            return res.status(401).json({ message: 'Not authorized to delete this note' });
+            return res.status(401).json({ message: 'Not authorized' });
         }
 
-        // 1. Gamification: Decrement user's noteCount
+        // 1. Database Cleanups
         await req.user.updateOne({ $inc: { noteCount: -1 } });
-        
-        // 2. Clean up References (Saved Notes & Collections)
         await Promise.all([
-            User.updateMany(
-                { savedNotes: note._id },
-                { $pull: { savedNotes: note._id } }
-            ),
-            Collection.updateMany(
-                { notes: note._id },
-                { $pull: { notes: note._id } }
-            )
+            User.updateMany({ savedNotes: note._id }, { $pull: { savedNotes: note._id } }),
+            Collection.updateMany({ notes: note._id }, { $pull: { notes: note._id } })
         ]);
-        console.log(`Cleaned up note ID ${note._id} from users and collections.`);
 
-        // 3. Delete from Cloudinary
+        // 2. Cloudinary Cleanup
         if (note.cloudinaryId) {
-            const resourceTypeForDeletion = (note.fileType && (note.fileType.startsWith('image/') || note.fileType === 'application/pdf')) ? 'image' : 'raw';
-            await cloudinary.uploader.destroy(note.cloudinaryId, { resource_type: resourceTypeForDeletion });
-            console.log(`Deleted Cloudinary asset: ${note.cloudinaryId}`);
+            const resourceType = (note.fileType && (note.fileType.startsWith('image/') || note.fileType === 'application/pdf')) ? 'image' : 'raw';
+            await cloudinary.uploader.destroy(note.cloudinaryId, { resource_type: resourceType });
+            console.log("✅ Cloudinary asset deleted");
         }
 
-        // 4. ✅ SEO UPDATE: Await Google Indexing Deletion
-        // We do this BEFORE the database deletion to ensure we have the context
+        // 3. SEO NOTIFICATION (MUST AWAIT)
         try {
+            console.log("📡 Notifying Google of deletion...");
             await indexingService.urlDeleted(req.params.id, 'note');
             console.log(`✅ SEO Success: Google notified of deletion for ${req.params.id}`);
         } catch (seoErr) {
-            // Log the error but continue—don't let a Google API hiccup stop the DB deletion
-            console.error('⚠️ SEO Deletion Background Error:', seoErr.message);
+            console.error('⚠️ SEO Indexing Error:', seoErr.message);
         }
 
-        // 5. Delete from Database
+        // 4. Final DB Deletion
         await note.deleteOne();
-        console.log(`✅ Note ${req.params.id} removed from MongoDB.`);
-        // 6. Final Response
+        console.log("🏁 Note removed from Database. Process complete.");
+
         res.json({ message: 'Note removed successfully' });
 
     } catch (error) {
-        console.error('🔴 Error deleting note (noteRoutes):', error);
-        res.status(500).json({ message: 'Server Error occurred while deleting the note.' });
+        console.error('🔴 Delete Route Error:', error);
+        res.status(500).json({ message: 'Server Error' });
     }
 });
 // =========================================================================
