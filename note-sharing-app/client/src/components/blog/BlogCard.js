@@ -1,57 +1,247 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FaUser, FaEye, FaCalendarAlt } from 'react-icons/fa';
+import { FaEye, FaCalendarAlt, FaEdit, FaTrash, FaArrowRight } from 'react-icons/fa';
 import StarRating from '../common/StarRating';
 
 const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () => {} }) => {
-    // FIX: Safely access createdAt with a fallback to current date if missing
+    
+    // --- 1. SAFE DATA HANDLING ---
+    
+    // Date formatting with fallback
     const dateToFormat = blog.createdAt ? new Date(blog.createdAt) : new Date();
     const formattedDate = dateToFormat.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
     
-    // FIX: Add safety check (|| 0) to prevent crash if downloadCount is undefined
-    const views = (blog.downloadCount || 0).toLocaleString();
+    // View count fallback
+    const views = (blog.views || blog.downloadCount || 0).toLocaleString();
+
+    // Summary Generation Logic
+    const getSummary = () => {
+        if (blog.summary && blog.summary.trim().length > 0) {
+            return blog.summary.length > 120 ? blog.summary.substring(0, 120) + '...' : blog.summary;
+        }
+        if (blog.description && blog.description.trim().length > 0) {
+            return blog.description.length > 120 ? blog.description.substring(0, 120) + '...' : blog.description;
+        }
+        if (blog.content) {
+            // FIX: Removed unnecessary escape for '[' inside the character class
+            // Old: /[#*`_\[\]]/g  -> New: /[#*`_[\]]/g
+            const cleanText = blog.content.replace(/<[^>]+>/g, '').replace(/[#*`_[\]]/g, '');
+            return cleanText.substring(0, 120) + '...';
+        }
+        return 'No summary available.';
+    };
+
+    const summaryText = getSummary();
+
+    // --- 2. HOLOGRAPHIC STYLES ---
+    const styles = {
+        card: {
+            background: 'rgba(255, 255, 255, 0.03)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            border: '1px solid rgba(255, 255, 255, 0.05)',
+            borderRadius: '20px',
+            padding: '1.5rem',
+            transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+            display: 'flex',
+            flexDirection: 'column',
+            height: '100%',
+            position: 'relative',
+            overflow: 'hidden',
+            boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)'
+        },
+        cardHover: {
+            transform: 'translateY(-5px)',
+            borderColor: 'rgba(0, 212, 255, 0.3)',
+            boxShadow: '0 10px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0, 212, 255, 0.1)'
+        },
+        glowBar: {
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '4px',
+            height: '100%',
+            background: 'linear-gradient(to bottom, #00d4ff, #ff00cc)',
+            opacity: 0.7
+        },
+        title: {
+            fontSize: '1.4rem',
+            fontWeight: '700',
+            margin: '0 0 0.5rem 0',
+            lineHeight: 1.3,
+            color: '#fff',
+            textDecoration: 'none',
+            display: 'block',
+            transition: 'color 0.3s'
+        },
+        summary: {
+            color: 'rgba(255, 255, 255, 0.7)',
+            fontSize: '0.95rem',
+            lineHeight: 1.6,
+            marginBottom: '1.5rem',
+            flex: 1, 
+            fontFamily: "'Spline Sans', sans-serif"
+        },
+        metaList: {
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'flex-end',
+            borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+            paddingTop: '1rem',
+            marginTop: 'auto'
+        },
+        authorDetails: {
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px'
+        },
+        authorAvatar: {
+            width: '40px',
+            height: '40px',
+            borderRadius: '50%',
+            objectFit: 'cover',
+            border: '2px solid rgba(0, 212, 255, 0.5)'
+        },
+        authorName: {
+            fontSize: '0.9rem',
+            color: '#fff',
+            fontWeight: '600'
+        },
+        statsColumn: {
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-end',
+            gap: '4px',
+            fontSize: '0.8rem',
+            color: 'rgba(255, 255, 255, 0.6)'
+        },
+        statRow: {
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px'
+        },
+        actionContainer: {
+            display: 'flex',
+            gap: '10px',
+            marginTop: '1.5rem'
+        },
+        btn: {
+            padding: '8px 16px',
+            borderRadius: '8px',
+            border: 'none',
+            cursor: 'pointer',
+            fontSize: '0.9rem',
+            fontWeight: '600',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            transition: 'all 0.3s'
+        },
+        editBtn: {
+            background: 'rgba(0, 212, 255, 0.1)',
+            color: '#00d4ff',
+            border: '1px solid rgba(0, 212, 255, 0.3)'
+        },
+        deleteBtn: {
+            background: 'rgba(255, 0, 85, 0.1)',
+            color: '#ff0055',
+            border: '1px solid rgba(255, 0, 85, 0.3)'
+        },
+        readMoreBtn: {
+            marginTop: '1rem',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            color: '#00d4ff',
+            textDecoration: 'none',
+            fontWeight: '600',
+            fontSize: '0.95rem',
+            transition: 'gap 0.3s'
+        }
+    };
 
     return (
-        <div className="blog-card blog-card-list">
-            <Link to={`/blogs/${blog.slug}`} className="blog-title-button-link">
-                <h3>{blog.title}</h3>
+        <div 
+            style={styles.card}
+            onMouseEnter={(e) => Object.assign(e.currentTarget.style, styles.cardHover)}
+            onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'none';
+                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.05)';
+                e.currentTarget.style.boxShadow = '0 4px 30px rgba(0, 0, 0, 0.1)';
+            }}
+        >
+            <div style={styles.glowBar}></div>
+
+            <Link to={`/blogs/${blog.slug}`} style={{textDecoration: 'none'}}>
+                <h3 
+                    style={styles.title}
+                    onMouseEnter={(e) => e.target.style.color = '#00d4ff'}
+                    onMouseLeave={(e) => e.target.style.color = '#fff'}
+                >
+                    {blog.title}
+                </h3>
             </Link>
             
-            <p className="blog-summary">{blog.summary}</p>
+            <p style={styles.summary}>
+                {summaryText}
+            </p>
             
-            <div className="blog-meta-list">
-                <div className="blog-author-details">
+            <div style={styles.metaList}>
+                <div style={styles.authorDetails}>
                     <img 
                         src={blog.author?.avatar || 'https://via.placeholder.com/40'} 
                         alt={`Avatar of ${blog.author?.name}`} 
-                        className="blog-author-avatar"
+                        style={styles.authorAvatar}
                     />
-                    <p className="blog-author-name">
-                        <FaUser className="meta-icon" /> <strong>{blog.author?.name || 'Deleted User'}</strong>
-                    </p>
-                </div>
-                <div className="blog-rating-views">
-                    <div className="blog-rating-display">
-                        <StarRating rating={blog.rating || 0} readOnly={true} />
-                        <span>({blog.numReviews || 0} reviews)</span>
+                    <div>
+                        <div style={styles.authorName}>
+                            {blog.author?.name || 'Deleted User'}
+                        </div>
+                        <div style={{fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', marginTop: '2px'}}>
+                            <FaCalendarAlt style={{fontSize: '0.7rem', marginRight: '4px'}} /> 
+                            {formattedDate}
+                        </div>
                     </div>
-                    <span className="blog-views">
-                        <FaEye className="meta-icon" /> {views} views
-                    </span>
-                    <span className="blog-date">
-                         <FaCalendarAlt className="meta-icon" /> {formattedDate}
-                    </span>
+                </div>
+
+                <div style={styles.statsColumn}>
+                    <div style={styles.statRow}>
+                        <StarRating rating={blog.rating || 0} readOnly={true} size={12} />
+                        <span>({blog.numReviews || 0})</span>
+                    </div>
+                    <div style={styles.statRow}>
+                        <FaEye /> {views} views
+                    </div>
                 </div>
             </div>
 
             {showActions ? (
-                <div className="owner-actions">
-                    <button className="action-button edit-btn" onClick={() => onEdit(blog)}>Edit</button>
-                    <button className="action-button delete-btn" onClick={() => onDelete(blog._id)}>Delete</button>
+                <div style={styles.actionContainer}>
+                    <button 
+                        style={{...styles.btn, ...styles.editBtn}} 
+                        onClick={() => onEdit(blog)}
+                        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(0, 212, 255, 0.2)'}
+                        onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(0, 212, 255, 0.1)'}
+                    >
+                        <FaEdit /> Edit
+                    </button>
+                    <button 
+                        style={{...styles.btn, ...styles.deleteBtn}} 
+                        onClick={() => onDelete(blog._id)}
+                        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 0, 85, 0.2)'}
+                        onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255, 0, 85, 0.1)'}
+                    >
+                        <FaTrash /> Delete
+                    </button>
                 </div>
             ) : (
-                <Link to={`/blogs/${blog.slug}`} className="read-more-btn">
-                    Read Full Article &rarr;
+                <Link 
+                    to={`/blogs/${blog.slug}`} 
+                    style={styles.readMoreBtn}
+                    onMouseEnter={(e) => e.currentTarget.style.gap = '12px'}
+                    onMouseLeave={(e) => e.currentTarget.style.gap = '8px'}
+                >
+                    Read Full Article <FaArrowRight />
                 </Link>
             )}
         </div>
