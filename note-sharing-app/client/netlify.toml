@@ -64,15 +64,15 @@ for = "/sitemap.xml"
 
 # Dynamic sitemap redirect
 [[redirects]]
-from = "/sitemap-dynamic.xml"
-to = "https://peernotez.onrender.com/sitemap-dynamic.xml"
+from = "/sitemap.xml"
+to = "https://peernotez.onrender.com/sitemap.xml"
 status = 200
 force = true
 
 # Static sitemap redirect (legacy)
 [[redirects]]
-from = "/sitemap.xml"
-to = "/sitemap.xml"
+from = "/static-sitemap.xml"
+to = "/static-sitemap.xml"
 status = 200
 
 # SPA catch-all route (React/Vue/Angular)
