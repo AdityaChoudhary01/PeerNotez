@@ -6,7 +6,7 @@ import Reviews from '../components/notes/Reviews';
 import StarRating from '../components/common/StarRating';
 import useAuth from '../hooks/useAuth';
 import AuthorInfoBlock from '../components/common/AuthorInfoBlock';
-import { FaBookmark, FaDownload, FaList, FaExclamationTriangle, FaSpinner, FaFileAlt, FaInfoCircle } from 'react-icons/fa';
+import { FaBookmark, FaDownload, FaList, FaExclamationTriangle, FaSpinner, FaFileAlt, FaInfoCircle, FaCheckCircle } from 'react-icons/fa';
 import AddToCollectionModal from '../components/notes/AddToCollectionModal';
 import RelatedNotes from '../components/notes/RelatedNotes'; // RESTORED IMPORT
 
@@ -23,10 +23,11 @@ const ViewNotePage = () => {
     const [note, setNote] = useState(null);
     const [error, setError] = useState('');
     const [isSaving, setIsSaving] = useState(false);
+    const [isSaved, setIsSaved] = useState(false); // NEW STATE FOR TOGGLE
     const [isModalOpen, setIsModalOpen] = useState(false); 
     const [refetchIndex, setRefetchIndex] = useState(0);
     const { noteId } = useParams();
-    const { token, isAuthenticated } = useAuth();
+    const { token, isAuthenticated, user: currentUser, updateUser } = useAuth(); // ADDED updateUser
 
     // --- INTERNAL CSS: HOLOGRAPHIC THEME ---
     const styles = {
@@ -108,6 +109,11 @@ const ViewNotePage = () => {
             color: '#fff',
             boxShadow: '0 4px 15px rgba(0, 212, 255, 0.3)'
         },
+        savedBtn: { // STYLE FOR SAVED STATE
+            background: 'rgba(255, 255, 255, 0.1)',
+            color: '#00ffaa',
+            border: '1px solid rgba(0, 255, 170, 0.3)'
+        },
         secondaryBtn: {
             background: 'rgba(255, 255, 255, 0.1)',
             color: '#fff',
@@ -179,6 +185,13 @@ const ViewNotePage = () => {
         fetchNote();
     }, [noteId, refetchIndex, fetchNote]);
 
+    // CHECK IF NOTE IS IN USER'S SAVED LIST
+    useEffect(() => {
+        if (currentUser && currentUser.savedNotes) {
+            setIsSaved(currentUser.savedNotes.includes(noteId));
+        }
+    }, [currentUser, noteId]);
+
     const handleRefetch = () => {
         setRefetchIndex(prev => prev + 1);
     };
@@ -192,13 +205,28 @@ const ViewNotePage = () => {
         setIsSaving(true);
         try {
             const config = { headers: { Authorization: `Bearer ${token}` } };
-            const endpoint = `/users/save/${noteId}`;
+            // TOGGLE ENDPOINT BASED ON CURRENT STATE
+            const endpoint = isSaved ? `/users/unsave/${noteId}` : `/users/save/${noteId}`;
 
             const { data } = await axios.put(endpoint, {}, config);
+            
+            // UPDATE LOCAL CONTEXT SO OTHER PAGES SYNC
+            let newSavedNotes = [...(currentUser.savedNotes || [])];
+            if (isSaved) {
+                newSavedNotes = newSavedNotes.filter(id => id !== noteId);
+            } else {
+                newSavedNotes.push(noteId);
+            }
+            
+            if (updateUser) {
+                updateUser({ savedNotes: newSavedNotes });
+            }
+            
+            setIsSaved(!isSaved);
             alert(data.message);
         } catch (error) {
-            console.error('Failed to save note', error);
-            alert('Failed to save note. It might already be saved or an error occurred.');
+            console.error('Failed to toggle save note', error);
+            alert('Operation failed. Please try again.');
         } finally {
             setIsSaving(false);
         }
@@ -365,12 +393,12 @@ const ViewNotePage = () => {
                             <button 
                                 onClick={handleSaveNote} 
                                 disabled={isSaving} 
-                                style={{...styles.btn, ...styles.primaryBtn}}
+                                style={isSaved ? {...styles.btn, ...styles.savedBtn} : {...styles.btn, ...styles.primaryBtn}}
                                 onMouseEnter={(e) => e.target.style.transform = 'translateY(-2px)'}
                                 onMouseLeave={(e) => e.target.style.transform = 'translateY(0)'}
                             >
-                                <FaBookmark />
-                                {isSaving ? ' Saving...' : ' Save Note'}
+                                {isSaved ? <><FaCheckCircle /> Saved</> : <><FaBookmark /> Save Note</>}
+                                {isSaving && '...'}
                             </button>
                         )}
                         
@@ -424,7 +452,6 @@ const ViewNotePage = () => {
                     }
                     .view-note-actions {
                         flex-direction: column;
-                        gap: 0.8rem !important;
                     }
                     .view-note-actions button,
                     .view-note-actions a {
