@@ -1,28 +1,20 @@
 const { google } = require('googleapis');
 
-// 1. Check if variables exist to prevent "undefined" errors
-const clientEmail = process.env.GOOGLE_CLIENT_EMAIL;
-const privateKey = process.env.GOOGLE_PRIVATE_KEY;
+// Use the constructor with a single configuration object
+const jwtClient = new google.auth.JWT({
+  email: process.env.GOOGLE_CLIENT_EMAIL,
+  key: process.env.GOOGLE_PRIVATE_KEY ? process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n') : null,
+  scopes: ['https://www.googleapis.com/auth/indexing']
+});
 
-// 2. Optimized JWT Client setup
-const jwtClient = new google.auth.JWT(
-  clientEmail,
-  null,
-  privateKey ? privateKey.replace(/\\n/g, '\n') : null,
-  ['https://www.googleapis.com/auth/indexing']
-);
-
-/**
- * Notifies Google that a URL has been updated or created.
- */
 const urlUpdated = async (urlID, type) => {
-  // CRITICAL: Check if credentials are loaded before attempting authorize
-  if (!clientEmail || !privateKey) {
-    console.error('SEO Error: Missing Google Credentials in .env');
+  if (!process.env.GOOGLE_CLIENT_EMAIL || !process.env.GOOGLE_PRIVATE_KEY) {
+    console.error('❌ SEO Error: Missing credentials in Environment Variables');
     return;
   }
 
   try {
+    // This triggers the actual authentication
     await jwtClient.authorize();
     
     const baseUrl = 'https://peernotez.netlify.app';
@@ -38,28 +30,13 @@ const urlUpdated = async (urlID, type) => {
       },
     });
 
-    console.log(`SEO Success: Google notified for ${type}: ${targetUrl}`);
+    console.log(`✅ SEO Success: Google notified for ${type}: ${targetUrl}`);
     return response.data;
   } catch (error) {
-    console.error('SEO Error: Google Indexing API failed:', error.message);
+    console.error('❌ SEO Error:', error.message);
+    // Return null so the calling function knows it failed but doesn't crash
+    return null; 
   }
 };
 
-const urlDeleted = async (urlID, type) => {
-  if (!clientEmail || !privateKey) return;
-  try {
-    await jwtClient.authorize();
-    const baseUrl = 'https://peernotez.netlify.app';
-    const targetUrl = type === 'note' ? `${baseUrl}/view/${urlID}` : `${baseUrl}/blogs/${urlID}`;
-
-    await google.indexing('v3').urlNotifications.publish({
-      auth: jwtClient,
-      requestBody: { url: targetUrl, type: 'URL_DELETED' },
-    });
-    console.log(`SEO Success: Google notified of deletion: ${targetUrl}`);
-  } catch (error) {
-    console.error('SEO Error:', error.message);
-  }
-};
-
-module.exports = { urlUpdated, urlDeleted };
+module.exports = { urlUpdated };
