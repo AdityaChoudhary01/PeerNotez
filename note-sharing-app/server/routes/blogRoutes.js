@@ -144,6 +144,18 @@ router.get('/my-blogs', protect, async (req, res) => {
     }
 });
 
+// @route   GET /api/blogs/user/:userId
+// PLACE THIS ABOVE router.get('/:slug') or router.get('/:id')
+router.get('/user/:userId', async (req, res) => {
+    try {
+        const blogs = await Blog.find({ author: req.params.userId })
+            .sort({ createdAt: -1 })
+            .populate('author', 'name avatar');
+        res.json({ blogs });
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching user blogs' });
+    }
+});
 
 // @route   GET /api/blogs/:slug
 // @desc    Get a single full blog post by its URL slug and increment view count
@@ -220,7 +232,6 @@ router.post('/:id/reviews', protect, async (req, res) => {
             }
 
             // FIX 3: Update timestamp for Sitemap freshness
-            // This ensures Google knows the page content (comments) has changed
             blog.updatedAt = new Date();
 
             await blog.save();
@@ -329,7 +340,6 @@ router.put('/:id/toggle-featured', protect, admin, async (req, res) => {
         res.status(500).json({ message: 'Server Error occurred while updating the blog.' });
     }
 });
-
 
 // @route   DELETE /api/blogs/:id
 // @desc    Delete a blog (Owner or Admin)
