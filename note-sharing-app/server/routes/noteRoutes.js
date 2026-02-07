@@ -314,6 +314,7 @@ router.get('/mynotes', protect, async (req, res) => {
 // UPDATED POST/PUT/DELETE Routes
 // =========================================================================
 
+
 // @route   POST /api/notes/upload
 // @desc    Upload a new note
 router.post('/upload', protect, uploadToMemory.single('file'), async (req, res) => {
@@ -330,7 +331,8 @@ router.post('/upload', protect, uploadToMemory.single('file'), async (req, res) 
       });
     }
 
-    const { title, university, course, subject, year } = req.body;
+    // ✅ SEO UPDATE (Fix 1): Extract 'description' from body
+    const { title, description, university, course, subject, year } = req.body;
 
     const officeMimeTypes = [
       'application/msword',
@@ -381,20 +383,20 @@ router.post('/upload', protect, uploadToMemory.single('file'), async (req, res) 
     finalFilePath = uploadResult.secure_url;
     finalCloudinaryId = uploadResult.public_id;
     console.log('Cloudinary Upload Result (Secure URL):', uploadResult.secure_url);
-    console.log('Cloudinary Public ID:', uploadResult.public_id);
 
-
-    if (!title || !university || !course || !subject || !year) {
+    // ✅ SEO UPDATE (Fix 1): Check for description existence
+    if (!title || !university || !course || !subject || !year || !description) {
       console.log('Error: Missing required text fields for note after file upload.');
       if (finalCloudinaryId) {
         await cloudinary.uploader.destroy(finalCloudinaryId, { resource_type: resourceType });
         console.warn(`Cleaned up orphaned Cloudinary asset: ${finalCloudinaryId} due to missing note details.`);
       }
-      return res.status(400).json({ message: 'Please provide all required fields: title, university, course, subject, and year.' });
+      return res.status(400).json({ message: 'Please provide all required fields: title, description, university, course, subject, and year.' });
     }
 
     const newNote = new Note({
       title,
+      description, // ✅ Saved
       university,
       course,
       subject,
@@ -409,7 +411,7 @@ router.post('/upload', protect, uploadToMemory.single('file'), async (req, res) 
 
     const savedNote = await newNote.save();
     
-    // NEW: Increment user's noteCount (for Gamification)
+    // Increment user's noteCount (for Gamification)
     await req.user.updateOne({ $inc: { noteCount: 1 } });
     
     await indexingService.urlUpdated(savedNote._id.toString(), 'note'); // Use ID and type 'note'
@@ -419,19 +421,9 @@ router.post('/upload', protect, uploadToMemory.single('file'), async (req, res) 
   } catch (error) {
     console.error('--- START SERVER-SIDE ERROR LOG (Conditional Upload) ---');
     console.error('Note upload failed:', error);
-    console.error('Error name:', error.name);
-    console.error('Error message:', error.message);
-    if (error.stack) {
-      console.error('Error stack:', error.stack);
-    }
-    if (error.response && error.response.data) {
-      console.error('Error response data (if applicable):', error.response.data);
-    }
-    console.error('--- END SERVER-SIDE ERROR LOG (Conditional Upload) ---');
-
+    
     if (file && finalCloudinaryId) {
         try {
-            const isOfficeDoc = ['application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'].includes(file.mimetype);
             const resourceTypeForDeletion = (file.mimetype.startsWith('image/') || file.mimetype === 'application/pdf') ? 'image' : 'raw';
             await cloudinary.uploader.destroy(finalCloudinaryId, { resource_type: resourceTypeForDeletion });
             console.warn(`Cleaned up Cloudinary asset: ${finalCloudinaryId} after failed DB save.`);
