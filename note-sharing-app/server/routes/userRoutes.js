@@ -30,9 +30,9 @@ const calculateBadges = (user) => {
 // USER AUTH & PROFILE MANAGEMENT
 // ==========================================================
 
-// @route   GET /api/users/profile
-// @desc    Get user profile with calculated badges and following status
-// @access  Private
+// @route   GET /api/users/profile
+// @desc    Get user profile with calculated badges and following status
+// @access  Private
 router.get('/profile', protect, async (req, res) => {
     try {
         const user = await User.findById(req.user.id).select('-password');
@@ -58,9 +58,9 @@ router.get('/profile', protect, async (req, res) => {
 });
 
 
-// @route   PUT /api/users/profile/avatar
-// @desc    Update user profile picture
-// @access  Private
+// @route   PUT /api/users/profile/avatar
+// @desc    Update user profile picture
+// @access  Private
 router.put('/profile/avatar', protect, upload.single('avatar'), async (req, res) => {
     try {
         if (!req.file) {
@@ -87,9 +87,9 @@ router.put('/profile/avatar', protect, upload.single('avatar'), async (req, res)
     }
 });
 
-// @route   PUT /api/users/profile
-// @desc    Update user profile details (e.g., name)
-// @access  Private
+// @route   PUT /api/users/profile
+// @desc    Update user profile details (e.g., name)
+// @access  Private
 router.put('/profile', protect, async (req, res) => {
     try {
         const user = await User.findById(req.user.id);
@@ -120,8 +120,8 @@ router.put('/profile', protect, async (req, res) => {
 // NEW: FOLLOWING & FEED ROUTES
 // ==========================================================
 
-// @route   PUT /api/users/:id/follow
-// @desc    Follow or unfollow a user (User ID in params is the author to follow)
+// @route   PUT /api/users/:id/follow
+// @desc    Follow or unfollow a user (User ID in params is the author to follow)
 router.put('/:id/follow', protect, async (req, res) => {
     try {
         const userIdToFollow = req.params.id;
@@ -150,10 +150,14 @@ router.put('/:id/follow', protect, async (req, res) => {
             // Unfollow
             updateQuery = { $pull: { following: userIdToFollow } };
             message = `${author.name} unfollowed successfully.`;
+            // Also remove current user from author's followers list
+            await User.findByIdAndUpdate(userIdToFollow, { $pull: { followers: currentUser._id } });
         } else {
             // Follow
             updateQuery = { $push: { following: userIdToFollow } };
             message = `${author.name} followed successfully.`;
+            // Also add current user to author's followers list
+            await User.findByIdAndUpdate(userIdToFollow, { $push: { followers: currentUser._id } });
         }
 
         // Update the current user's following list
@@ -171,8 +175,8 @@ router.put('/:id/follow', protect, async (req, res) => {
     }
 });
 
-// @route   GET /api/users/feed
-// @desc    Get latest content from followed users (Personalized Feed)
+// @route   GET /api/users/feed
+// @desc    Get latest content from followed users (Personalized Feed)
 router.get('/feed', protect, async (req, res) => {
     try {
         const followedUsers = req.user.following;
@@ -235,9 +239,9 @@ router.get('/feed', protect, async (req, res) => {
 // NOTE SAVING ROUTES (Existing Logic)
 // ==========================================================
 
-// @route   PUT /api/users/save/:noteId
-// @desc    Save a note to user's savedNotes list
-// @access  Private
+// @route   PUT /api/users/save/:noteId
+// @desc    Save a note to user's savedNotes list
+// @access  Private
 router.put('/save/:noteId', protect, async (req, res) => {
     try {
         const user = await User.findById(req.user.id);
@@ -256,9 +260,9 @@ router.put('/save/:noteId', protect, async (req, res) => {
     }
 });
 
-// @route   PUT /api/users/unsave/:noteId
-// @desc    Unsave a note from user's savedNotes list
-// @access  Private
+// @route   PUT /api/users/unsave/:noteId
+// @desc    Unsave a note from user's savedNotes list
+// @access  Private
 router.put('/unsave/:noteId', protect, async (req, res) => {
     try {
         const user = await User.findById(req.user.id);
@@ -280,9 +284,9 @@ router.put('/unsave/:noteId', protect, async (req, res) => {
     }
 });
 
-// @route   GET /api/users/savednotes
-// @desc    Get all saved notes for a user with pagination
-// @access  Private
+// @route   GET /api/users/savednotes
+// @desc    Get all saved notes for a user with pagination
+// @access  Private
 router.get('/savednotes', protect, async (req, res) => {
     try {
         const userId = req.user.id;
@@ -359,9 +363,32 @@ router.get('/top-contributors', async (req, res) => {
     }
 });
 
-// @route   GET /api/users/me/collections
-// @desc    Get all user collections (used for profile/modal)
-// @access  Private
+// @route   GET /api/users/:id/profile
+// @desc    Get public user profile by ID
+// @access  Public
+router.get('/:id/profile', async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id).select('-password');
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        const userObject = user.toObject();
+        const badges = calculateBadges(userObject);
+
+        res.json({
+            ...userObject,
+            badges,
+            followersCount: user.followers ? user.followers.length : 0,
+            followingCount: user.following ? user.following.length : 0,
+        });
+    } catch (error) {
+        console.error('Error fetching public profile:', error);
+        res.status(500).json({ message: 'Server Error fetching profile.' });
+    }
+});
+
+// @route   GET /api/users/me/collections
+// @desc    Get all user collections (used for profile/modal)
+// @access  Private
 router.get('/me/collections', protect, async (req, res) => {
     try {
         // Find all collections belonging to the authenticated user
@@ -377,9 +404,9 @@ router.get('/me/collections', protect, async (req, res) => {
     }
 });
 
-// @route   GET /api/users
-// @desc    Get all users (Admin only)
-// @access  Private/Admin
+// @route   GET /api/users
+// @desc    Get all users (Admin only)
+// @access  Private/Admin
 router.get('/', protect, admin, async (req, res) => {
     try {
         const users = await User.find({});
@@ -390,9 +417,9 @@ router.get('/', protect, admin, async (req, res) => {
     }
 });
 
-// @route   DELETE /api/users/:id
-// @desc    Delete a user (Admin only)
-// @access  Private/Admin
+// @route   DELETE /api/users/:id
+// @desc    Delete a user (Admin only)
+// @access  Private/Admin
 router.delete('/:id', protect, admin, async (req, res) => {
     try {
         if (req.params.id.toString() === req.user.id.toString()) {
@@ -412,9 +439,9 @@ router.delete('/:id', protect, admin, async (req, res) => {
     }
 });
 
-// @route   PUT /api/users/:id/role
-// @desc    Change a user's role (toggle between 'user' and 'admin')
-// @access  Private/Admin
+// @route   PUT /api/users/:id/role
+// @desc    Change a user's role (toggle between 'user' and 'admin')
+// @access  Private/Admin
 router.put('/:id/role', protect, admin, async (req, res) => {
     try {
         if (req.params.id.toString() === req.user.id.toString()) {
