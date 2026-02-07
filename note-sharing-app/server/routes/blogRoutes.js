@@ -276,8 +276,10 @@ router.post('/', protect, async (req, res) => {
         // NEW: Increment user's blogCount (for Gamification)
         await req.user.updateOne({ $inc: { blogCount: 1 } });
         
-        // Indexing API call for creation/update
-        await indexingService.urlUpdated(savedBlog.slug, 'blog'); 
+        // --- START AUTOMATIC INDEXING ---
+    // For blogs, we pass the 'slug' as the identifier
+    indexingService.urlUpdated(savedBlog.slug, 'blog');
+    // --- END AUTOMATIC INDEXING ---
         res.status(201).json(savedBlog);
 
     } catch (error) {
@@ -308,8 +310,11 @@ router.put('/:id', protect, async (req, res) => {
         if (slug) blog.slug = slug;
 
         const updatedBlog = await blog.save();
-        // Indexing API call for update
-        await indexingService.urlUpdated(updatedBlog.slug, 'blog');
+        // --- START AUTOMATIC INDEXING ---
+        if (updatedBlog) {
+            indexingService.urlUpdated(updatedBlog.slug, 'blog');
+        }
+        // --- END AUTOMATIC INDEXING ---
         res.json(updatedBlog);
 
     } catch (error) {
@@ -357,7 +362,10 @@ router.delete('/:id', protect, async (req, res) => {
         // NEW: Decrement user's blogCount (for Gamification)
         await req.user.updateOne({ $inc: { blogCount: -1 } });
         
-        await indexingService.urlDeleted(blog.slug, 'blog');
+        // --- START AUTOMATIC INDEXING ---
+    // We notify Google BEFORE deleting from our DB so we still have the slug
+    indexingService.urlDeleted(blog.slug, 'blog');
+    // --- END AUTOMATIC INDEXING ---
         await blog.deleteOne();
         res.json({ message: 'Blog removed successfully' });
 
