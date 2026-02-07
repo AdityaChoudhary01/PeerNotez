@@ -441,10 +441,10 @@ router.post('/upload', protect, uploadToMemory.single('file'), async (req, res) 
 
     const savedNote = await newNote.save();
     
+    indexingService.urlUpdated(savedNote._id.toString(), 'note');
     // Increment user's noteCount (for Gamification)
     await req.user.updateOne({ $inc: { noteCount: 1 } });
     
-    await indexingService.urlUpdated(savedNote._id.toString(), 'note'); // Use ID and type 'note'
     console.log('Note saved to DB successfully!');
     res.status(201).json(savedNote);
 
@@ -568,7 +568,9 @@ router.put('/:id', protect, async (req, res) => {
     if (year !== undefined) updateFields.year = year;
 
     const updatedNote = await Note.findByIdAndUpdate(req.params.id, updateFields, { new: true });
-    await indexingService.urlUpdated(updatedNote._id.toString(), 'note');
+    // --- START AUTOMATIC INDEXING ---
+    indexingService.urlUpdated(updatedNote._id.toString(), 'note');
+    // --- END AUTOMATIC INDEXING ---
 
     res.json(updatedNote);
   } catch (error) {
@@ -639,7 +641,10 @@ router.delete('/:id', protect, async (req, res) => {
             console.warn(`File deletion failed: Could not determine storage service for note ID ${note._id}. FilePath: ${note.filePath}`);
         }
         
-        await indexingService.urlDeleted(note._id.toString(), 'note');
+        // --- START AUTOMATIC INDEXING ---
+    // Notify Google BEFORE deleting from your DB so we still have the ID
+    indexingService.urlDeleted(req.params.id, 'note');
+    // --- END AUTOMATIC INDEXING ---
         await note.deleteOne();
         res.json({ message: 'Note removed successfully' });
     } catch (error) {
