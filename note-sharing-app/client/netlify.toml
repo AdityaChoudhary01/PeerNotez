@@ -65,7 +65,7 @@ for = "/static-sitemap.xml"
 # Dynamic sitemap redirect
 [[redirects]]
 from = "/sitemap.xml"
-to = "https://peernotez.onrender.com/sitemap.xml"
+to = "https://peernotez.vercel.app/sitemap.xml"
 status = 200
 force = true
 
