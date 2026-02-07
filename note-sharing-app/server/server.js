@@ -6,7 +6,7 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
-const path = require('path'); // <-- 1. ADD THIS IMPORT
+const path = require('path');
 require('dotenv').config();
 
 // --- Schema Imports ---
@@ -19,13 +19,12 @@ const contactRoutes = require('./routes/contactRoutes');
 const userRoutes = require('./routes/userRoutes');
 const blogRoutes = require('./routes/blogRoutes');
 const sitemapRoutes = require('./routes/sitemapRoutes');
+
 // --- App Initialization ---
 const app = express();
 
-// Set the 'trust proxy' setting.
+// Set the 'trust proxy' setting for Vercel/CDN compatibility
 app.set('trust proxy', 1);
-
-const PORT = process.env.PORT || 5001;
 
 // --- Security Middleware ---
 app.use(helmet());
@@ -58,16 +57,33 @@ const apiLimiter = rateLimit({
 });
 app.use('/api/', apiLimiter);
 
-// --- Database Connection ---
-mongoose.connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => console.log('✅ MongoDB connected successfully.'))
-  .catch(err => {
-    console.error('❌ MongoDB Connection Error:', err);
-    process.exit(1);
-  });
+// --- Database Connection (Serverless Optimized) ---
+let isConnected = false;
+
+const connectDB = async () => {
+    if (isConnected) return;
+
+    try {
+        const db = await mongoose.connect(process.env.MONGO_URI, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+            maxPoolSize: 10,
+            serverSelectionTimeoutMS: 5000,
+            socketTimeoutMS: 45000,
+        });
+        isConnected = db.connections[0].readyState;
+        console.log('✅ MongoDB connected successfully.');
+    } catch (err) {
+        console.error('❌ MongoDB Connection Error:', err);
+        isConnected = false;
+    }
+};
+
+// Middleware to ensure DB is connected on every request before hitting routes
+app.use(async (req, res, next) => {
+    await connectDB();
+    next();
+});
 
 // --- Route Mounting (API Routes) ---
 app.use('/api/auth', authRoutes);
@@ -82,8 +98,6 @@ app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'UP', timestamp: new Date().toISOString() });
 });
 
-
-
 // --- Global Error Handler (KEEP LAST) ---
 app.use((err, req, res, next) => {
   console.error('🔴 Global Error:', err.message);
@@ -94,6 +108,12 @@ app.use((err, req, res, next) => {
   });
 });
 
-// --- Server Startup ---
-app.listen(PORT, () => console.log(`🚀 Server is running on port ${PORT}`));
+// --- Vercel Export Configuration ---
+// Export the app for Vercel's serverless handler
+module.exports = app;
 
+// Only start the standalone server if running locally
+if (process.env.NODE_ENV !== 'production') {
+    const PORT = process.env.PORT || 5001;
+    app.listen(PORT, () => console.log(`🚀 Local Server is running on port ${PORT}`));
+}
