@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import ReactMarkdown from 'react-markdown';
 import useAuth from '../hooks/useAuth';
-import { FaFeatherAlt, FaSave, FaTimes, FaLink, FaAlignLeft, FaQuoteRight } from 'react-icons/fa';
+import { FaFeatherAlt, FaSave, FaTimes, FaLink, FaAlignLeft, FaQuoteRight, FaImage } from 'react-icons/fa';
 
 const PostBlogPage = ({ existingBlog = null, onBlogUpdated = () => {}, onClose = () => {} }) => {
     const isEditing = !!existingBlog;
@@ -14,6 +14,9 @@ const PostBlogPage = ({ existingBlog = null, onBlogUpdated = () => {}, onClose =
         content: existingBlog?.content || '',
         slug: existingBlog?.slug || '',
     });
+    const [coverImage, setCoverImage] = useState(null); // File object
+    const [previewImage, setPreviewImage] = useState(existingBlog?.coverImage || null); // URL for preview
+
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const { token } = useAuth();
@@ -22,7 +25,7 @@ const PostBlogPage = ({ existingBlog = null, onBlogUpdated = () => {}, onClose =
     // --- INTERNAL CSS: HOLOGRAPHIC THEME ---
     const styles = {
         container: {
-            padding: '2rem', // Desktop padding
+            padding: '2rem',
             maxWidth: '1200px',
             margin: '0 auto',
             minHeight: '80vh'
@@ -32,7 +35,7 @@ const PostBlogPage = ({ existingBlog = null, onBlogUpdated = () => {}, onClose =
             backdropFilter: 'blur(20px)',
             borderRadius: '24px',
             border: '1px solid rgba(255, 255, 255, 0.1)',
-            padding: '3rem', // Desktop padding
+            padding: '3rem',
             boxShadow: '0 25px 50px rgba(0,0,0,0.4)',
             color: '#fff'
         },
@@ -76,7 +79,8 @@ const PostBlogPage = ({ existingBlog = null, onBlogUpdated = () => {}, onClose =
             fontSize: '1rem',
             outline: 'none',
             transition: 'border-color 0.3s, box-shadow 0.3s',
-            fontFamily: 'inherit'
+            fontFamily: 'inherit',
+            boxSizing: 'border-box'
         },
         textarea: {
             width: '100%',
@@ -90,7 +94,32 @@ const PostBlogPage = ({ existingBlog = null, onBlogUpdated = () => {}, onClose =
             transition: 'border-color 0.3s, box-shadow 0.3s',
             fontFamily: 'inherit',
             resize: 'vertical',
-            minHeight: '100px'
+            minHeight: '100px',
+            boxSizing: 'border-box'
+        },
+        fileInputWrapper: {
+            position: 'relative',
+            overflow: 'hidden',
+            display: 'inline-block',
+            width: '100%'
+        },
+        fileLabel: {
+            border: '2px dashed rgba(255,255,255,0.2)',
+            borderRadius: '12px',
+            padding: '2rem',
+            textAlign: 'center',
+            cursor: 'pointer',
+            transition: 'border-color 0.3s',
+            display: 'block',
+            color: 'rgba(255,255,255,0.5)'
+        },
+        imagePreview: {
+            width: '100%',
+            maxHeight: '300px',
+            objectFit: 'cover',
+            borderRadius: '12px',
+            marginTop: '1rem',
+            border: '1px solid rgba(255,255,255,0.1)'
         },
         previewBox: {
             background: 'rgba(255, 255, 255, 0.05)',
@@ -167,6 +196,15 @@ const PostBlogPage = ({ existingBlog = null, onBlogUpdated = () => {}, onClose =
         }
     };
 
+    // --- NEW: Handle Image Selection ---
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setCoverImage(file);
+            setPreviewImage(URL.createObjectURL(file)); // Local preview
+        }
+    };
+
     const handleFocus = (e) => {
         e.target.style.borderColor = '#00d4ff';
         e.target.style.boxShadow = '0 0 10px rgba(0, 212, 255, 0.2)';
@@ -183,19 +221,42 @@ const PostBlogPage = ({ existingBlog = null, onBlogUpdated = () => {}, onClose =
         setLoading(true);
 
         const url = isEditing ? `/blogs/${existingBlog._id}` : '/blogs';
-        const method = isEditing ? axios.put : axios.post;
+        const method = isEditing ? 'put' : 'post'; // Use string method name for dynamic axios call
+
+        // --- Use FormData for File Upload ---
+        const data = new FormData();
+        data.append('title', formData.title);
+        data.append('summary', formData.summary);
+        data.append('content', formData.content);
+        if (formData.slug) data.append('slug', formData.slug);
+        
+        if (coverImage) {
+            data.append('coverImage', coverImage);
+        }
 
         try {
-            const config = { headers: { Authorization: `Bearer ${token}` } };
-            const { data } = await method(url, formData, config);
+            const config = { 
+                headers: { 
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'multipart/form-data' // Required for files
+                } 
+            };
+            
+            // Dynamic axios call handling
+            const response = await axios({
+                method: method,
+                url: url,
+                data: data,
+                headers: config.headers
+            });
             
             alert(`Blog post ${isEditing ? 'updated' : 'created'} successfully!`);
             
             if (isEditing) {
-                onBlogUpdated(data); 
+                onBlogUpdated(response.data); 
                 onClose(); 
             } else {
-                navigate(`/blogs/${data.slug}`);
+                navigate(`/blogs/${response.data.slug}`);
             }
         } catch (err) {
             console.error('Blog submission failed', err);
@@ -223,6 +284,31 @@ const PostBlogPage = ({ existingBlog = null, onBlogUpdated = () => {}, onClose =
 
                 {error && <div style={styles.errorMsg}>{error}</div>}
                 
+                {/* --- NEW: Image Upload Section --- */}
+                <div style={styles.formGroup}>
+                    <label style={styles.label}>
+                        <FaImage style={{color: '#ffaa00'}} /> Cover Image
+                    </label>
+                    <div style={styles.fileInputWrapper}>
+                        <label htmlFor="coverImage" style={styles.fileLabel}
+                            onMouseEnter={(e) => e.currentTarget.style.borderColor = '#00d4ff'}
+                            onMouseLeave={(e) => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'}
+                        >
+                            {coverImage ? coverImage.name : "Click to Upload Banner Image (16:9 recommended)"}
+                        </label>
+                        <input 
+                            id="coverImage" 
+                            type="file" 
+                            accept="image/*"
+                            onChange={handleImageChange}
+                            style={{display: 'none'}} 
+                        />
+                    </div>
+                    {previewImage && (
+                        <img src={previewImage} alt="Cover Preview" style={styles.imagePreview} />
+                    )}
+                </div>
+
                 <div style={styles.formGroup}>
                     <label htmlFor="title" style={styles.label}>
                         <FaQuoteRight style={{color: '#00d4ff'}} /> Title
