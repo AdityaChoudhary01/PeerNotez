@@ -180,6 +180,10 @@ const PostBlogPage = ({ existingBlog = null, onBlogUpdated = () => {}, onClose =
             fontSize: '0.8rem',
             color: 'rgba(255,255,255,0.4)',
             marginTop: '5px'
+        },
+        requiredStar: {
+            color: '#ff0055',
+            marginLeft: '4px'
         }
     };
 
@@ -196,12 +200,11 @@ const PostBlogPage = ({ existingBlog = null, onBlogUpdated = () => {}, onClose =
         }
     };
 
-    // --- NEW: Handle Image Selection ---
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (file) {
             setCoverImage(file);
-            setPreviewImage(URL.createObjectURL(file)); // Local preview
+            setPreviewImage(URL.createObjectURL(file)); 
         }
     };
 
@@ -218,17 +221,34 @@ const PostBlogPage = ({ existingBlog = null, onBlogUpdated = () => {}, onClose =
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+
+        // --- VALIDATION: Check All Fields ---
+        if (!formData.title.trim() || !formData.summary.trim() || !formData.content.trim() || !formData.slug.trim()) {
+            setError('All text fields are required.');
+            return;
+        }
+
+        // --- VALIDATION: Check Image ---
+        if (!isEditing && !coverImage) {
+            setError('A cover image is required for new posts.');
+            return;
+        }
+        // For editing, we check if there's either a new file OR an existing preview (meaning image wasn't deleted)
+        if (isEditing && !coverImage && !previewImage) {
+             setError('A cover image is required.');
+             return;
+        }
+
         setLoading(true);
 
         const url = isEditing ? `/blogs/${existingBlog._id}` : '/blogs';
-        const method = isEditing ? 'put' : 'post'; // Use string method name for dynamic axios call
+        const method = isEditing ? 'put' : 'post'; 
 
-        // --- Use FormData for File Upload ---
         const data = new FormData();
         data.append('title', formData.title);
         data.append('summary', formData.summary);
         data.append('content', formData.content);
-        if (formData.slug) data.append('slug', formData.slug);
+        data.append('slug', formData.slug); // Slug is always sent, even if editing (though backend might ignore it for safety)
         
         if (coverImage) {
             data.append('coverImage', coverImage);
@@ -238,11 +258,10 @@ const PostBlogPage = ({ existingBlog = null, onBlogUpdated = () => {}, onClose =
             const config = { 
                 headers: { 
                     Authorization: `Bearer ${token}`,
-                    'Content-Type': 'multipart/form-data' // Required for files
+                    'Content-Type': 'multipart/form-data' 
                 } 
             };
             
-            // Dynamic axios call handling
             const response = await axios({
                 method: method,
                 url: url,
@@ -284,10 +303,10 @@ const PostBlogPage = ({ existingBlog = null, onBlogUpdated = () => {}, onClose =
 
                 {error && <div style={styles.errorMsg}>{error}</div>}
                 
-                {/* --- NEW: Image Upload Section --- */}
+                {/* --- Image Upload Section --- */}
                 <div style={styles.formGroup}>
                     <label style={styles.label}>
-                        <FaImage style={{color: '#ffaa00'}} /> Cover Image
+                        <FaImage style={{color: '#ffaa00'}} /> Cover Image <span style={styles.requiredStar}>*</span>
                     </label>
                     <div style={styles.fileInputWrapper}>
                         <label htmlFor="coverImage" style={styles.fileLabel}
@@ -302,6 +321,7 @@ const PostBlogPage = ({ existingBlog = null, onBlogUpdated = () => {}, onClose =
                             accept="image/*"
                             onChange={handleImageChange}
                             style={{display: 'none'}} 
+                            required={!isEditing} // Required only for new posts via HTML validation too
                         />
                     </div>
                     {previewImage && (
@@ -311,7 +331,7 @@ const PostBlogPage = ({ existingBlog = null, onBlogUpdated = () => {}, onClose =
 
                 <div style={styles.formGroup}>
                     <label htmlFor="title" style={styles.label}>
-                        <FaQuoteRight style={{color: '#00d4ff'}} /> Title
+                        <FaQuoteRight style={{color: '#00d4ff'}} /> Title <span style={styles.requiredStar}>*</span>
                     </label>
                     <input 
                         id="title" 
@@ -329,7 +349,7 @@ const PostBlogPage = ({ existingBlog = null, onBlogUpdated = () => {}, onClose =
                 
                 <div style={styles.formGroup}>
                     <label htmlFor="summary" style={styles.label}>
-                        <FaAlignLeft style={{color: '#bc13fe'}} /> Summary (Teaser)
+                        <FaAlignLeft style={{color: '#bc13fe'}} /> Summary (Teaser) <span style={styles.requiredStar}>*</span>
                     </label>
                     <textarea 
                         id="summary" 
@@ -347,7 +367,7 @@ const PostBlogPage = ({ existingBlog = null, onBlogUpdated = () => {}, onClose =
                 
                 <div style={styles.formGroup}>
                     <label htmlFor="slug" style={styles.label}>
-                        <FaLink style={{color: '#00ffaa'}} /> URL Slug
+                        <FaLink style={{color: '#00ffaa'}} /> URL Slug <span style={styles.requiredStar}>*</span>
                     </label>
                     <input 
                         id="slug" 
@@ -366,7 +386,7 @@ const PostBlogPage = ({ existingBlog = null, onBlogUpdated = () => {}, onClose =
 
                 <div style={styles.formGroup}>
                     <label htmlFor="content" style={styles.label}>
-                        <FaFeatherAlt style={{color: '#ff00cc'}} /> Content (Markdown Supported)
+                        <FaFeatherAlt style={{color: '#ff00cc'}} /> Content (Markdown Supported) <span style={styles.requiredStar}>*</span>
                     </label>
                     <textarea 
                         id="content" 
