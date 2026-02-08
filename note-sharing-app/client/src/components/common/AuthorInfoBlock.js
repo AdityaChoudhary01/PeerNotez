@@ -1,30 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import { FaUserPlus, FaUserCheck, FaCrown } from 'react-icons/fa'; 
-import useAuth from '../../hooks/useAuth'; // Adjust path if necessary based on folder structure
+import { FaUserPlus, FaUserCheck, FaCrown, FaUserEdit } from 'react-icons/fa'; 
+import useAuth from '../../hooks/useAuth'; 
 
 const AuthorInfoBlock = ({ author }) => {
-    // Current user context
     const { user, token, updateUser } = useAuth();
     
     // Determine if the current viewer is the author
     const isOwner = user?._id === author?._id;
     
-    // Check if the current user is following the author (based on context)
     const [isFollowing, setIsFollowing] = useState(false);
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        if (user && author) {
-            // Check the current user's following array
-            // Ensure user.following exists to prevent crash
+        if (user && author && !isOwner) {
             const followingList = user.following || [];
             setIsFollowing(followingList.includes(author._id));
         }
-    }, [user, author]);
+    }, [user, author, isOwner]);
 
-    // --- INTERNAL CSS: HOLOGRAPHIC AUTHOR CARD ---
     const styles = {
         card: {
             background: 'rgba(255, 255, 255, 0.05)',
@@ -48,7 +43,9 @@ const AuthorInfoBlock = ({ author }) => {
             left: '-20%',
             width: '200px',
             height: '200px',
-            background: 'radial-gradient(circle, rgba(0, 212, 255, 0.15), transparent 70%)',
+            background: isOwner 
+                ? 'radial-gradient(circle, rgba(99, 102, 241, 0.15), transparent 70%)' // Indigo glow for owner
+                : 'radial-gradient(circle, rgba(0, 212, 255, 0.15), transparent 70%)',
             pointerEvents: 'none'
         },
         link: {
@@ -66,9 +63,9 @@ const AuthorInfoBlock = ({ author }) => {
             width: '60px',
             height: '60px',
             borderRadius: '50%',
-            border: '2px solid rgba(0, 212, 255, 0.6)',
+            border: isOwner ? '2px solid #6366f1' : '2px solid rgba(0, 212, 255, 0.6)',
             objectFit: 'cover',
-            boxShadow: '0 0 15px rgba(0, 212, 255, 0.3)'
+            boxShadow: isOwner ? '0 0 15px rgba(99, 102, 241, 0.3)' : '0 0 15px rgba(0, 212, 255, 0.3)'
         },
         details: {
             display: 'flex',
@@ -101,6 +98,15 @@ const AuthorInfoBlock = ({ author }) => {
             marginLeft: '8px',
             boxShadow: '0 0 10px rgba(255, 215, 0, 0.4)'
         },
+        ownerBadge: {
+            fontSize: '0.7rem',
+            background: 'rgba(99, 102, 241, 0.2)',
+            color: '#818cf8',
+            padding: '2px 8px',
+            borderRadius: '10px',
+            border: '1px solid rgba(99, 102, 241, 0.3)',
+            fontWeight: '600'
+        },
         btnWrapper: {
             display: 'flex',
             flexDirection: 'column',
@@ -130,6 +136,11 @@ const AuthorInfoBlock = ({ author }) => {
             border: '1px solid rgba(255, 255, 255, 0.2)',
             color: '#fff'
         },
+        editBtn: {
+            background: 'rgba(255, 255, 255, 0.08)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            color: '#fff'
+        },
         loginText: {
             fontSize: '0.8rem',
             color: 'rgba(255, 255, 255, 0.5)',
@@ -146,16 +157,13 @@ const AuthorInfoBlock = ({ author }) => {
         setLoading(true);
         try {
             const config = { headers: { Authorization: `Bearer ${token}` } };
-            // Ensure this endpoint matches your backend route
             const { data } = await axios.put(`/users/${author._id}/follow`, {}, config); 
             
             setIsFollowing(data.isFollowing); 
             
-            // If the context provider allows updating the user object locally
             if(data.userFollowing && updateUser) {
                 updateUser({ following: data.userFollowing }); 
             }
-
         } catch (error) {
             console.error(error);
             alert(error.response?.data?.message || 'Failed to update follow status.');
@@ -164,9 +172,8 @@ const AuthorInfoBlock = ({ author }) => {
         }
     };
     
-    if (!author || isOwner) {
-        return null;
-    }
+    // Safety check - still return null if author data is missing
+    if (!author) return null;
 
     return (
         <div 
@@ -177,8 +184,7 @@ const AuthorInfoBlock = ({ author }) => {
         >
             <div style={styles.glow}></div>
 
-            {/* Link wrapper directs to the Public Profile */}
-            <Link to={`/profile/${author._id}`} style={styles.link} className="author-link-wrapper">
+            <Link to={isOwner ? `/profile` : `/profile/${author._id}`} style={styles.link} className="author-link-wrapper">
                 <div style={styles.avatarWrapper}>
                     <img 
                         src={author.avatar || 'https://via.placeholder.com/60'} 
@@ -189,6 +195,7 @@ const AuthorInfoBlock = ({ author }) => {
                 <div style={styles.details}>
                     <div style={styles.name}>
                         {author.name}
+                        {isOwner && <span style={styles.ownerBadge}>You</span>}
                         {author.noteCount >= 50 && (
                             <span style={styles.badge} title="Power Uploader">
                                 <FaCrown /> Elite
@@ -205,21 +212,30 @@ const AuthorInfoBlock = ({ author }) => {
             </Link>
             
             <div style={styles.btnWrapper} className="author-action-wrapper">
-                <button 
-                    onClick={handleFollowToggle} 
-                    style={isFollowing ? {...styles.btn, ...styles.followingBtn} : {...styles.btn, ...styles.followBtn}}
-                    disabled={loading}
-                    onMouseEnter={(e) => !isFollowing && (e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 212, 255, 0.5)')}
-                    onMouseLeave={(e) => !isFollowing && (e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 212, 255, 0.3)')}
-                >
-                    {loading ? 'Updating...' : (
-                        isFollowing ? <><FaUserCheck /> Following</> : <><FaUserPlus /> Follow</>
-                    )}
-                </button>
-                {!user && <span style={styles.loginText}>Log in to follow</span>}
+                {isOwner ? (
+                    // Show "Edit Profile" or just a label if it's the owner
+                    <Link to="/profile" style={{ textDecoration: 'none' }}>
+                        <button style={{...styles.btn, ...styles.editBtn}}>
+                            <FaUserEdit /> Edit Profile
+                        </button>
+                    </Link>
+                ) : (
+                    // Show Follow button for others
+                    <>
+                        <button 
+                            onClick={handleFollowToggle} 
+                            style={isFollowing ? {...styles.btn, ...styles.followingBtn} : {...styles.btn, ...styles.followBtn}}
+                            disabled={loading}
+                        >
+                            {loading ? 'Updating...' : (
+                                isFollowing ? <><FaUserCheck /> Following</> : <><FaUserPlus /> Follow</>
+                            )}
+                        </button>
+                        {!user && <span style={styles.loginText}>Log in to follow</span>}
+                    </>
+                )}
             </div>
 
-            {/* RESPONSIVE STYLES */}
             <style>{`
                 @media (max-width: 600px) {
                     .author-info-card {
@@ -233,7 +249,7 @@ const AuthorInfoBlock = ({ author }) => {
                     }
                     .author-action-wrapper {
                         width: 100%;
-                        align-items: stretch !important; /* Make button full width */
+                        align-items: stretch !important;
                         margin-top: 0.5rem;
                     }
                     .author-action-wrapper button {
