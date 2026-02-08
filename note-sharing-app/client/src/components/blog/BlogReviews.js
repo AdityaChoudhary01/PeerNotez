@@ -4,6 +4,7 @@ import useAuth from '../../hooks/useAuth';
 import StarRating from '../common/StarRating';
 import { Link } from 'react-router-dom';
 import { FaReply, FaPaperPlane } from 'react-icons/fa';
+import { optimizeCloudinaryUrl } from '../../utils/cloudinaryHelper';
 
 // Utility for formatting dates
 const formatDate = (dateString) =>
@@ -58,7 +59,7 @@ const styles = {
         fontWeight: '700',
         color: '#fff',
         fontSize: '1rem',
-        textDecoration: 'none' // Added for clean Links
+        textDecoration: 'none'
     },
     date: {
         fontSize: '0.8rem',
@@ -167,17 +168,16 @@ const ReplyCard = ({ reply, postId, onReviewAdded, user, token }) => {
   return (
     <div style={{...styles.reviewCard, ...styles.replyCard}}>
       <div style={styles.authorHeader}>
-        {/* CLICKABLE AVATAR */}
         <Link to={`/profile/${reply.user?._id}`}>
             <img
-            src={reply.user?.avatar || 'https://via.placeholder.com/40'}
+            src={optimizeCloudinaryUrl(reply.user?.avatar || 'https://via.placeholder.com/40', { width: 80, height: 80, isProfile: true })}
             alt={reply.user?.name || 'Deleted User'}
+            loading="lazy"
             style={{...styles.avatar, width: '35px', height: '35px'}}
             />
         </Link>
         <div style={styles.authorInfo}>
           <div style={styles.authorName}>
-            {/* CLICKABLE USERNAME */}
             <Link to={`/profile/${reply.user?._id}`} style={styles.authorName}>
                 {reply.user?.name || 'Deleted User'}
             </Link>
@@ -199,6 +199,7 @@ const ReplyCard = ({ reply, postId, onReviewAdded, user, token }) => {
                 onClick={() => setIsReplying(prev => !prev)}
                 onMouseEnter={(e) => e.currentTarget.style.color = '#ff00cc'}
                 onMouseLeave={(e) => e.currentTarget.style.color = '#00d4ff'}
+                aria-label="Reply to comment"
             >
               <FaReply /> {isReplying ? 'Cancel' : 'Reply'}
             </button>
@@ -254,7 +255,6 @@ const CommentThread = ({ comment, postId, onReviewAdded, user, token }) => {
     }
   };
 
-  // Extract all replies into a single flat array
   const flattenReplies = (replyList) => {
     let allReplies = [];
     if (!replyList) return allReplies;
@@ -269,19 +269,17 @@ const CommentThread = ({ comment, postId, onReviewAdded, user, token }) => {
 
   return (
     <div>
-      {/* Main Top-Level Comment */}
       <div style={styles.reviewCard}>
         <div style={styles.authorHeader}>
-          {/* CLICKABLE AVATAR */}
           <Link to={`/profile/${comment.user?._id}`}>
             <img
-                src={comment.user?.avatar || 'https://via.placeholder.com/45'}
+                src={optimizeCloudinaryUrl(comment.user?.avatar || 'https://via.placeholder.com/45', { width: 90, height: 90, isProfile: true })}
                 alt={comment.user?.name || 'Deleted User'}
+                loading="lazy"
                 style={styles.avatar}
             />
           </Link>
           <div style={styles.authorInfo}>
-            {/* CLICKABLE USERNAME */}
             <Link to={`/profile/${comment.user?._id}`} style={styles.authorName}>
                 <strong style={styles.authorName}>{comment.user?.name || 'Deleted User'}</strong>
             </Link>
@@ -304,6 +302,7 @@ const CommentThread = ({ comment, postId, onReviewAdded, user, token }) => {
                 onClick={() => setIsReplying(prev => !prev)}
                 onMouseEnter={(e) => e.currentTarget.style.color = '#ff00cc'}
                 onMouseLeave={(e) => e.currentTarget.style.color = '#00d4ff'}
+                aria-label="Reply to comment"
               >
                 <FaReply /> {isReplying ? 'Cancel' : 'Reply'}
               </button>
@@ -328,7 +327,6 @@ const CommentThread = ({ comment, postId, onReviewAdded, user, token }) => {
         </div>
       </div>
 
-      {/* Flattened Replies */}
       {allFlatReplies.map(reply => (
         <ReplyCard
           key={reply._id}
@@ -352,12 +350,10 @@ const BlogReviews = ({ blogId, reviews, onReviewAdded }) => {
   const [loading, setLoading] = useState(false);
   const { user, token } = useAuth();
 
-  // --- THREAD BUILDING LOGIC (Using useCallback to resolve ESLint warning) ---
   const buildCommentThreads = useCallback((flatReviews) => {
     const map = {};
     const rootComments = [];
 
-    // Step 1: Map & Attach Parent User
     flatReviews.forEach(r => { 
         const parentComment = r.parentReviewId 
             ? flatReviews.find(p => p._id === r.parentReviewId) 
@@ -371,7 +367,6 @@ const BlogReviews = ({ blogId, reviews, onReviewAdded }) => {
         map[r._id] = { ...r, replies: [], parentUser: parentUser }; 
     });
 
-    // Step 2: Build Hierarchy
     Object.values(map).forEach(r => {
       if (r.parentReviewId) {
         const parent = map[r.parentReviewId];
