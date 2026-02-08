@@ -6,32 +6,39 @@ import NoteCard from '../components/notes/NoteCard';
 import BlogCard from '../components/blog/BlogCard';
 import FilterBar from '../components/common/FilterBar';
 import Pagination from '../components/common/Pagination';
+import { optimizeCloudinaryUrl } from '../utils/cloudinaryHelper';
 import { FaFilter, FaDownload, FaTimes, FaFeatherAlt, FaRocket, FaGlobe, FaStar, FaUserAstronaut, FaArrowRight } from 'react-icons/fa';
 
-const DOWNLOAD_LINK = 'https://github.com/AdityaChoudhary01/public-peernotez/releases/download/v1.0.3/PeerNotez.apk';
+const DOWNLOAD_LINK = 'https://github.com/AdityaChoudhary01/PeerNotez/releases/download/v1.0.3/PeerNotez.apk';
 
 const HomePage = () => {
+    // --- State for main notes grid ---
     const [notes, setNotes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filters, setFilters] = useState({});
     const [sortBy, setSortBy] = useState('uploadDate');
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
+
+    // --- State for featured content ---
     const [featuredNotes, setFeaturedNotes] = useState([]);
     const [loadingFeatured, setLoadingFeatured] = useState(true);
     const [featuredBlogs, setFeaturedBlogs] = useState([]);
     const [loadingFeaturedBlogs, setLoadingFeaturedBlogs] = useState(true);
+
+    // --- State for dynamic content ---
     const [stats, setStats] = useState({ totalNotes: 0, totalUsers: 0, downloadsThisMonth: 0 });
     const [loadingStats, setLoadingStats] = useState(true);
     const [topContributors, setTopContributors] = useState([]);
     const [loadingContributors, setLoadingContributors] = useState(true);
+    
     const [isFilterBarOpen, setIsFilterBarOpen] = useState(false);
     const [showAppButton, setShowAppButton] = useState(true);
 
+    // --- 3D TILT STATE ---
     const heroRef = useRef(null);
     const [tilt, setTilt] = useState({ x: 0, y: 0 });
 
-    // Styles stay consistent with your holographic theme
     const styles = {
         heroSection: {
             minHeight: '85vh',
@@ -316,7 +323,6 @@ const HomePage = () => {
                         <Link to="/upload" style={styles.secondaryBtn}>Contribute Now</Link>
                     </div>
                 </header>
-                {/* Visual Glows */}
                 <div style={{ position: 'absolute', top: '10%', left: '5%', width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(255, 0, 204, 0.2), transparent 70%)', filter: 'blur(50px)', zIndex: 0 }} />
                 <div style={{ position: 'absolute', bottom: '10%', right: '5%', width: '400px', height: '400px', background: 'radial-gradient(circle, rgba(0, 212, 255, 0.2), transparent 70%)', filter: 'blur(50px)', zIndex: 0 }} />
             </section>
@@ -451,8 +457,9 @@ const HomePage = () => {
                                 }}
                             >
                                 <img 
-                                    src={contributor.avatar} 
+                                    src={optimizeCloudinaryUrl(contributor.avatar, { width: 120, height: 120, isProfile: true })} 
                                     alt={`${contributor.name} - Top Contributor`} 
+                                    loading="lazy"
                                     style={{width: '60px', height: '60px', borderRadius: '50%', border: '2px solid #00d4ff', objectFit: 'cover'}}
                                 />
                                 <div>
