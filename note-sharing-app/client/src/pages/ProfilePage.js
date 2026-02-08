@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'; // Removed useCallback
 import axios from 'axios';
 import useAuth from '../hooks/useAuth';
 import NoteCard from '../components/notes/NoteCard';
@@ -44,28 +44,31 @@ const ProfilePage = () => {
         wrapper: {
             paddingTop: '2rem',
             paddingBottom: '5rem',
-            minHeight: '80vh'
+            minHeight: '80vh',
+            paddingLeft: '1rem',
+            paddingRight: '1rem'
         },
         headerCard: {
             background: 'rgba(255, 255, 255, 0.03)',
             backdropFilter: 'blur(10px)',
             borderRadius: '24px',
             border: '1px solid rgba(255, 255, 255, 0.1)',
-            padding: '3rem',
+            padding: '2rem 1rem', // Reduced padding for mobile
             marginBottom: '3rem',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             textAlign: 'center',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
+            boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+            overflow: 'hidden' // Prevents glow/content leakage
         },
         avatarContainer: {
             position: 'relative',
             marginBottom: '1.5rem'
         },
         avatar: {
-            width: '140px',
-            height: '140px',
+            width: '120px', // Slightly smaller for better mobile fit
+            height: '120px',
             borderRadius: '50%',
             objectFit: 'cover',
             border: '4px solid rgba(255,255,255,0.1)',
@@ -79,24 +82,29 @@ const ProfilePage = () => {
             color: '#000',
             padding: '5px 10px',
             borderRadius: '20px',
-            fontSize: '0.8rem',
+            fontSize: '0.7rem',
             fontWeight: '700',
             cursor: 'pointer',
             boxShadow: '0 2px 10px rgba(0,0,0,0.2)'
         },
         userName: {
-            fontSize: '2.5rem',
+            fontSize: 'clamp(1.5rem, 8vw, 2.5rem)', // Fluid typography
             fontWeight: '800',
             marginBottom: '0.5rem',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '10px'
+            gap: '10px',
+            width: '100%',
+            overflowWrap: 'break-word', // Handles long names
+            wordBreak: 'break-word'
         },
         userEmail: {
             color: 'rgba(255,255,255,0.6)',
             marginBottom: '1.5rem',
-            fontSize: '1.1rem'
+            fontSize: '1rem',
+            width: '100%',
+            overflowWrap: 'break-word'
         },
         editBtn: {
             background: 'transparent',
@@ -104,11 +112,13 @@ const ProfilePage = () => {
             color: 'rgba(255,255,255,0.5)',
             cursor: 'pointer',
             fontSize: '1rem',
-            transition: 'color 0.2s'
+            transition: 'color 0.2s',
+            display: 'flex',
+            alignItems: 'center'
         },
         badges: {
             display: 'flex',
-            gap: '10px',
+            gap: '8px',
             justifyContent: 'center',
             flexWrap: 'wrap',
             marginBottom: '2rem'
@@ -117,9 +127,9 @@ const ProfilePage = () => {
             background: 'rgba(255, 215, 0, 0.1)',
             color: '#ffd700',
             border: '1px solid rgba(255, 215, 0, 0.3)',
-            padding: '5px 12px',
+            padding: '4px 10px',
             borderRadius: '20px',
-            fontSize: '0.9rem',
+            fontSize: '0.8rem',
             display: 'flex',
             alignItems: 'center',
             gap: '5px'
@@ -127,7 +137,7 @@ const ProfilePage = () => {
         tabs: {
             display: 'flex',
             justifyContent: 'center',
-            gap: '1rem',
+            gap: '0.5rem', // Tighter gap for mobile
             marginBottom: '3rem',
             flexWrap: 'wrap'
         },
@@ -135,15 +145,15 @@ const ProfilePage = () => {
             background: 'rgba(255,255,255,0.05)',
             border: '1px solid rgba(255,255,255,0.1)',
             color: 'rgba(255,255,255,0.7)',
-            padding: '12px 24px',
+            padding: '10px 18px',
             borderRadius: '50px',
             cursor: 'pointer',
-            fontSize: '1rem',
+            fontSize: '0.9rem',
             fontWeight: '600',
             transition: 'all 0.3s',
             display: 'flex',
             alignItems: 'center',
-            gap: '8px'
+            gap: '6px'
         },
         activeTab: {
             background: 'linear-gradient(135deg, #00d4ff 0%, #333399 100%)',
@@ -153,28 +163,32 @@ const ProfilePage = () => {
         },
         grid: {
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-            gap: '2rem'
+            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+            gap: '1.5rem'
         },
         collectionItem: {
             background: 'rgba(255, 255, 255, 0.02)',
             border: '1px solid rgba(255, 255, 255, 0.05)',
             borderRadius: '16px',
-            padding: '1.5rem',
+            padding: '1.2rem',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
             marginBottom: '1rem',
-            transition: 'background 0.2s'
+            transition: 'background 0.2s',
+            gap: '10px'
         },
         collectionLink: {
             color: '#fff',
             textDecoration: 'none',
-            fontSize: '1.1rem',
+            fontSize: '1rem',
             fontWeight: '600',
             display: 'flex',
             alignItems: 'center',
-            gap: '10px'
+            gap: '8px',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap'
         },
         deleteBtn: {
             background: 'rgba(255, 0, 85, 0.1)',
@@ -183,7 +197,8 @@ const ProfilePage = () => {
             borderRadius: '8px',
             padding: '8px',
             cursor: 'pointer',
-            transition: 'background 0.2s'
+            transition: 'background 0.2s',
+            flexShrink: 0
         },
         editInput: {
             background: 'rgba(0,0,0,0.3)',
@@ -191,9 +206,11 @@ const ProfilePage = () => {
             color: '#fff',
             padding: '8px 12px',
             borderRadius: '8px',
-            fontSize: '1.2rem',
+            fontSize: '1.1rem',
             textAlign: 'center',
-            marginBottom: '0.5rem'
+            marginBottom: '0.5rem',
+            width: '90%',
+            maxWidth: '300px'
         },
         saveBtn: {
             background: '#00d4ff',
@@ -203,7 +220,7 @@ const ProfilePage = () => {
             borderRadius: '4px',
             cursor: 'pointer',
             fontWeight: '700',
-            fontSize: '0.9rem',
+            fontSize: '0.85rem',
             margin: '0 5px'
         },
         cancelBtn: {
@@ -213,7 +230,7 @@ const ProfilePage = () => {
             padding: '5px 15px',
             borderRadius: '4px',
             cursor: 'pointer',
-            fontSize: '0.9rem',
+            fontSize: '0.85rem',
             margin: '0 5px'
         }
     };
@@ -381,7 +398,7 @@ const ProfilePage = () => {
                 
                 {!isEditingName ? (
                     <div style={styles.userName}>
-                        <h1>{user?.name}</h1>
+                        <h1 style={{fontSize: 'inherit', margin: 0}}>{user?.name}</h1>
                         <button 
                             onClick={() => setIsEditingName(true)} 
                             style={styles.editBtn} 
@@ -392,7 +409,7 @@ const ProfilePage = () => {
                         </button>
                     </div>
                 ) : (
-                    <form onSubmit={handleNameSave} style={{marginBottom: '1rem'}}>
+                    <form onSubmit={handleNameSave} style={{marginBottom: '1rem', width: '100%'}}>
                         <input 
                             type="text" 
                             value={newName} 
@@ -401,9 +418,10 @@ const ProfilePage = () => {
                             autoFocus 
                             aria-label="New name"
                         />
-                        <br/>
-                        <button type="submit" style={styles.saveBtn}>Save</button>
-                        <button type="button" onClick={() => setIsEditingName(false)} style={styles.cancelBtn}>Cancel</button>
+                        <div style={{display: 'flex', justifyContent: 'center', gap: '10px'}}>
+                            <button type="submit" style={styles.saveBtn}>Save</button>
+                            <button type="button" onClick={() => setIsEditingName(false)} style={styles.cancelBtn}>Cancel</button>
+                        </div>
                     </form>
                 )}
                 
@@ -419,8 +437,8 @@ const ProfilePage = () => {
                     </div>
                 )}
 
-                <Link to="/feed" style={{...styles.tabBtn, ...styles.activeTab, textDecoration: 'none', marginTop: '1rem'}}>
-                    <FaRss aria-hidden="true" /> My Personalized Feed
+                <Link to="/feed" style={{...styles.tabBtn, ...styles.activeTab, textDecoration: 'none', marginTop: '1rem', width: 'fit-content'}}>
+                    <FaRss aria-hidden="true" /> Personalized Feed
                 </Link>
             </header>
 
@@ -451,7 +469,7 @@ const ProfilePage = () => {
                     to="/blogs/my-blogs" 
                     style={{...styles.tabBtn, textDecoration: 'none', ...(activeTab === 'blogs' ? styles.activeTab : {})}}
                 >
-                    <FaPenNib aria-hidden="true" /> My Blogs ({totalMyBlogs}) 
+                    <FaPenNib aria-hidden="true" /> Blogs ({totalMyBlogs}) 
                 </Link>
             </nav>
 
@@ -463,7 +481,7 @@ const ProfilePage = () => {
                             <div style={{textAlign: 'center', padding: '3rem', color: 'rgba(255,255,255,0.6)'}}>Loading notes...</div>
                         ) : (
                             <div>
-                                <h2 style={{color: '#fff', fontSize: '1.5rem', marginBottom: '2rem', textAlign: 'center'}}>
+                                <h2 style={{color: '#fff', fontSize: '1.25rem', marginBottom: '2rem', textAlign: 'center'}}>
                                     {activeTab === 'uploads' ? 'My Uploaded Notes' : 'My Saved Notes'}
                                 </h2>
                                 {displayNotes.length > 0 ? (
@@ -494,24 +512,23 @@ const ProfilePage = () => {
                 {/* Collections Content */}
                 {activeTab === 'collections' && (
                     <div className="collections-section">
-                        <h2 style={{color: '#fff', fontSize: '1.5rem', marginBottom: '2rem', textAlign: 'center'}}>My Note Collections</h2>
+                        <h2 style={{color: '#fff', fontSize: '1.25rem', marginBottom: '2rem', textAlign: 'center'}}>My Note Collections</h2>
                         {collections.length > 0 ? (
                             <div style={{maxWidth: '800px', margin: '0 auto'}}>
                                 {collections.map(collection => (
-                                    <div key={collection._id} style={styles.collectionItem} onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'} onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}>
-                                        <div style={{display: 'flex', alignItems: 'center'}}>
+                                    <div key={collection._id} style={styles.collectionItem}>
+                                        <div style={{display: 'flex', alignItems: 'center', overflow: 'hidden'}}>
                                             <Link to={`/collections/${collection._id}`} style={styles.collectionLink}>
-                                                <FaList style={{color: '#00d4ff'}} aria-hidden="true" /> {collection.name}
+                                                <FaList style={{color: '#00d4ff', flexShrink: 0}} aria-hidden="true" /> 
+                                                <span style={{overflow: 'hidden', textOverflow: 'ellipsis'}}>{collection.name}</span>
                                             </Link>
-                                            <span style={{marginLeft: '10px', color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem'}}>({collection.notes.length} notes)</span>
+                                            <span style={{marginLeft: '10px', color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem', flexShrink: 0}}>({collection.notes.length})</span>
                                         </div>
                                         <button 
                                             onClick={() => handleDeleteCollection(collection._id, collection.name)}
                                             style={styles.deleteBtn}
                                             title="Delete Collection"
                                             aria-label={`Delete collection ${collection.name}`}
-                                            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 0, 85, 0.2)'} 
-                                            onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255, 0, 85, 0.1)'}
                                         >
                                             <FaTrashAlt aria-hidden="true" />
                                         </button>
@@ -519,7 +536,7 @@ const ProfilePage = () => {
                                 ))}
                             </div>
                         ) : (
-                            <p style={{textAlign: 'center', color: 'rgba(255,255,255,0.5)', fontSize: '1.1rem'}}>You haven't created any collections yet. Start organizing your notes!</p>
+                            <p style={{textAlign: 'center', color: 'rgba(255,255,255,0.5)', fontSize: '1.1rem'}}>You haven't created any collections yet.</p>
                         )}
                     </div>
                 )}
