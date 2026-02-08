@@ -10,6 +10,7 @@ const EditNoteModal = ({ note, token, onUpdate, onClose }) => {
         course: '',
         subject: '',
         year: '',
+        description: '', // Restored description field
     });
     const [loading, setLoading] = useState(false);
 
@@ -23,7 +24,6 @@ const EditNoteModal = ({ note, token, onUpdate, onClose }) => {
             height: '100vh',
             background: 'rgba(0, 0, 0, 0.75)',
             backdropFilter: 'blur(8px)',
-            // High Z-Index combined with Portal ensures it tops everything
             zIndex: 99999, 
             display: 'flex',
             justifyContent: 'center',
@@ -97,6 +97,10 @@ const EditNoteModal = ({ note, token, onUpdate, onClose }) => {
             transition: 'all 0.3s ease',
             fontFamily: "'Spline Sans', sans-serif"
         },
+        textArea: {
+            minHeight: '100px',
+            resize: 'vertical'
+        },
         footer: {
             padding: '1.5rem',
             borderTop: '1px solid rgba(255, 255, 255, 0.1)',
@@ -140,6 +144,7 @@ const EditNoteModal = ({ note, token, onUpdate, onClose }) => {
                 course: note.course || '',
                 subject: note.subject || '',
                 year: note.year || '',
+                description: note.description || '', // Map description from note
             });
         }
     }, [note]);
@@ -148,13 +153,10 @@ const EditNoteModal = ({ note, token, onUpdate, onClose }) => {
         const handleEscape = (e) => {
             if (e.key === 'Escape') onClose();
         };
-        // Disable body scroll when modal is open
         document.body.style.overflow = 'hidden';
-        
         document.addEventListener('keydown', handleEscape);
         return () => {
             document.removeEventListener('keydown', handleEscape);
-            // Re-enable body scroll
             document.body.style.overflow = 'unset';
         };
     }, [onClose]);
@@ -177,6 +179,13 @@ const EditNoteModal = ({ note, token, onUpdate, onClose }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        // --- RESTORED VALIDATION ---
+        if (formData.description.length < 20) {
+            alert('Description must be at least 20 characters long.');
+            return;
+        }
+
         setLoading(true);
         const config = {
             headers: { Authorization: `Bearer ${token}` },
@@ -187,7 +196,7 @@ const EditNoteModal = ({ note, token, onUpdate, onClose }) => {
             onUpdate(data);
         } catch (error) {
             console.error('Failed to update note', error);
-            alert('Failed to update note. Please try again.');
+            alert(error.response?.data?.message || 'Failed to update note. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -195,8 +204,6 @@ const EditNoteModal = ({ note, token, onUpdate, onClose }) => {
 
     if (!note) return null;
 
-    // Use ReactDOM.createPortal to render the modal outside of the parent DOM hierarchy
-    // This attaches the modal to the document.body, ensuring no parent styles interfere.
     return ReactDOM.createPortal(
         <div style={styles.backdrop} onClick={onClose}>
             <div style={styles.modal} onClick={e => e.stopPropagation()}>
@@ -228,6 +235,22 @@ const EditNoteModal = ({ note, token, onUpdate, onClose }) => {
                                 style={styles.input}
                             />
                         </div>
+
+                        {/* --- RESTORED DESCRIPTION FIELD --- */}
+                        <div style={styles.inputGroup}>
+                            <label htmlFor="description" style={styles.label}>Description (Min. 20 chars)</label>
+                            <textarea
+                                id="description"
+                                name="description"
+                                value={formData.description}
+                                onChange={handleChange}
+                                onFocus={handleFocus}
+                                onBlur={handleBlur}
+                                required
+                                style={{...styles.input, ...styles.textArea}}
+                            />
+                        </div>
+
                         <div style={styles.inputGroup}>
                             <label htmlFor="university" style={styles.label}>University</label>
                             <input
@@ -315,7 +338,7 @@ const EditNoteModal = ({ note, token, onUpdate, onClose }) => {
                 @keyframes scaleUp { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
             `}</style>
         </div>,
-        document.body // Target the body directly
+        document.body 
     );
 };
 
