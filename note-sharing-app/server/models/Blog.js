@@ -3,7 +3,6 @@ const Schema = mongoose.Schema;
 
 const blogReviewSchema = new Schema({
   user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-  // 👇 Rating is optional to allow for reply-only comments
   rating: { type: Number, required: false, min: 1, max: 5 }, 
   comment: { type: String, required: true },
   parentReviewId: { type: Schema.Types.ObjectId, default: null } 
@@ -18,9 +17,10 @@ const blogSchema = new mongoose.Schema({
   slug: { type: String, required: true, unique: true },
   author: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, 
   
-  // FIX: Removed manual 'createdAt'. 
-  // 'timestamps: true' below handles both createdAt and updatedAt automatically.
-  
+  // --- 🚀 NEW: Banner Image Fields (Cloudinary) ---
+  coverImage: { type: String, default: "" }, // Stores the secure_url
+  cloudinaryId: { type: String, default: "" }, // Stores public_id for deletion/updates
+
   // Blog Management & Review Fields
   reviews: [blogReviewSchema],
   rating: { type: Number, required: true, default: 0 },
@@ -28,8 +28,6 @@ const blogSchema = new mongoose.Schema({
   downloadCount: { type: Number, required: true, default: 0 }, // Tracks views
   isFeatured: { type: Boolean, required: true, default: false },
 }, {
-  // FIX: Enable automatic timestamps (createdAt, updatedAt)
-  // This is crucial for the Sitemap to know when the page changed (e.g. new review)
   timestamps: true 
 });
 
