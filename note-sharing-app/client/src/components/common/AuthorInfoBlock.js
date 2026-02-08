@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { FaUserPlus, FaUserCheck, FaCrown, FaInfoCircle } from 'react-icons/fa'; 
 import useAuth from '../../hooks/useAuth'; 
+import { optimizeCloudinaryUrl } from '../../utils/cloudinaryHelper';
 
 const AuthorInfoBlock = ({ author }) => {
     const { user, token, updateUser } = useAuth();
@@ -153,6 +154,13 @@ const AuthorInfoBlock = ({ author }) => {
     
     if (!author) return null;
 
+    // Optimized Avatar URL: 120px for high-density displays, auto-format, centered on face
+    const optimizedAvatar = optimizeCloudinaryUrl(author.avatar || 'https://via.placeholder.com/60', { 
+        width: 120, 
+        height: 120, 
+        isProfile: true 
+    });
+
     return (
         <div 
             className="author-info-card"
@@ -162,11 +170,11 @@ const AuthorInfoBlock = ({ author }) => {
         >
             <div style={styles.glow}></div>
 
-            {/* Clicking on name or avatar sends the user to their own profile if isOwner, else public profile */}
-            <Link to={isOwner ? `/profile/${author._id}` : `/profile/${author._id}`} style={styles.link} className="author-link-wrapper">
+            <Link to={`/profile/${author._id}`} style={styles.link} className="author-link-wrapper">
                 <img 
-                    src={author.avatar || 'https://via.placeholder.com/60'} 
+                    src={optimizedAvatar} 
                     alt={`Avatar of ${author.name}`} 
+                    loading="lazy"
                     style={styles.avatar}
                 />
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -187,7 +195,6 @@ const AuthorInfoBlock = ({ author }) => {
             
             <div style={styles.btnWrapper} className="author-action-wrapper">
                 {isOwner ? (
-                    /* Display Status Badge for Author instead of Action Button */
                     <div style={styles.authorStatus}>
                         <FaInfoCircle /> You are the Author
                     </div>
@@ -197,6 +204,7 @@ const AuthorInfoBlock = ({ author }) => {
                             onClick={handleFollowToggle} 
                             style={isFollowing ? {...styles.btn, ...styles.followingBtn} : {...styles.btn, ...styles.followBtn}}
                             disabled={loading}
+                            aria-label={isFollowing ? `Unfollow ${author.name}` : `Follow ${author.name}`}
                         >
                             {loading ? 'Updating...' : (
                                 isFollowing ? <><FaUserCheck /> Following</> : <><FaUserPlus /> Follow</>
