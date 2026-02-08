@@ -1,9 +1,44 @@
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
+const { cloudinary } = require('../config/cloudinary');
+const path = require('path');
+const { Readable } = require('stream');
 const Blog = require('../models/Blog'); 
 const { protect } = require('../middleware/authMiddleware');
 const { admin } = require('../middleware/adminMiddleware');
 const indexingService = require('../utils/indexingService'); // For SEO/Indexing
+
+// -------------------------------------------------------------------------
+// 1. Multer Setup (Memory Storage)
+// -------------------------------------------------------------------------
+const memoryStorage = multer.memoryStorage();
+const uploadToMemory = multer({
+  storage: memoryStorage,
+  limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit for images
+});
+
+// -------------------------------------------------------------------------
+// 2. Helper: Stream Upload to Cloudinary
+// -------------------------------------------------------------------------
+const streamUpload = (buffer) => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        folder: 'blog_banners',
+        resource_type: 'image', // Blog banners are always images
+      },
+      (error, result) => {
+        if (result) {
+          resolve(result);
+        } else {
+          reject(error);
+        }
+      }
+    );
+    Readable.from(buffer).pipe(stream);
+  });
+};
 
 // Utility function for updating review stats (Only considers top-level, rated comments)
 const updateBlogReviewStats = (blog) => {
@@ -31,11 +66,10 @@ router.get('/related/:id', async (req, res) => {
         if (!currentBlog) return res.status(404).json({ message: 'Blog not found' });
 
         // Find other blogs, excluding the current one.
-        // We sort by creation date to show recent posts.
         const relatedBlogs = await Blog.find({
             _id: { $ne: currentBlog._id } 
         })
-        .select('title summary slug createdAt author rating numReviews isFeatured') 
+        .select('title summary slug createdAt author rating numReviews isFeatured coverImage') 
         .populate('author', 'name avatar')
         .sort({ createdAt: -1 }) 
         .limit(3); // Limit to 3 suggestions
@@ -258,11 +292,23 @@ router.post('/:id/reviews', protect, async (req, res) => {
 // 2. PRIVATE/ADMIN ROUTES (CRUD)
 // ==========================================================
 
-// @route    POST /api/blogs
-// @desc     Create a new blog post (Protected)
-router.post('/', protect, async (req, res) => {
+// @route   POST /api/blogs
+// @desc    Create a new blog post with optional cover image
+router.post('/', protect, uploadToMemory.single('coverImage'), async (req, res) => {
     const { title, summary, content, slug } = req.body;
+    let coverImage = "";
+    let cloudinaryId = "";
+
     try {
+        // --- 1. HANDLE IMAGE UPLOAD ---
+        if (req.file) {
+            console.log('Uploading blog banner to Cloudinary...');
+            const result = await streamUpload(req.file.buffer);
+            coverImage = result.secure_url;
+            cloudinaryId = result.public_id;
+        }
+
+        // --- 2. CREATE BLOG ---
         const newBlog = new Blog({
             title,
             summary,
@@ -270,6 +316,8 @@ router.post('/', protect, async (req, res) => {
             // Simple slug generation if not provided
             slug: slug || title.toLowerCase().replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-'),
             author: req.user._id,
+            coverImage, 
+            cloudinaryId, 
         });
 
         const savedBlog = await newBlog.save();
@@ -279,13 +327,11 @@ router.post('/', protect, async (req, res) => {
         await req.user.updateOne({ $inc: { blogCount: 1 } });
         
         // 2. ✅ SEO UPDATE: Await Google Indexing
-        // We AWAIT this so the Vercel "socket" doesn't hang up
         try {
             console.log("📡 Notifying Google of new blog post...");
             await indexingService.urlUpdated(savedBlog.slug, 'blog');
             console.log(`✅ SEO Success: Google notified for blog slug: ${savedBlog.slug}`);
         } catch (seoErr) {
-            // Log the error but don't fail the request
             console.error('⚠️ SEO Indexing Error (Blog):', seoErr.message);
         }
 
@@ -294,13 +340,20 @@ router.post('/', protect, async (req, res) => {
 
     } catch (error) {
         console.error('🔴 Error creating blog:', error.message);
-        res.status(400).json({ message: 'Failed to create blog. Slug might be duplicated.' });
+        
+        // Clean up Cloudinary image if DB save fails
+        if (cloudinaryId) {
+            await cloudinary.uploader.destroy(cloudinaryId);
+            console.log('Rolled back Cloudinary upload due to DB error.');
+        }
+
+        res.status(400).json({ message: 'Failed to create blog. Slug might be duplicated or data invalid.' });
     }
 });
 
-// @route    PUT /api/blogs/:id
-// @desc     Update a blog (Owner or Admin)
-router.put('/:id', protect, async (req, res) => {
+// @route   PUT /api/blogs/:id
+// @desc    Update a blog (Owner or Admin)
+router.put('/:id', protect, uploadToMemory.single('coverImage'), async (req, res) => {
     try {
         const blog = await Blog.findById(req.params.id);
 
@@ -313,6 +366,21 @@ router.put('/:id', protect, async (req, res) => {
         
         const { title, summary, content, slug } = req.body;
 
+        // --- 1. HANDLE NEW IMAGE UPLOAD ---
+        if (req.file) {
+            console.log('Uploading new banner image...');
+            
+            // Delete old image if exists
+            if (blog.cloudinaryId) {
+                await cloudinary.uploader.destroy(blog.cloudinaryId);
+            }
+            
+            // Upload new image
+            const result = await streamUpload(req.file.buffer);
+            blog.coverImage = result.secure_url;
+            blog.cloudinaryId = result.public_id;
+        }
+
         // Update fields if they exist in the request body
         if (title) blog.title = title;
         if (summary) blog.summary = summary;
@@ -323,7 +391,6 @@ router.put('/:id', protect, async (req, res) => {
         console.log(`✅ Blog updated in DB: ${updatedBlog.title}`);
 
         // --- START AUTOMATIC INDEXING (Vercel Optimized) ---
-        // We MUST await this so Vercel keeps the function alive
         try {
             console.log(`📡 Notifying Google of update for blog slug: ${updatedBlog.slug}`);
             await indexingService.urlUpdated(updatedBlog.slug, 'blog');
@@ -340,6 +407,7 @@ router.put('/:id', protect, async (req, res) => {
         res.status(500).json({ message: 'Server Error occurred while updating the blog.' });
     }
 });
+
 // @route   PUT /api/blogs/:id/toggle-featured
 // @desc    Toggle a blog's featured status (Admin only)
 router.put('/:id/toggle-featured', protect, admin, async (req, res) => {
@@ -363,8 +431,8 @@ router.put('/:id/toggle-featured', protect, admin, async (req, res) => {
     }
 });
 
-// @route    DELETE /api/blogs/:id
-// @desc     Delete a blog (Owner or Admin)
+// @route   DELETE /api/blogs/:id
+// @desc    Delete a blog (Owner or Admin)
 router.delete('/:id', protect, async (req, res) => {
     try {
         const blog = await Blog.findById(req.params.id);
@@ -376,26 +444,30 @@ router.delete('/:id', protect, async (req, res) => {
             return res.status(401).json({ message: 'Not authorized to delete this blog' });
         }
         
-        // 1. Gamification: Decrement user's blogCount
+        // --- 1. DELETE IMAGE FROM CLOUDINARY ---
+        if (blog.cloudinaryId) {
+            await cloudinary.uploader.destroy(blog.cloudinaryId);
+            console.log(`Deleted Cloudinary banner: ${blog.cloudinaryId}`);
+        }
+
+        // 2. Gamification: Decrement user's blogCount
         await req.user.updateOne({ $inc: { blogCount: -1 } });
         console.log(`📉 Decremented blogCount for user: ${req.user.id}`);
         
-        // 2. ✅ SEO UPDATE: Await Google Indexing Deletion
-        // We do this BEFORE the database deletion to ensure we have the slug context
+        // 3. ✅ SEO UPDATE: Await Google Indexing Deletion
         try {
             console.log(`📡 Notifying Google to remove blog slug: ${blog.slug}`);
             await indexingService.urlDeleted(blog.slug, 'blog');
             console.log(`✅ SEO Success: Google notified of deletion for blog: ${blog.slug}`);
         } catch (seoErr) {
-            // Log the error but continue—don't let an SEO hiccup stop the deletion
             console.error('⚠️ SEO Deletion Error (Blog):', seoErr.message);
         }
 
-        // 3. Final Database Deletion
+        // 4. Final Database Deletion
         await blog.deleteOne();
         console.log(`🏁 Blog ${req.params.id} successfully removed from MongoDB.`);
 
-        // 4. Response
+        // 5. Response
         res.json({ message: 'Blog removed successfully' });
 
     } catch (error) {
@@ -404,5 +476,14 @@ router.delete('/:id', protect, async (req, res) => {
     }
 });
 
+// Global Error Handling Middleware (for Multer)
+router.use((err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    return res.status(400).json({ message: `File upload error: ${err.message}` });
+  } else if (err) {
+    return res.status(500).json({ message: 'An unexpected file upload error occurred.' });
+  }
+  next();
+});
 
 module.exports = router;
