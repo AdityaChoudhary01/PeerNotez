@@ -10,6 +10,7 @@ import RelatedBlogs from '../components/blog/RelatedBlogs';
 import Pagination from '../components/common/Pagination';
 import StarRating from '../components/common/StarRating';
 import AuthorInfoBlock from '../components/common/AuthorInfoBlock';
+import { optimizeCloudinaryUrl } from '../utils/cloudinaryHelper';
 
 // --- INTERNAL CSS: HOLOGRAPHIC BLOG PAGE ---
 const styles = {
@@ -19,7 +20,6 @@ const styles = {
         overflowX: 'hidden',
         minHeight: '80vh'
     },
-    // List View Styles
     header: {
         textAlign: 'center',
         marginBottom: '4rem',
@@ -113,7 +113,6 @@ const styles = {
         gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
         gap: '2rem'
     },
-    // Full Article Styles
     articleContainer: {
         maxWidth: '900px',
         margin: '0 auto',
@@ -138,12 +137,12 @@ const styles = {
         padding: '3rem',
         boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
         marginBottom: '3rem',
-        overflow: 'hidden' // Ensure image respects radius
+        overflow: 'hidden'
     },
-    // NEW: Banner Image Style
     articleBanner: {
         width: '100%',
-        height: '400px',
+        height: 'auto',
+        maxHeight: '500px',
         objectFit: 'cover',
         borderRadius: '16px',
         marginBottom: '2rem',
@@ -258,7 +257,7 @@ const markdownComponents = {
         )
     },
     a: ({node, children, ...props}) => <a style={{color: '#00d4ff', textDecoration: 'underline', textUnderlineOffset: '4px', fontWeight: '500'}} {...props}>{children}</a>,
-    img: ({node, alt, ...props}) => <img alt={alt || 'Blog image'} style={{maxWidth: '100%', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.4)', margin: '2rem 0', border: '1px solid rgba(255,255,255,0.1)'}} {...props} />,
+    img: ({node, alt, ...props}) => <img alt={alt || 'Blog image'} loading="lazy" style={{maxWidth: '100%', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.4)', margin: '2rem 0', border: '1px solid rgba(255,255,255,0.1)'}} {...props} />,
     hr: ({node, ...props}) => <hr style={{border: '0', height: '1px', background: 'linear-gradient(to right, transparent, rgba(255, 255, 255, 0.2), transparent)', margin: '4rem 0'}} {...props} />
 };
 
@@ -268,13 +267,17 @@ const FullBlogContent = ({ blog, onRefetch }) => {
     const authorName = blog.author?.name || 'PeerNotez Contributor';
     const canonicalUrl = `https://peernotez.netlify.app/blogs/${blog.slug}`;
 
+    // Cloudinary Optimizations
+    const optimizedBanner = optimizeCloudinaryUrl(blog.coverImage, { width: 1000, height: 500, crop: 'fill' });
+    const optimizedMiniAvatar = optimizeCloudinaryUrl(blog.author?.avatar, { width: 90, height: 90, isProfile: true });
+
     const articleSchema = {
         "@context": "https://schema.org",
         "@type": "BlogPosting",
         "mainEntityOfPage": { "@type": "WebPage", "@id": canonicalUrl },
         "headline": blog.title,
         "description": blog.summary,
-        "image": blog.coverImage || "https://peernotez.netlify.app/logo512.png", // Use coverImage if available
+        "image": blog.coverImage || "https://peernotez.netlify.app/logo512.png",
         "datePublished": blog.createdAt,
         "dateModified": blog.updatedAt || blog.createdAt,
         "author": { "@type": "Person", "name": authorName },
@@ -286,7 +289,7 @@ const FullBlogContent = ({ blog, onRefetch }) => {
     };
 
     return (
-        <div style={styles.articleContainer} className="blog-article-wrapper">
+        <main style={styles.articleContainer} className="blog-article-wrapper">
             <Helmet>
                 <title>{`${blog?.title ? `${blog.title} | PeerNotez Blog` : 'Blog Post | PeerNotez'}`}</title> 
                 <meta name="description" content={blog.summary} />
@@ -294,16 +297,15 @@ const FullBlogContent = ({ blog, onRefetch }) => {
                 <script type="application/ld+json">{JSON.stringify(articleSchema)}</script>
             </Helmet>
             
-            <Link to="/blogs" style={styles.backLink} onMouseEnter={(e) => e.target.style.color = '#fff'} onMouseLeave={(e) => e.target.style.color = 'rgba(255,255,255,0.7)'}>
-                <FaArrowLeft /> Back to All Blogs
+            <Link to="/blogs" style={styles.backLink} onMouseEnter={(e) => e.currentTarget.style.color = '#fff'} onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255,255,255,0.7)'}>
+                <FaArrowLeft aria-hidden="true" /> Back to All Blogs
             </Link>
 
             <article style={styles.articleCard} className="blog-article-card">
-                {/* --- 🚀 NEW: BANNER IMAGE DISPLAY --- */}
                 {blog.coverImage && (
                     <img 
-                        src={blog.coverImage} 
-                        alt={blog.title} 
+                        src={optimizedBanner} 
+                        alt={`Banner for ${blog.title}`} 
                         style={styles.articleBanner} 
                     />
                 )}
@@ -317,8 +319,9 @@ const FullBlogContent = ({ blog, onRefetch }) => {
                 <div style={styles.articleMeta} className="blog-article-meta">
                     <div style={styles.authorRow}>
                         <img 
-                            src={blog.author?.avatar || 'https://via.placeholder.com/44'} 
-                            alt={`Avatar of ${authorName}`} 
+                            src={optimizedMiniAvatar || 'https://via.placeholder.com/44'} 
+                            alt={`${authorName}'s avatar`} 
+                            loading="lazy"
                             style={styles.miniAvatar}
                         />
                         <span>By <strong>{authorName}</strong></span>
@@ -337,23 +340,23 @@ const FullBlogContent = ({ blog, onRefetch }) => {
                 </div>
             </article>
 
-            <section style={styles.secondarySection}>
-                <h2 style={{color: '#fff', marginBottom: '1.5rem', fontSize: '1.5rem'}}>Continue Your Learning Journey</h2>
+            <section style={styles.secondarySection} aria-labelledby="learning-journey-title">
+                <h2 id="learning-journey-title" style={{color: '#fff', marginBottom: '1.5rem', fontSize: '1.5rem'}}>Continue Your Learning Journey</h2>
                 <div style={{display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center'}}>
-                    <Link to="/search" style={styles.ctaBtn} onMouseEnter={(e) => e.target.style.transform = 'translateY(-3px)'} onMouseLeave={(e) => e.target.style.transform = 'translateY(0)'}>
-                        <FaSearch /> Find More Notes
+                    <Link to="/search" style={styles.ctaBtn} onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-3px)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
+                        <FaSearch aria-hidden="true" /> Find More Notes
                     </Link>
-                    <Link to="/blogs/post" style={{...styles.ctaBtn, background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)'}} onMouseEnter={(e) => e.target.style.transform = 'translateY(-3px)'} onMouseLeave={(e) => e.target.style.transform = 'translateY(0)'}>
-                        <FaPenNib /> Write Your Own Blog
+                    <Link to="/blogs/post" style={{...styles.ctaBtn, background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)'}} onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-3px)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
+                        <FaPenNib aria-hidden="true" /> Write Your Own Blog
                     </Link>
                 </div>
             </section>
 
             <RelatedBlogs currentBlogId={blog._id} />
 
-            <div style={{marginTop: '1rem'}}>
+            <section style={{marginTop: '1rem'}} aria-label="Blog reviews and discussion">
                 <BlogReviews blogId={blog._id} reviews={blog.reviews || []} onReviewAdded={onRefetch} />
-            </div>
+            </section>
 
             <style>{`
                 @media (max-width: 768px) {
@@ -362,7 +365,7 @@ const FullBlogContent = ({ blog, onRefetch }) => {
                         padding-right: 1rem;
                     }
                     .blog-article-card {
-                        padding: 1.5rem !important; /* Reduced from 3rem */
+                        padding: 1.5rem !important;
                         border-radius: 16px !important;
                     }
                     .blog-article-meta {
@@ -372,7 +375,7 @@ const FullBlogContent = ({ blog, onRefetch }) => {
                     }
                 }
             `}</style>
-        </div>
+        </main>
     );
 };
 
@@ -438,15 +441,14 @@ const BlogPage = () => {
     if (slug) {
         if (loadingSingle || !singleBlog) {
              return (
-                <div style={{textAlign: 'center', padding: '5rem', color: 'rgba(255,255,255,0.7)', fontSize: '1.2rem'}}>
-                    <FaSpinner className="fa-spin" style={{marginRight: '10px'}} /> Loading...
+                <div style={{textAlign: 'center', padding: '5rem', color: 'rgba(255,255,255,0.7)', fontSize: '1.2rem'}} aria-live="polite">
+                    <FaSpinner className="fa-spin" style={{marginRight: '10px'}} aria-hidden="true" /> Loading article...
                 </div>
             );
         }
         return <FullBlogContent blog={singleBlog} onRefetch={handleRefetch} />;
     }
 
-    // List View Render
     return (
         <div style={styles.wrapper}>
             <Helmet>
@@ -456,23 +458,24 @@ const BlogPage = () => {
             </Helmet>
 
             <header style={styles.header} className="blog-list-header">
-                <h1 style={styles.title}><FaFeatherAlt /> The PeerNotez Blog</h1>
+                <h1 style={styles.title}><FaFeatherAlt aria-hidden="true" /> The PeerNotez Blog</h1>
                 <p style={styles.subtitle}>Deep dive into study hacks, developer insights, and community stories.</p>
-                <Link to="/blogs/post" style={styles.ctaBtn} onMouseEnter={(e) => e.target.style.transform = 'translateY(-3px)'} onMouseLeave={(e) => e.target.style.transform = 'translateY(0)'}>
-                    <FaPenNib /> Write a New Post
+                <Link to="/blogs/post" style={styles.ctaBtn} onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-3px)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
+                    <FaPenNib aria-hidden="true" /> Write a New Post
                 </Link>
             </header>
 
-            <section style={styles.controls} className="blog-list-controls">
+            <section style={styles.controls} className="blog-list-controls" aria-label="Search and filter blogs">
                 <form onSubmit={handleSearchSubmit} style={styles.searchForm} className="blog-search-form">
                     <input
                         type="text"
                         placeholder="Search articles..."
+                        aria-label="Search blog articles"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         style={styles.searchInput}
                     />
-                    <button type="submit" style={styles.searchBtn}><FaSearch /></button>
+                    <button type="submit" style={styles.searchBtn} aria-label="Perform search"><FaSearch /></button>
                 </form>
 
                 <div style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
@@ -493,9 +496,9 @@ const BlogPage = () => {
                 </div>
             </section>
 
-            <section>
+            <main>
                 {loading ? (
-                    <div style={{textAlign: 'center', padding: '2rem', color: 'rgba(255,255,255,0.7)'}}>Loading blog posts...</div>
+                    <div style={{textAlign: 'center', padding: '2rem', color: 'rgba(255,255,255,0.7)'}} aria-live="polite">Loading blog posts...</div>
                 ) : blogs.length > 0 ? (
                     <>
                         <div style={styles.grid}>
@@ -510,7 +513,7 @@ const BlogPage = () => {
                 ) : (
                     <p style={{textAlign: 'center', marginTop: '2rem', color: 'rgba(255,255,255,0.5)'}}>No blog posts found matching your criteria.</p>
                 )}
-            </section>
+            </main>
 
             <style>{`
                 @media (max-width: 768px) {
