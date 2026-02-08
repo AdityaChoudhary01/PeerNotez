@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { FaEye, FaCalendarAlt, FaEdit, FaTrash, FaArrowRight, FaImage } from 'react-icons/fa';
 import StarRating from '../common/StarRating';
+import { optimizeCloudinaryUrl } from '../../utils/cloudinaryHelper';
 
 const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () => {} }) => {
     
@@ -45,7 +46,6 @@ const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () 
             borderColor: 'rgba(0, 212, 255, 0.3)',
             boxShadow: '0 10px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0, 212, 255, 0.1)'
         },
-        // NEW: Banner Image Styles
         bannerContainer: {
             width: '100%',
             height: '180px',
@@ -175,7 +175,6 @@ const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () 
             style={styles.card}
             onMouseEnter={(e) => {
                 Object.assign(e.currentTarget.style, styles.cardHover);
-                // Subtle zoom effect on banner image if it exists
                 const img = e.currentTarget.querySelector('img.banner-img');
                 if(img) img.style.transform = 'scale(1.05)';
             }}
@@ -187,12 +186,12 @@ const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () 
                 if(img) img.style.transform = 'scale(1)';
             }}
         >
-            {/* --- NEW: Banner Image Section --- */}
             <Link to={`/blogs/${blog.slug}`} style={styles.bannerContainer}>
                 {blog.coverImage ? (
                     <img 
-                        src={blog.coverImage} 
+                        src={optimizeCloudinaryUrl(blog.coverImage, { width: 600, height: 338 })} 
                         alt={blog.title} 
+                        loading="lazy"
                         style={styles.bannerImage} 
                         className="banner-img"
                     />
@@ -221,8 +220,9 @@ const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () 
                 <div style={styles.metaList}>
                     <div style={styles.authorDetails}>
                         <img 
-                            src={blog.author?.avatar || 'https://via.placeholder.com/40'} 
+                            src={optimizeCloudinaryUrl(blog.author?.avatar || 'https://via.placeholder.com/40', { width: 80, height: 80, crop: 'thumb', isProfile: true })} 
                             alt={`Avatar of ${blog.author?.name}`} 
+                            loading="lazy"
                             style={styles.authorAvatar}
                         />
                         <div>
@@ -252,6 +252,7 @@ const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () 
                         <button 
                             style={{...styles.btn, ...styles.editBtn}} 
                             onClick={() => onEdit(blog)}
+                            aria-label="Edit blog"
                             onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(0, 212, 255, 0.2)'}
                             onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(0, 212, 255, 0.1)'}
                         >
@@ -260,6 +261,7 @@ const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () 
                         <button 
                             style={{...styles.btn, ...styles.deleteBtn}} 
                             onClick={() => onDelete(blog._id)}
+                            aria-label="Delete blog"
                             onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 0, 85, 0.2)'}
                             onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255, 0, 85, 0.1)'}
                         >
