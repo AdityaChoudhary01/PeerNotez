@@ -4,6 +4,7 @@ import axios from 'axios';
 import useAuth from '../../hooks/useAuth';
 import StarRating from '../common/StarRating';
 import { FaDownload, FaEye, FaHeart, FaRegHeart, FaEdit, FaTrash } from 'react-icons/fa';
+import { optimizeCloudinaryUrl } from '../../utils/cloudinaryHelper';
 
 const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () => {} }) => {
     const { user, token, saveNote, unsaveNote } = useAuth();
@@ -115,15 +116,19 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
     let thumbnailUrl = '/images/icons/document-icon.png';
     const fileType = note.fileType || '';
 
-    // Priority 1: Cloudinary
+    // Optimized Cloudinary Logic
     if (note.cloudinaryId) {
+        const baseUrl = `https://res.cloudinary.com/${cloudName}/image/upload/${note.cloudinaryId}.jpg`;
+        
         if (fileType.startsWith('image/')) {
-            thumbnailUrl = `https://res.cloudinary.com/${cloudName}/image/upload/w_400,h_300,c_fill,f_auto,q_auto/${note.cloudinaryId}.jpg`;
+            // Optimize image thumbnails
+            thumbnailUrl = optimizeCloudinaryUrl(baseUrl, { width: 400, height: 300 });
         } else if (fileType === 'application/pdf') {
-            thumbnailUrl = `https://res.cloudinary.com/${cloudName}/image/upload/w_400,h_300,c_pad,pg_1,f_jpg,q_auto/${note.cloudinaryId}.jpg`;
+            // Generate optimized PDF preview of page 1
+            thumbnailUrl = optimizeCloudinaryUrl(baseUrl, { width: 400, height: 300, pg: 1, crop: 'pad' });
         }
     } 
-    // Priority 2: Static Icons
+    // Static Fallback Icons
     else if (fileType.includes('msword') || fileType.includes('wordprocessingml')) {
         thumbnailUrl = '/images/icons/word-icon.png';
     } else if (fileType.includes('ms-excel') || fileType.includes('spreadsheetml')) {
@@ -172,8 +177,9 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
                     <img 
                         src={thumbnailUrl} 
                         alt={note.title} 
+                        loading="lazy"
                         style={isHovered ? {...styles.thumbnail, ...styles.thumbnailHover} : styles.thumbnail}
-                        // Use generic icon styling if no Cloudinary ID
+                        // Apply specific styling if using a static icon vs an image preview
                         css={!note.cloudinaryId ? { objectFit: 'contain', padding: '20%' } : {}}
                     />
                     {isHovered && (
@@ -209,12 +215,14 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
                          <button 
                             onClick={(e) => { e.preventDefault(); onEdit(note); }}
                             style={{...styles.actionBtn, color: '#00d4ff', background: 'rgba(0,212,255,0.1)'}}
+                            aria-label="Edit note"
                          >
                              <FaEdit /> Edit
                          </button>
                          <button 
                             onClick={(e) => { e.preventDefault(); onDelete(note._id); }}
                             style={{...styles.actionBtn, color: '#ff0055', background: 'rgba(255,0,85,0.1)'}}
+                            aria-label="Delete note"
                          >
                              <FaTrash /> Delete
                          </button>
@@ -226,6 +234,7 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
                         onClick={handleSaveToggle} 
                         style={styles.actionBtn}
                         title={isSaved ? "Unsave" : "Save"}
+                        aria-label={isSaved ? "Unsave note" : "Save note"}
                     >
                         {isSaved ? <FaHeart style={styles.heartIcon} /> : <FaRegHeart />}
                     </button>
@@ -234,6 +243,7 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
                         onClick={handleDownload} 
                         style={styles.actionBtn}
                         title="Download"
+                        aria-label="Download note"
                     >
                         <FaDownload />
                     </button>
