@@ -57,22 +57,20 @@ const updateBlogReviewStats = (blog) => {
 // 1. PUBLIC ROUTES (LISTING, SINGLE VIEW, REVIEWS)
 // ==========================================================
 
-// FIX 2: Internal Linking (Topic Clusters) - NEW ENDPOINT
 // @route   GET /api/blogs/related/:id
-// @desc    Get related blog posts (Read Next)
 router.get('/related/:id', async (req, res) => {
     try {
         const currentBlog = await Blog.findById(req.params.id);
         if (!currentBlog) return res.status(404).json({ message: 'Blog not found' });
 
-        // Find other blogs, excluding the current one.
         const relatedBlogs = await Blog.find({
             _id: { $ne: currentBlog._id } 
         })
-        .select('title summary slug createdAt author rating numReviews isFeatured coverImage') 
+        // ADD 'downloadCount' TO THE SELECT LIST BELOW
+        .select('title summary slug createdAt author rating numReviews isFeatured coverImage downloadCount') 
         .populate('author', 'name avatar')
         .sort({ createdAt: -1 }) 
-        .limit(3); // Limit to 3 suggestions
+        .limit(3);
 
         res.json(relatedBlogs);
     } catch (error) {
