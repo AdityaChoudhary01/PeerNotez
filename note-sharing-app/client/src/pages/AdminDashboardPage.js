@@ -4,7 +4,7 @@ import useAuth from '../hooks/useAuth';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import Pagination from '../components/common/Pagination';
-import { FaFeatherAlt, FaUsers, FaFileAlt, FaTools, FaTrash, FaUserShield, FaStar, FaEye, FaExclamationTriangle } from 'react-icons/fa';
+import { FaFeatherAlt, FaUsers, FaFileAlt, FaTools, FaTrash, FaUserShield, FaStar, FaEye, FaExclamationTriangle, FaImage } from 'react-icons/fa';
 
 const AdminDashboardPage = () => {
     const [users, setUsers] = useState([]);
@@ -126,6 +126,19 @@ const AdminDashboardPage = () => {
             objectFit: 'cover',
             borderRadius: '8px',
             marginRight: '1rem',
+            border: '1px solid rgba(255, 255, 255, 0.1)'
+        },
+        // NEW: Placeholder for blogs without images
+        placeholderThumb: {
+            width: '80px',
+            height: '60px',
+            borderRadius: '8px',
+            marginRight: '1rem',
+            background: 'rgba(255,255,255,0.05)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'rgba(255,255,255,0.3)',
             border: '1px solid rgba(255, 255, 255, 0.1)'
         },
         actions: {
@@ -332,7 +345,15 @@ const AdminDashboardPage = () => {
         return (
             <div key={blog._id} style={styles.listItem}>
                 <div style={{display: 'flex', alignItems: 'center'}}>
-                    <img src={blog.author?.avatar || 'https://via.placeholder.com/50'} alt="Avatar" style={styles.avatar} />
+                    {/* --- 🚀 NEW: BANNER IMAGE DISPLAY --- */}
+                    {blog.coverImage ? (
+                        <img src={blog.coverImage} alt="Banner" style={styles.thumbnail} />
+                    ) : (
+                        <div style={styles.placeholderThumb}>
+                            <FaImage size={24} />
+                        </div>
+                    )}
+                    
                     <div style={styles.itemInfo}>
                         <strong style={styles.itemTitle}>{blog.title}</strong>
                         <span style={styles.itemMeta}>By: {blog.author?.name || 'Unknown'}</span>
