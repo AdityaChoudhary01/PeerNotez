@@ -9,6 +9,7 @@ import {
 import NoteCard from '../components/notes/NoteCard';
 import BlogCard from '../components/blog/BlogCard';
 import useAuth from '../hooks/useAuth';
+import { optimizeCloudinaryUrl } from '../utils/cloudinaryHelper';
 
 const PublicProfilePage = () => {
     const { userId } = useParams();
@@ -84,12 +85,10 @@ const PublicProfilePage = () => {
         }
     };
 
-    // --- Fetch and Show Followers/Following List ---
     const openUserList = async (type) => {
         setModalConfig({ isOpen: true, type, data: [] });
         setModalLoading(true);
         try {
-            // Adjust endpoint if your backend uses a different path for populated lists
             const { data } = await axios.get(`/users/${userId}/${type}`);
             setModalConfig(prev => ({ ...prev, data: data.users || [] }));
         } catch (err) {
@@ -104,13 +103,12 @@ const PublicProfilePage = () => {
 
     const isOwnProfile = currentUser?._id === profile._id;
 
-    // --- SEO ENHANCEMENT: META STRINGS ---
+    // --- SEO ENHANCEMENT ---
     const seoTitle = `${profile.name} | Student Profile at PeerNotez`;
     const seoDescription = `View ${profile.name}'s academic contributions on PeerNotez. Exploring ${notes.length} notes and ${blogs.length} blogs from ${profile.university || 'their university'}.`;
     const profileUrl = `https://peernotez.netlify.app/profile/${userId}`;
-    const profileImage = profile.avatar || `https://peernotez.netlify.app/logo192.png`;
+    const profileImage = optimizeCloudinaryUrl(profile.avatar, { width: 400, height: 400, isProfile: true });
 
-    // --- SEO ENHANCEMENT: JSON-LD SCHEMA ---
     const schemaData = {
         "@context": "https://schema.org",
         "@type": "Person",
@@ -132,41 +130,23 @@ const PublicProfilePage = () => {
     };
 
     return (
-        <div className="profile-container">
+        <main className="profile-container">
             <Helmet>
                 <title>{seoTitle}</title>
                 <meta name="description" content={seoDescription} />
                 <link rel="canonical" href={profileUrl} />
-                
-                {/* Open Graph / Facebook */}
-                <meta property="og:type" content="profile" />
-                <meta property="og:title" content={seoTitle} />
-                <meta property="og:description" content={seoDescription} />
-                <meta property="og:image" content={profileImage} />
-                <meta property="og:url" content={profileUrl} />
-                
-                {/* Twitter */}
-                <meta name="twitter:card" content="summary" />
-                <meta name="twitter:title" content={seoTitle} />
-                <meta name="twitter:description" content={seoDescription} />
-                <meta name="twitter:image" content={profileImage} />
-
-                {/* Structured Data */}
-                <script type="application/ld+json">
-                    {JSON.stringify(schemaData)}
-                </script>
+                <script type="application/ld+json">{JSON.stringify(schemaData)}</script>
             </Helmet>
 
-            <div className="profile-header-card">
+            <header className="profile-header-card">
                 <div className="gradient-overlay"></div>
-                
                 <div className="header-flex">
                     <div className="avatar-section">
-                        <img 
-                            src={profile.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${profile.name}&backgroundColor=00d4ff`} 
-                            alt={profile.name} 
-                            className="main-avatar"
-                        />
+                    <img 
+    src={profileImage || `https://api.dicebear.com/7.x/initials/svg?seed=${profile.name}&backgroundColor=00d4ff`} 
+    alt={profile.name} // <--- Better: Screen reader says "Image, Aditya Choudhary"
+    className="main-avatar"
+/>
                     </div>
 
                     <div className="info-section">
@@ -181,6 +161,7 @@ const PublicProfilePage = () => {
                                     onClick={handleFollowToggle} 
                                     disabled={followLoading}
                                     className={`follow-btn ${isFollowing ? 'following' : ''}`}
+                                    aria-label={isFollowing ? `Unfollow ${profile.name}` : `Follow ${profile.name}`}
                                 >
                                     {followLoading ? '...' : (isFollowing ? <><FaUserCheck /> Following</> : <><FaUserPlus /> Follow</>)}
                                 </button>
@@ -188,9 +169,9 @@ const PublicProfilePage = () => {
                         </div>
 
                         <div className="meta-list">
-                            {profile.university && <span><FaUniversity /> {profile.university}</span>}
-                            {profile.location && <span><FaMapMarkerAlt /> {profile.location}</span>}
-                            <span><FaCalendarAlt /> Joined {new Date(profile.createdAt).toLocaleDateString()}</span>
+                            {profile.university && <span><FaUniversity aria-hidden="true" /> {profile.university}</span>}
+                            {profile.location && <span><FaMapMarkerAlt aria-hidden="true" /> {profile.location}</span>}
+                            <span><FaCalendarAlt aria-hidden="true" /> Joined {new Date(profile.createdAt).toLocaleDateString()}</span>
                         </div>
 
                         {profile.bio && <p className="bio-text">{profile.bio}</p>}
@@ -198,29 +179,37 @@ const PublicProfilePage = () => {
                         <div className="stats-grid">
                             <div className="stat"><span className="val">{notes.length}</span><span className="lab">Notes</span></div>
                             <div className="stat"><span className="val">{blogs.length}</span><span className="lab">Blogs</span></div>
-                            
-                            {/* CLICKABLE FOLLOWERS */}
-                            <div className="stat clickable" onClick={() => openUserList('followers')}>
+                            <div className="stat clickable" onClick={() => openUserList('followers')} role="button" aria-label={`View ${profile.followersCount || 0} followers`}>
                                 <span className="val">{profile.followersCount || 0}</span>
                                 <span className="lab">Followers</span>
                             </div>
-                            
-                            {/* CLICKABLE FOLLOWING */}
-                            <div className="stat clickable" onClick={() => openUserList('following')}>
+                            <div className="stat clickable" onClick={() => openUserList('following')} role="button" aria-label={`View ${profile.followingCount || 0} following`}>
                                 <span className="val">{profile.followingCount || 0}</span>
                                 <span className="lab">Following</span>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </header>
 
-            <div className="tab-bar">
-                <button onClick={() => setActiveTab('notes')} className={`tab-btn ${activeTab === 'notes' ? 'active' : ''}`}><FaBook /> Notes</button>
-                <button onClick={() => setActiveTab('blogs')} className={`tab-btn ${activeTab === 'blogs' ? 'active' : ''}`}><FaRss /> Blogs</button>
-            </div>
+            <nav className="tab-bar" aria-label="Profile tabs">
+                <button 
+                    onClick={() => setActiveTab('notes')} 
+                    className={`tab-btn ${activeTab === 'notes' ? 'active' : ''}`}
+                    aria-current={activeTab === 'notes' ? 'page' : undefined}
+                >
+                    <FaBook aria-hidden="true" /> Notes
+                </button>
+                <button 
+                    onClick={() => setActiveTab('blogs')} 
+                    className={`tab-btn ${activeTab === 'blogs' ? 'active' : ''}`}
+                    aria-current={activeTab === 'blogs' ? 'page' : undefined}
+                >
+                    <FaRss aria-hidden="true" /> Blogs
+                </button>
+            </nav>
 
-            <div className="content-grid">
+            <section className="content-grid" aria-live="polite">
                 {activeTab === 'notes' ? (
                     notes.length > 0 ? notes.map(note => <NoteCard key={note._id} note={note} />) : 
                     <div className="empty-notice">No notes available.</div>
@@ -228,23 +217,27 @@ const PublicProfilePage = () => {
                     blogs.length > 0 ? blogs.map(blog => <BlogCard key={blog._id} blog={blog} />) : 
                     <div className="empty-notice">No blog posts available.</div>
                 )}
-            </div>
+            </section>
 
             {/* --- LIST MODAL --- */}
             {modalConfig.isOpen && (
                 <div className="modal-overlay" onClick={() => setModalConfig({ ...modalConfig, isOpen: false })}>
-                    <div className="user-list-modal" onClick={e => e.stopPropagation()}>
+                    <div className="user-list-modal" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="modal-title">
                         <div className="modal-header">
-                            <h3>{modalConfig.type.charAt(0).toUpperCase() + modalConfig.type.slice(1)}</h3>
-                            <button className="close-btn" onClick={() => setModalConfig({ ...modalConfig, isOpen: false })}><FaTimes /></button>
+                            <h3 id="modal-title">{modalConfig.type.charAt(0).toUpperCase() + modalConfig.type.slice(1)}</h3>
+                            <button className="close-btn" onClick={() => setModalConfig({ ...modalConfig, isOpen: false })} aria-label="Close modal"><FaTimes /></button>
                         </div>
                         <div className="modal-body">
                             {modalLoading ? (
-                                <div className="modal-loader"><FaSpinner className="fa-spin" /></div>
+                                <div className="modal-loader"><FaSpinner className="fa-spin" aria-hidden="true" /></div>
                             ) : modalConfig.data.length > 0 ? (
                                 modalConfig.data.map(u => (
                                     <Link to={`/profile/${u._id}`} key={u._id} className="user-item" onClick={() => setModalConfig({ ...modalConfig, isOpen: false })}>
-                                        <img src={u.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${u.name}`} alt={u.name} />
+                                        <img 
+                                            src={optimizeCloudinaryUrl(u.avatar, { width: 80, height: 80, isProfile: true }) || `https://api.dicebear.com/7.x/initials/svg?seed=${u.name}`} 
+                                            alt={u.name} 
+                                            loading="lazy"
+                                        />
                                         <span>{u.name}</span>
                                     </Link>
                                 ))
@@ -287,7 +280,6 @@ const PublicProfilePage = () => {
                 .content-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2rem; }
                 .empty-notice { grid-column: 1/-1; text-align: center; padding: 5rem; color: rgba(255,255,255,0.3); border: 2px dashed rgba(255,255,255,0.05); border-radius: 30px; }
 
-                /* Modal Styles */
                 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(5px); }
                 .user-list-modal { background: #121220; border: 1px solid rgba(255,255,255,0.1); width: 90%; max-width: 400px; border-radius: 24px; overflow: hidden; animation: slideUp 0.3s ease-out; }
                 @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
@@ -315,7 +307,7 @@ const PublicProfilePage = () => {
                     .main-avatar { width: 120px; height: 120px; }
                 }
             `}</style>
-        </div>
+        </main>
     );
 };
 
