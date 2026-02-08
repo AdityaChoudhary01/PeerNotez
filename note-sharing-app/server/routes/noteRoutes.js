@@ -568,13 +568,18 @@ router.put('/:id', protect, async (req, res) => {
       return res.status(401).json({ message: 'Not authorized to update this note' });
     }
 
-    const { title, university, course, subject, year } = req.body;
+    // 1. ADD 'description' TO DESTRUCTURING
+    const { title, university, course, subject, year, description } = req.body;
+    
     const updateFields = {};
     if (title !== undefined) updateFields.title = title;
     if (university !== undefined) updateFields.university = university;
     if (course !== undefined) updateFields.course = course;
     if (subject !== undefined) updateFields.subject = subject;
     if (year !== undefined) updateFields.year = year;
+    
+    // 2. ADD 'description' TO UPDATE FIELDS
+    if (description !== undefined) updateFields.description = description;
 
     const updatedNote = await Note.findByIdAndUpdate(
       req.params.id, 
@@ -585,7 +590,6 @@ router.put('/:id', protect, async (req, res) => {
     console.log(`✅ Note ${updatedNote._id} updated in Database.`);
 
     // --- START AUTOMATIC INDEXING (Vercel Optimized) ---
-    // We MUST await this so Vercel keeps the function alive to finish the Google API call
     try {
       await indexingService.urlUpdated(updatedNote._id.toString(), 'note');
       console.log(`✅ SEO Success: Google notified of update for note: ${updatedNote._id}`);
