@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import { FaUserPlus, FaUserCheck, FaCrown, FaUserEdit } from 'react-icons/fa'; 
+import { FaUserPlus, FaUserCheck, FaCrown, FaInfoCircle } from 'react-icons/fa'; 
 import useAuth from '../../hooks/useAuth'; 
 
 const AuthorInfoBlock = ({ author }) => {
@@ -44,7 +44,7 @@ const AuthorInfoBlock = ({ author }) => {
             width: '200px',
             height: '200px',
             background: isOwner 
-                ? 'radial-gradient(circle, rgba(99, 102, 241, 0.15), transparent 70%)' // Indigo glow for owner
+                ? 'radial-gradient(circle, rgba(99, 102, 241, 0.15), transparent 70%)' 
                 : 'radial-gradient(circle, rgba(0, 212, 255, 0.15), transparent 70%)',
             pointerEvents: 'none'
         },
@@ -56,9 +56,6 @@ const AuthorInfoBlock = ({ author }) => {
             zIndex: 1,
             cursor: 'pointer'
         },
-        avatarWrapper: {
-            position: 'relative'
-        },
         avatar: {
             width: '60px',
             height: '60px',
@@ -66,10 +63,6 @@ const AuthorInfoBlock = ({ author }) => {
             border: isOwner ? '2px solid #6366f1' : '2px solid rgba(0, 212, 255, 0.6)',
             objectFit: 'cover',
             boxShadow: isOwner ? '0 0 15px rgba(99, 102, 241, 0.3)' : '0 0 15px rgba(0, 212, 255, 0.3)'
-        },
-        details: {
-            display: 'flex',
-            flexDirection: 'column'
         },
         name: {
             fontSize: '1.1rem',
@@ -95,23 +88,25 @@ const AuthorInfoBlock = ({ author }) => {
             display: 'inline-flex',
             alignItems: 'center',
             gap: '4px',
-            marginLeft: '8px',
-            boxShadow: '0 0 10px rgba(255, 215, 0, 0.4)'
-        },
-        ownerBadge: {
-            fontSize: '0.7rem',
-            background: 'rgba(99, 102, 241, 0.2)',
-            color: '#818cf8',
-            padding: '2px 8px',
-            borderRadius: '10px',
-            border: '1px solid rgba(99, 102, 241, 0.3)',
-            fontWeight: '600'
+            marginLeft: '8px'
         },
         btnWrapper: {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'flex-end',
             zIndex: 2
+        },
+        authorStatus: {
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            color: 'rgba(255, 255, 255, 0.7)',
+            fontSize: '0.9rem',
+            fontWeight: '600',
+            background: 'rgba(255, 255, 255, 0.08)',
+            padding: '8px 16px',
+            borderRadius: '50px',
+            border: '1px solid rgba(255, 255, 255, 0.1)'
         },
         btn: {
             padding: '10px 20px',
@@ -123,28 +118,16 @@ const AuthorInfoBlock = ({ author }) => {
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
-            transition: 'all 0.3s ease',
-            zIndex: 1
+            transition: 'all 0.3s ease'
         },
         followBtn: {
             background: 'linear-gradient(135deg, #00d4ff 0%, #333399 100%)',
-            color: '#fff',
-            boxShadow: '0 4px 15px rgba(0, 212, 255, 0.3)'
+            color: '#fff'
         },
         followingBtn: {
             background: 'rgba(255, 255, 255, 0.1)',
             border: '1px solid rgba(255, 255, 255, 0.2)',
             color: '#fff'
-        },
-        editBtn: {
-            background: 'rgba(255, 255, 255, 0.08)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            color: '#fff'
-        },
-        loginText: {
-            fontSize: '0.8rem',
-            color: 'rgba(255, 255, 255, 0.5)',
-            marginTop: '5px'
         }
     };
 
@@ -153,26 +136,21 @@ const AuthorInfoBlock = ({ author }) => {
             alert('Please log in to follow authors.');
             return;
         }
-        
         setLoading(true);
         try {
             const config = { headers: { Authorization: `Bearer ${token}` } };
             const { data } = await axios.put(`/users/${author._id}/follow`, {}, config); 
-            
             setIsFollowing(data.isFollowing); 
-            
             if(data.userFollowing && updateUser) {
                 updateUser({ following: data.userFollowing }); 
             }
         } catch (error) {
-            console.error(error);
             alert(error.response?.data?.message || 'Failed to update follow status.');
         } finally {
             setLoading(false);
         }
     };
     
-    // Safety check - still return null if author data is missing
     if (!author) return null;
 
     return (
@@ -184,22 +162,18 @@ const AuthorInfoBlock = ({ author }) => {
         >
             <div style={styles.glow}></div>
 
-            <Link to={isOwner ? `/profile` : `/profile/${author._id}`} style={styles.link} className="author-link-wrapper">
-                <div style={styles.avatarWrapper}>
-                    <img 
-                        src={author.avatar || 'https://via.placeholder.com/60'} 
-                        alt={`Avatar of ${author.name}`} 
-                        style={styles.avatar}
-                    />
-                </div>
-                <div style={styles.details}>
+            {/* Clicking on name or avatar sends the user to their own profile if isOwner, else public profile */}
+            <Link to={isOwner ? `/profile/${author._id}` : `/profile/${author._id}`} style={styles.link} className="author-link-wrapper">
+                <img 
+                    src={author.avatar || 'https://via.placeholder.com/60'} 
+                    alt={`Avatar of ${author.name}`} 
+                    style={styles.avatar}
+                />
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <div style={styles.name}>
                         {author.name}
-                        {isOwner && <span style={styles.ownerBadge}>You</span>}
                         {author.noteCount >= 50 && (
-                            <span style={styles.badge} title="Power Uploader">
-                                <FaCrown /> Elite
-                            </span>
+                            <span style={styles.badge}><FaCrown /> Elite</span>
                         )}
                     </div>
                     <span style={styles.stats}>
@@ -213,14 +187,11 @@ const AuthorInfoBlock = ({ author }) => {
             
             <div style={styles.btnWrapper} className="author-action-wrapper">
                 {isOwner ? (
-                    // Show "Edit Profile" or just a label if it's the owner
-                    <Link to="/profile" style={{ textDecoration: 'none' }}>
-                        <button style={{...styles.btn, ...styles.editBtn}}>
-                            <FaUserEdit /> Edit Profile
-                        </button>
-                    </Link>
+                    /* Display Status Badge for Author instead of Action Button */
+                    <div style={styles.authorStatus}>
+                        <FaInfoCircle /> You are the Author
+                    </div>
                 ) : (
-                    // Show Follow button for others
                     <>
                         <button 
                             onClick={handleFollowToggle} 
@@ -231,30 +202,16 @@ const AuthorInfoBlock = ({ author }) => {
                                 isFollowing ? <><FaUserCheck /> Following</> : <><FaUserPlus /> Follow</>
                             )}
                         </button>
-                        {!user && <span style={styles.loginText}>Log in to follow</span>}
+                        {!user && <span style={{fontSize: '0.8rem', color: 'rgba(255, 255, 255, 0.5)', marginTop: '5px'}}>Log in to follow</span>}
                     </>
                 )}
             </div>
 
             <style>{`
                 @media (max-width: 600px) {
-                    .author-info-card {
-                        flex-direction: column;
-                        align-items: flex-start !important;
-                        gap: 1rem;
-                        padding: 1rem !important;
-                    }
-                    .author-link-wrapper {
-                        width: 100%;
-                    }
-                    .author-action-wrapper {
-                        width: 100%;
-                        align-items: stretch !important;
-                        margin-top: 0.5rem;
-                    }
-                    .author-action-wrapper button {
-                        justify-content: center;
-                    }
+                    .author-info-card { flex-direction: column; align-items: flex-start !important; gap: 1rem; padding: 1rem !important; }
+                    .author-link-wrapper, .author-action-wrapper { width: 100%; }
+                    .author-action-wrapper { align-items: stretch !important; margin-top: 0.5rem; }
                 }
             `}</style>
         </div>
