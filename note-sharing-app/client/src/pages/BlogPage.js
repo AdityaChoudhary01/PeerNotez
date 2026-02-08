@@ -31,7 +31,7 @@ const styles = {
         boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
     },
     title: {
-        fontSize: 'clamp(2rem, 5vw, 4rem)', // Adjusted clamp for better mobile scaling
+        fontSize: 'clamp(2rem, 5vw, 4rem)', 
         fontWeight: '800',
         background: 'linear-gradient(to right, #00d4ff, #ff00cc)',
         WebkitBackgroundClip: 'text',
@@ -137,7 +137,18 @@ const styles = {
         borderRadius: '24px',
         padding: '3rem',
         boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-        marginBottom: '3rem'
+        marginBottom: '3rem',
+        overflow: 'hidden' // Ensure image respects radius
+    },
+    // NEW: Banner Image Style
+    articleBanner: {
+        width: '100%',
+        height: '400px',
+        objectFit: 'cover',
+        borderRadius: '16px',
+        marginBottom: '2rem',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        boxShadow: '0 10px 30px rgba(0,0,0,0.3)'
     },
     articleTitle: {
         fontSize: 'clamp(2rem, 5vw, 3.5rem)',
@@ -148,7 +159,6 @@ const styles = {
         letterSpacing: '-0.02em',
         textShadow: '0 0 30px rgba(0, 212, 255, 0.3)'
     },
-    // Updated Meta style to handle wrapping better
     articleMeta: {
         display: 'flex',
         alignItems: 'center',
@@ -186,7 +196,6 @@ const styles = {
         background: 'rgba(0,0,0,0.2)',
         borderRadius: '16px'
     },
-    // New container to prevent overlap
     authorBlockWrapper: {
         marginTop: '1.5rem',
         marginBottom: '2rem'
@@ -265,7 +274,7 @@ const FullBlogContent = ({ blog, onRefetch }) => {
         "mainEntityOfPage": { "@type": "WebPage", "@id": canonicalUrl },
         "headline": blog.title,
         "description": blog.summary,
-        "image": "https://peernotez.netlify.app/logo512.png",
+        "image": blog.coverImage || "https://peernotez.netlify.app/logo512.png", // Use coverImage if available
         "datePublished": blog.createdAt,
         "dateModified": blog.updatedAt || blog.createdAt,
         "author": { "@type": "Person", "name": authorName },
@@ -290,9 +299,17 @@ const FullBlogContent = ({ blog, onRefetch }) => {
             </Link>
 
             <article style={styles.articleCard} className="blog-article-card">
+                {/* --- 🚀 NEW: BANNER IMAGE DISPLAY --- */}
+                {blog.coverImage && (
+                    <img 
+                        src={blog.coverImage} 
+                        alt={blog.title} 
+                        style={styles.articleBanner} 
+                    />
+                )}
+
                 <h1 style={styles.articleTitle}>{blog.title}</h1>
                 
-                {/* Fixed Overlap: Added specific container with margin */}
                 <div style={styles.authorBlockWrapper}>
                     <AuthorInfoBlock author={blog.author} contentId={blog._id} contentType="blog" />
                 </div>
@@ -338,7 +355,6 @@ const FullBlogContent = ({ blog, onRefetch }) => {
                 <BlogReviews blogId={blog._id} reviews={blog.reviews || []} onReviewAdded={onRefetch} />
             </div>
 
-            {/* RESPONSIVE OVERRIDES */}
             <style>{`
                 @media (max-width: 768px) {
                     .blog-article-wrapper {
