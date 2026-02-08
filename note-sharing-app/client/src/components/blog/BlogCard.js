@@ -1,32 +1,23 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FaEye, FaCalendarAlt, FaEdit, FaTrash, FaArrowRight } from 'react-icons/fa';
+import { FaEye, FaCalendarAlt, FaEdit, FaTrash, FaArrowRight, FaImage } from 'react-icons/fa';
 import StarRating from '../common/StarRating';
 
 const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () => {} }) => {
     
     // --- 1. SAFE DATA HANDLING ---
-    
-    // Date formatting with fallback
     const dateToFormat = blog.createdAt ? new Date(blog.createdAt) : new Date();
     const formattedDate = dateToFormat.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-    
-    // View count fallback
     const views = (blog.views || blog.downloadCount || 0).toLocaleString();
 
     // Summary Generation Logic
     const getSummary = () => {
         if (blog.summary && blog.summary.trim().length > 0) {
-            return blog.summary.length > 120 ? blog.summary.substring(0, 120) + '...' : blog.summary;
-        }
-        if (blog.description && blog.description.trim().length > 0) {
-            return blog.description.length > 120 ? blog.description.substring(0, 120) + '...' : blog.description;
+            return blog.summary.length > 100 ? blog.summary.substring(0, 100) + '...' : blog.summary;
         }
         if (blog.content) {
-            // FIX: Removed unnecessary escape for '[' inside the character class
-            // Old: /[#*`_\[\]]/g  -> New: /[#*`_[\]]/g
             const cleanText = blog.content.replace(/<[^>]+>/g, '').replace(/[#*`_[\]]/g, '');
-            return cleanText.substring(0, 120) + '...';
+            return cleanText.substring(0, 100) + '...';
         }
         return 'No summary available.';
     };
@@ -41,13 +32,12 @@ const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () 
             WebkitBackdropFilter: 'blur(16px)',
             border: '1px solid rgba(255, 255, 255, 0.05)',
             borderRadius: '20px',
-            padding: '1.5rem',
+            overflow: 'hidden', // Ensures image stays inside radius
             transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
             display: 'flex',
             flexDirection: 'column',
             height: '100%',
             position: 'relative',
-            overflow: 'hidden',
             boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)'
         },
         cardHover: {
@@ -55,17 +45,37 @@ const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () 
             borderColor: 'rgba(0, 212, 255, 0.3)',
             boxShadow: '0 10px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0, 212, 255, 0.1)'
         },
-        glowBar: {
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '4px',
+        // NEW: Banner Image Styles
+        bannerContainer: {
+            width: '100%',
+            height: '180px',
+            position: 'relative',
+            overflow: 'hidden',
+            background: '#1e293b' // Placeholder color
+        },
+        bannerImage: {
+            width: '100%',
             height: '100%',
-            background: 'linear-gradient(to bottom, #00d4ff, #ff00cc)',
-            opacity: 0.7
+            objectFit: 'cover',
+            transition: 'transform 0.5s ease'
+        },
+        bannerPlaceholder: {
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)',
+            color: 'rgba(255,255,255,0.2)'
+        },
+        contentBody: {
+            padding: '1.5rem',
+            display: 'flex',
+            flexDirection: 'column',
+            flex: 1
         },
         title: {
-            fontSize: '1.4rem',
+            fontSize: '1.3rem',
             fontWeight: '700',
             margin: '0 0 0.5rem 0',
             lineHeight: 1.3,
@@ -76,7 +86,7 @@ const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () 
         },
         summary: {
             color: 'rgba(255, 255, 255, 0.7)',
-            fontSize: '0.95rem',
+            fontSize: '0.9rem',
             lineHeight: 1.6,
             marginBottom: '1.5rem',
             flex: 1, 
@@ -96,14 +106,14 @@ const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () 
             gap: '10px'
         },
         authorAvatar: {
-            width: '40px',
-            height: '40px',
+            width: '36px',
+            height: '36px',
             borderRadius: '50%',
             objectFit: 'cover',
             border: '2px solid rgba(0, 212, 255, 0.5)'
         },
         authorName: {
-            fontSize: '0.9rem',
+            fontSize: '0.85rem',
             color: '#fff',
             fontWeight: '600'
         },
@@ -112,7 +122,7 @@ const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () 
             flexDirection: 'column',
             alignItems: 'flex-end',
             gap: '4px',
-            fontSize: '0.8rem',
+            fontSize: '0.75rem',
             color: 'rgba(255, 255, 255, 0.6)'
         },
         statRow: {
@@ -155,7 +165,7 @@ const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () 
             color: '#00d4ff',
             textDecoration: 'none',
             fontWeight: '600',
-            fontSize: '0.95rem',
+            fontSize: '0.9rem',
             transition: 'gap 0.3s'
         }
     };
@@ -163,87 +173,110 @@ const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () 
     return (
         <div 
             style={styles.card}
-            onMouseEnter={(e) => Object.assign(e.currentTarget.style, styles.cardHover)}
+            onMouseEnter={(e) => {
+                Object.assign(e.currentTarget.style, styles.cardHover);
+                // Subtle zoom effect on banner image if it exists
+                const img = e.currentTarget.querySelector('img.banner-img');
+                if(img) img.style.transform = 'scale(1.05)';
+            }}
             onMouseLeave={(e) => {
                 e.currentTarget.style.transform = 'none';
                 e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.05)';
                 e.currentTarget.style.boxShadow = '0 4px 30px rgba(0, 0, 0, 0.1)';
+                const img = e.currentTarget.querySelector('img.banner-img');
+                if(img) img.style.transform = 'scale(1)';
             }}
         >
-            <div style={styles.glowBar}></div>
-
-            <Link to={`/blogs/${blog.slug}`} style={{textDecoration: 'none'}}>
-                <h3 
-                    style={styles.title}
-                    onMouseEnter={(e) => e.target.style.color = '#00d4ff'}
-                    onMouseLeave={(e) => e.target.style.color = '#fff'}
-                >
-                    {blog.title}
-                </h3>
-            </Link>
-            
-            <p style={styles.summary}>
-                {summaryText}
-            </p>
-            
-            <div style={styles.metaList}>
-                <div style={styles.authorDetails}>
+            {/* --- NEW: Banner Image Section --- */}
+            <Link to={`/blogs/${blog.slug}`} style={styles.bannerContainer}>
+                {blog.coverImage ? (
                     <img 
-                        src={blog.author?.avatar || 'https://via.placeholder.com/40'} 
-                        alt={`Avatar of ${blog.author?.name}`} 
-                        style={styles.authorAvatar}
+                        src={blog.coverImage} 
+                        alt={blog.title} 
+                        style={styles.bannerImage} 
+                        className="banner-img"
                     />
-                    <div>
-                        <div style={styles.authorName}>
-                            {blog.author?.name || 'Deleted User'}
-                        </div>
-                        <div style={{fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', marginTop: '2px'}}>
-                            <FaCalendarAlt style={{fontSize: '0.7rem', marginRight: '4px'}} /> 
-                            {formattedDate}
-                        </div>
+                ) : (
+                    <div style={styles.bannerPlaceholder}>
+                        <FaImage size={40} />
                     </div>
-                </div>
+                )}
+            </Link>
 
-                <div style={styles.statsColumn}>
-                    <div style={styles.statRow}>
-                        <StarRating rating={blog.rating || 0} readOnly={true} size={12} />
-                        <span>({blog.numReviews || 0})</span>
-                    </div>
-                    <div style={styles.statRow}>
-                        <FaEye /> {views} views
-                    </div>
-                </div>
-            </div>
-
-            {showActions ? (
-                <div style={styles.actionContainer}>
-                    <button 
-                        style={{...styles.btn, ...styles.editBtn}} 
-                        onClick={() => onEdit(blog)}
-                        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(0, 212, 255, 0.2)'}
-                        onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(0, 212, 255, 0.1)'}
+            <div style={styles.contentBody}>
+                <Link to={`/blogs/${blog.slug}`} style={{textDecoration: 'none'}}>
+                    <h3 
+                        style={styles.title}
+                        onMouseEnter={(e) => e.target.style.color = '#00d4ff'}
+                        onMouseLeave={(e) => e.target.style.color = '#fff'}
                     >
-                        <FaEdit /> Edit
-                    </button>
-                    <button 
-                        style={{...styles.btn, ...styles.deleteBtn}} 
-                        onClick={() => onDelete(blog._id)}
-                        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 0, 85, 0.2)'}
-                        onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255, 0, 85, 0.1)'}
-                    >
-                        <FaTrash /> Delete
-                    </button>
-                </div>
-            ) : (
-                <Link 
-                    to={`/blogs/${blog.slug}`} 
-                    style={styles.readMoreBtn}
-                    onMouseEnter={(e) => e.currentTarget.style.gap = '12px'}
-                    onMouseLeave={(e) => e.currentTarget.style.gap = '8px'}
-                >
-                    Read Full Article <FaArrowRight />
+                        {blog.title}
+                    </h3>
                 </Link>
-            )}
+                
+                <p style={styles.summary}>
+                    {summaryText}
+                </p>
+                
+                <div style={styles.metaList}>
+                    <div style={styles.authorDetails}>
+                        <img 
+                            src={blog.author?.avatar || 'https://via.placeholder.com/40'} 
+                            alt={`Avatar of ${blog.author?.name}`} 
+                            style={styles.authorAvatar}
+                        />
+                        <div>
+                            <div style={styles.authorName}>
+                                {blog.author?.name || 'Deleted User'}
+                            </div>
+                            <div style={{fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', marginTop: '2px'}}>
+                                <FaCalendarAlt style={{fontSize: '0.7rem', marginRight: '4px'}} /> 
+                                {formattedDate}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style={styles.statsColumn}>
+                        <div style={styles.statRow}>
+                            <StarRating rating={blog.rating || 0} readOnly={true} size={12} />
+                            <span>({blog.numReviews || 0})</span>
+                        </div>
+                        <div style={styles.statRow}>
+                            <FaEye /> {views} views
+                        </div>
+                    </div>
+                </div>
+
+                {showActions ? (
+                    <div style={styles.actionContainer}>
+                        <button 
+                            style={{...styles.btn, ...styles.editBtn}} 
+                            onClick={() => onEdit(blog)}
+                            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(0, 212, 255, 0.2)'}
+                            onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(0, 212, 255, 0.1)'}
+                        >
+                            <FaEdit /> Edit
+                        </button>
+                        <button 
+                            style={{...styles.btn, ...styles.deleteBtn}} 
+                            onClick={() => onDelete(blog._id)}
+                            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 0, 85, 0.2)'}
+                            onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255, 0, 85, 0.1)'}
+                        >
+                            <FaTrash /> Delete
+                        </button>
+                    </div>
+                ) : (
+                    <Link 
+                        to={`/blogs/${blog.slug}`} 
+                        style={styles.readMoreBtn}
+                        onMouseEnter={(e) => e.currentTarget.style.gap = '12px'}
+                        onMouseLeave={(e) => e.currentTarget.style.gap = '8px'}
+                    >
+                        Read Full Article <FaArrowRight />
+                    </Link>
+                )}
+            </div>
         </div>
     );
 };
