@@ -45,7 +45,6 @@ self.addEventListener("fetch", event => {
   }
 
   // 2. Network-First for index.html (Navigation requests)
-  // This prevents the "blurred" look by ensuring the newest HTML is fetched first.
   if (event.request.mode === "navigate") {
     event.respondWith(
       fetch(event.request)
@@ -56,20 +55,18 @@ self.addEventListener("fetch", event => {
           });
         })
         .catch(() => {
-          // Fallback to cache only if offline
           return caches.match(event.request);
         })
     );
     return;
   }
 
-  // 3. Cache-First for static assets (JS, CSS, Images)
+  // 3. Cache-First for static assets
   event.respondWith(
     caches.match(event.request).then(cachedResponse => {
       return (
         cachedResponse ||
         fetch(event.request).then(networkResponse => {
-          // Only cache successful responses
           if (networkResponse.status === 200) {
             const responseClone = networkResponse.clone();
             caches.open(CACHE_NAME).then(cache => cache.put(event.request, responseClone));
@@ -82,7 +79,6 @@ self.addEventListener("fetch", event => {
 });
 
 // 4. Message Listener for SKIP_WAITING
-// This connects with your serviceWorkerRegistration.js to allow immediate updates
 self.addEventListener("message", (event) => {
   if (event.data && event.data.type === "SKIP_WAITING") {
     self.skipWaiting();
