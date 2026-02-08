@@ -4,6 +4,7 @@ import useAuth from '../../hooks/useAuth';
 import StarRating from '../common/StarRating';
 import { Link } from 'react-router-dom';
 import { FaReply, FaPaperPlane } from 'react-icons/fa';
+import { optimizeCloudinaryUrl } from '../../utils/cloudinaryHelper';
 
 // Helper function to format dates
 const formatDate = (dateString) => {
@@ -60,7 +61,7 @@ const styles = {
         fontWeight: '700',
         color: '#fff',
         fontSize: '1rem',
-        textDecoration: 'none' // Added for Link
+        textDecoration: 'none'
     },
     date: {
         fontSize: '0.8rem',
@@ -167,17 +168,16 @@ const ReplyCard = ({ reply, noteId, onReviewAdded, user, token }) => {
   return (
     <div style={{...styles.reviewCard, ...styles.replyCard}}>
       <div style={styles.authorHeader}>
-        {/* CLICKABLE AVATAR */}
         <Link to={`/profile/${reply.user?._id}`}>
             <img
-            src={reply.user?.avatar || 'https://via.placeholder.com/40'}
+            src={optimizeCloudinaryUrl(reply.user?.avatar || 'https://via.placeholder.com/40', { width: 80, height: 80, isProfile: true })}
             alt={reply.user?.name || 'Deleted User'}
+            loading="lazy"
             style={{...styles.avatar, width: '35px', height: '35px'}}
             />
         </Link>
         <div style={styles.authorInfo}>
           <div style={styles.authorName}>
-            {/* CLICKABLE USERNAME */}
             <Link to={`/profile/${reply.user?._id}`} style={styles.authorName}>
                 {reply.user?.name || 'Deleted User'}
             </Link>
@@ -199,6 +199,7 @@ const ReplyCard = ({ reply, noteId, onReviewAdded, user, token }) => {
                 onClick={() => setIsReplying(prev => !prev)}
                 onMouseEnter={(e) => e.currentTarget.style.color = '#ff00cc'}
                 onMouseLeave={(e) => e.currentTarget.style.color = '#00d4ff'}
+                aria-label={`Reply to ${reply.user?.name || 'comment'}`}
             >
               <FaReply /> {isReplying ? 'Cancel' : 'Reply'}
             </button>
@@ -238,7 +239,6 @@ const CommentThread = ({ comment, noteId, onReviewAdded, user, token }) => {
 
         try {
             const config = { headers: { Authorization: `Bearer ${token}` } };
-            // Submitting a reply directly to the top-level comment
             await axios.post(`/notes/${noteId}/reviews`, { 
                 comment: replyComment, 
                 parentReviewId: comment._id,
@@ -246,7 +246,7 @@ const CommentThread = ({ comment, noteId, onReviewAdded, user, token }) => {
             
             setReplyComment('');
             setIsReplying(false);
-            onReviewAdded(); // Triggers parent refetch
+            onReviewAdded();
 
         } catch (error) {
             alert(error.response?.data?.message || 'Failed to submit reply.');
@@ -270,19 +270,17 @@ const CommentThread = ({ comment, noteId, onReviewAdded, user, token }) => {
 
     return (
         <div>
-            {/* Main Top-Level Comment */}
             <div style={styles.reviewCard}>
                 <div style={styles.authorHeader}>
-                    {/* CLICKABLE AVATAR */}
                     <Link to={`/profile/${comment.user?._id}`}>
                         <img 
-                            src={comment.user?.avatar || 'https://via.placeholder.com/45/CCCCCC/FFFFFF?text=P'} 
+                            src={optimizeCloudinaryUrl(comment.user?.avatar || 'https://via.placeholder.com/45/CCCCCC/FFFFFF?text=P', { width: 90, height: 90, isProfile: true })} 
                             alt={comment.user?.name || 'Deleted User'} 
+                            loading="lazy"
                             style={styles.avatar} 
                         />
                     </Link>
                     <div style={styles.authorInfo}>
-                        {/* CLICKABLE USERNAME */}
                         <Link to={`/profile/${comment.user?._id}`} style={styles.authorName}>
                             <strong style={styles.authorName}>{comment.user?.name || 'Deleted User'}</strong>
                         </Link>
@@ -305,6 +303,7 @@ const CommentThread = ({ comment, noteId, onReviewAdded, user, token }) => {
                                 onClick={() => setIsReplying(prev => !prev)}
                                 onMouseEnter={(e) => e.currentTarget.style.color = '#ff00cc'}
                                 onMouseLeave={(e) => e.currentTarget.style.color = '#00d4ff'}
+                                aria-label={`Reply to ${comment.user?.name || 'review'}`}
                             >
                                 <FaReply /> {isReplying ? 'Cancel' : 'Reply'}
                             </button>
@@ -335,7 +334,6 @@ const CommentThread = ({ comment, noteId, onReviewAdded, user, token }) => {
                 </div>
             </div>
 
-            {/* All Replies Flattened */}
             {allFlatReplies.map(reply => (
                 <ReplyCard
                     key={reply._id}
@@ -350,21 +348,16 @@ const CommentThread = ({ comment, noteId, onReviewAdded, user, token }) => {
     );
 };
 
-// ------------------------------------------------------------
-// --- Main Reviews Component ---
-// ------------------------------------------------------------
 const Reviews = ({ noteId, reviews, onReviewAdded }) => {
     const [rating, setRating] = useState(0);
     const [comment, setComment] = useState('');
     const [loading, setLoading] = useState(false);
     const { user, token } = useAuth();
     
-    // --- TARGETED USERNAME AND HIERARCHY LOGIC ---
     const buildCommentThreads = useCallback((flatReviews) => {
         const map = {};
         const rootComments = [];
 
-        // Step 1: Map & Attach Parent User
         flatReviews.forEach(r => { 
             const parentComment = r.parentReviewId 
                 ? flatReviews.find(p => p._id === r.parentReviewId) 
@@ -378,7 +371,6 @@ const Reviews = ({ noteId, reviews, onReviewAdded }) => {
             map[r._id] = { ...r, replies: [], parentUser: parentUser }; 
         });
 
-        // Step 2: Build Hierarchy
         Object.values(map).forEach(r => {
             if (r.parentReviewId) {
                 const parent = map[r.parentReviewId];
@@ -392,15 +384,11 @@ const Reviews = ({ noteId, reviews, onReviewAdded }) => {
             }
         });
         
-        // Sort root comments by creation date (newest first)
         rootComments.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        
         return rootComments;
     }, []);
 
     const commentThreads = buildCommentThreads(reviews);
-    
-    // Check if the user has already posted a top-level review/rating
     const alreadyReviewedTopLevel = reviews.some(r => r.user?._id === user?._id && !r.parentReviewId);
 
     const handleSubmit = async (e) => {
@@ -416,7 +404,7 @@ const Reviews = ({ noteId, reviews, onReviewAdded }) => {
             const config = { headers: { Authorization: `Bearer ${token}` } };
             await axios.post(`/notes/${noteId}/reviews`, { rating, comment }, config);
             
-            onReviewAdded(); // Triggers parent component to refetch
+            onReviewAdded();
             setRating(0);
             setComment('');
 
@@ -426,7 +414,6 @@ const Reviews = ({ noteId, reviews, onReviewAdded }) => {
             setLoading(false);
         }
     };
-    
 
     return (
         <div>
@@ -446,7 +433,6 @@ const Reviews = ({ noteId, reviews, onReviewAdded }) => {
                 ))}
             </div>
 
-            {/* Top-Level Review Form */}
             {user && !alreadyReviewedTopLevel && (
                 <div style={styles.mainForm}>
                     <h3 style={{marginBottom: '1.5rem', color: '#fff'}}>Write a Top-Level Review</h3>
