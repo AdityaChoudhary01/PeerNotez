@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'; // Removed useCallback
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import useAuth from '../hooks/useAuth';
 import NoteCard from '../components/notes/NoteCard';
@@ -6,6 +6,7 @@ import Pagination from '../components/common/Pagination';
 import EditNoteModal from '../components/notes/EditNoteModal';
 import { Link } from 'react-router-dom';
 import { FaRss, FaStar, FaEdit, FaList, FaTrashAlt, FaUpload, FaBookmark, FaPenNib } from 'react-icons/fa';
+import { optimizeCloudinaryUrl } from '../utils/cloudinaryHelper';
 
 const ProfilePage = () => {
     // Existing States
@@ -234,7 +235,7 @@ const ProfilePage = () => {
 
                 setTotalNotesUploads(uploadsRes.data.totalNotes || 0);
                 setTotalNotesSaved(savedRes.data.totalNotes || 0);
-                setCollections(collectionsRes.data); // We need the data for list anyway
+                setCollections(collectionsRes.data); 
                 setTotalCollections(collectionsRes.data.length || 0);
                 setTotalMyBlogs(blogsRes.data.totalBlogs || 0);
 
@@ -249,7 +250,7 @@ const ProfilePage = () => {
 
     // --- 2. Main List Fetcher (Only fetches CURRENT tab content) ---
     useEffect(() => {
-        if (authLoading || !token || activeTab === 'blogs') return;
+        if (authLoading || !token || activeTab === 'blogs' || activeTab === 'collections') return;
 
         const fetchData = async () => {
             setLoadingNotes(true);
@@ -260,7 +261,6 @@ const ProfilePage = () => {
                     const { data } = await axios.get(`/notes/mynotes?page=${currentPageUploads}`, config);
                     setMyNotes(data.notes || []);
                     setTotalPagesUploads(data.totalPages || 0);
-                    // Update count again just in case it changed
                     setTotalNotesUploads(data.totalNotes || 0); 
                 } else if (activeTab === 'saved') { 
                     const { data } = await axios.get(`/users/savednotes?page=${currentPageSaved}`, config);
@@ -268,7 +268,6 @@ const ProfilePage = () => {
                     setTotalPagesSaved(data.totalPages || 0);
                     setTotalNotesSaved(data.totalNotes || 0);
                 } 
-                // Collections are already fetched in the global counts useEffect
             } catch (error) {
                 console.error(`Failed to fetch ${activeTab} data:`, error.response?.data || error.message);
             } finally {
@@ -311,7 +310,6 @@ const ProfilePage = () => {
     useEffect(() => {
         if (activeTab === 'uploads') setCurrentPageUploads(1);
         if (activeTab === 'saved') setCurrentPageSaved(1);
-        // Do NOT trigger refetch here to avoid double calling, only page reset
     }, [activeTab]);
 
     useEffect(() => {
@@ -364,26 +362,45 @@ const ProfilePage = () => {
     const setCurrentPageState = activeTab === 'uploads' ? setCurrentPageUploads : setCurrentPageSaved;
     const emptyMessage = activeTab === 'uploads' ? 'You have not uploaded any notes yet.' : 'You have no saved notes.';
 
+    // Optimized Profile Image
+    const optimizedAvatar = optimizeCloudinaryUrl(user?.avatar, { width: 280, height: 280, isProfile: true });
+
     return (
-        <div style={styles.wrapper}>
+        <main style={styles.wrapper}>
             {/* Profile Header */}
-            <div style={styles.headerCard}>
+            <header style={styles.headerCard}>
                 <div style={styles.avatarContainer}>
-                    <img src={user?.avatar || 'https://via.placeholder.com/140/3f4451/ffffff?text=P'} alt={user?.name} style={styles.avatar} />
-                    <label htmlFor="avatar-upload" style={styles.avatarLabel}>📸 Change</label>
+                    <img 
+                        src={optimizedAvatar || 'https://via.placeholder.com/140/3f4451/ffffff?text=P'} 
+                        alt={user?.name || "User profile"} 
+                        style={styles.avatar} 
+                    />
+                    <label htmlFor="avatar-upload" style={styles.avatarLabel} aria-label="Change profile picture">📸 Change</label>
                     <input type="file" id="avatar-upload" accept="image/*" onChange={handleAvatarUpload} style={{ display: 'none' }} />
                 </div>
                 
                 {!isEditingName ? (
                     <div style={styles.userName}>
                         <h1>{user?.name}</h1>
-                        <button onClick={() => setIsEditingName(true)} style={styles.editBtn} title="Edit Name">
-                            <FaEdit />
+                        <button 
+                            onClick={() => setIsEditingName(true)} 
+                            style={styles.editBtn} 
+                            title="Edit Name"
+                            aria-label="Edit display name"
+                        >
+                            <FaEdit aria-hidden="true" />
                         </button>
                     </div>
                 ) : (
                     <form onSubmit={handleNameSave} style={{marginBottom: '1rem'}}>
-                        <input type="text" value={newName} onChange={e => setNewName(e.target.value)} style={styles.editInput} autoFocus />
+                        <input 
+                            type="text" 
+                            value={newName} 
+                            onChange={e => setNewName(e.target.value)} 
+                            style={styles.editInput} 
+                            autoFocus 
+                            aria-label="New name"
+                        />
                         <br/>
                         <button type="submit" style={styles.saveBtn}>Save</button>
                         <button type="button" onClick={() => setIsEditingName(false)} style={styles.cancelBtn}>Cancel</button>
@@ -396,111 +413,117 @@ const ProfilePage = () => {
                     <div style={styles.badges}> 
                         {user.badges.map((badge, index) => (
                             <span key={index} style={styles.badge} title={badge.description}>
-                                <FaStar style={{color: 'gold'}} /> {badge.name}
+                                <FaStar style={{color: 'gold'}} aria-hidden="true" /> {badge.name}
                             </span>
                         ))}
                     </div>
                 )}
 
                 <Link to="/feed" style={{...styles.tabBtn, ...styles.activeTab, textDecoration: 'none', marginTop: '1rem'}}>
-                    <FaRss /> My Personalized Feed
+                    <FaRss aria-hidden="true" /> My Personalized Feed
                 </Link>
-            </div>
+            </header>
 
             {/* Tabs */}
-            <div style={styles.tabs}>
+            <nav style={styles.tabs} aria-label="Profile section tabs">
                 <button 
                     onClick={() => setActiveTab('uploads')} 
                     style={{...styles.tabBtn, ...(activeTab === 'uploads' ? styles.activeTab : {})}}
+                    aria-current={activeTab === 'uploads' ? 'page' : undefined}
                 >
-                    <FaUpload /> Uploads ({totalNotesUploads}) 
+                    <FaUpload aria-hidden="true" /> Uploads ({totalNotesUploads}) 
                 </button>
                 <button 
                     onClick={() => setActiveTab('saved')} 
                     style={{...styles.tabBtn, ...(activeTab === 'saved' ? styles.activeTab : {})}}
+                    aria-current={activeTab === 'saved' ? 'page' : undefined}
                 >
-                    <FaBookmark /> Saved ({totalNotesSaved}) 
+                    <FaBookmark aria-hidden="true" /> Saved ({totalNotesSaved}) 
                 </button>
                 <button 
                     onClick={() => setActiveTab('collections')} 
                     style={{...styles.tabBtn, ...(activeTab === 'collections' ? styles.activeTab : {})}}
+                    aria-current={activeTab === 'collections' ? 'page' : undefined}
                 >
-                    <FaList /> Collections ({totalCollections}) 
+                    <FaList aria-hidden="true" /> Collections ({totalCollections}) 
                 </button>
                 <Link 
                     to="/blogs/my-blogs" 
                     style={{...styles.tabBtn, textDecoration: 'none', ...(activeTab === 'blogs' ? styles.activeTab : {})}}
                 >
-                    <FaPenNib /> My Blogs ({totalMyBlogs}) 
+                    <FaPenNib aria-hidden="true" /> My Blogs ({totalMyBlogs}) 
                 </Link>
-            </div>
+            </nav>
 
             {/* Content Section */}
-            {activeTab !== 'blogs' && activeTab !== 'collections' && (
-                <>
-                    {loadingNotes ? (
-                        <div style={{textAlign: 'center', padding: '3rem', color: 'rgba(255,255,255,0.6)'}}>Loading notes...</div>
-                    ) : (
-                        <div>
-                            <h2 style={{color: '#fff', fontSize: '1.5rem', marginBottom: '2rem', textAlign: 'center'}}>
-                                {activeTab === 'uploads' ? 'My Uploaded Notes' : 'My Saved Notes'}
-                            </h2>
-                            {displayNotes.length > 0 ? (
-                                <>
-                                    <div style={styles.grid}>
-                                        {displayNotes.map(note => (
-                                            <NoteCard
-                                                key={note._id}
-                                                note={note}
-                                                showActions={activeTab === 'uploads'} 
-                                                onDelete={activeTab === 'uploads' ? handleDeleteNote : undefined}
-                                                onEdit={activeTab === 'uploads' ? handleEditClick : undefined}
-                                            />
-                                        ))}
+            <section aria-live="polite">
+                {activeTab !== 'blogs' && activeTab !== 'collections' && (
+                    <>
+                        {loadingNotes ? (
+                            <div style={{textAlign: 'center', padding: '3rem', color: 'rgba(255,255,255,0.6)'}}>Loading notes...</div>
+                        ) : (
+                            <div>
+                                <h2 style={{color: '#fff', fontSize: '1.5rem', marginBottom: '2rem', textAlign: 'center'}}>
+                                    {activeTab === 'uploads' ? 'My Uploaded Notes' : 'My Saved Notes'}
+                                </h2>
+                                {displayNotes.length > 0 ? (
+                                    <>
+                                        <div style={styles.grid}>
+                                            {displayNotes.map(note => (
+                                                <NoteCard
+                                                    key={note._id}
+                                                    note={note}
+                                                    showActions={activeTab === 'uploads'} 
+                                                    onDelete={activeTab === 'uploads' ? handleDeleteNote : undefined}
+                                                    onEdit={activeTab === 'uploads' ? handleEditClick : undefined}
+                                                />
+                                            ))}
+                                        </div>
+                                        {currentTotalPages > 1 && (
+                                            <Pagination page={currentPageState} totalPages={currentTotalPages} onPageChange={setCurrentPageState} />
+                                        )}
+                                    </>
+                                ) : (
+                                    <p style={{textAlign: 'center', color: 'rgba(255,255,255,0.5)', fontSize: '1.1rem'}}>{emptyMessage}</p>
+                                )}
+                            </div>
+                        )}
+                    </>
+                )}
+                
+                {/* Collections Content */}
+                {activeTab === 'collections' && (
+                    <div className="collections-section">
+                        <h2 style={{color: '#fff', fontSize: '1.5rem', marginBottom: '2rem', textAlign: 'center'}}>My Note Collections</h2>
+                        {collections.length > 0 ? (
+                            <div style={{maxWidth: '800px', margin: '0 auto'}}>
+                                {collections.map(collection => (
+                                    <div key={collection._id} style={styles.collectionItem} onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'} onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}>
+                                        <div style={{display: 'flex', alignItems: 'center'}}>
+                                            <Link to={`/collections/${collection._id}`} style={styles.collectionLink}>
+                                                <FaList style={{color: '#00d4ff'}} aria-hidden="true" /> {collection.name}
+                                            </Link>
+                                            <span style={{marginLeft: '10px', color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem'}}>({collection.notes.length} notes)</span>
+                                        </div>
+                                        <button 
+                                            onClick={() => handleDeleteCollection(collection._id, collection.name)}
+                                            style={styles.deleteBtn}
+                                            title="Delete Collection"
+                                            aria-label={`Delete collection ${collection.name}`}
+                                            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 0, 85, 0.2)'} 
+                                            onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255, 0, 85, 0.1)'}
+                                        >
+                                            <FaTrashAlt aria-hidden="true" />
+                                        </button>
                                     </div>
-                                    {currentTotalPages > 1 && (
-                                        <Pagination page={currentPageState} totalPages={currentTotalPages} onPageChange={setCurrentPageState} />
-                                    )}
-                                </>
-                            ) : (
-                                <p style={{textAlign: 'center', color: 'rgba(255,255,255,0.5)', fontSize: '1.1rem'}}>{emptyMessage}</p>
-                            )}
-                        </div>
-                    )}
-                </>
-            )}
-            
-            {/* Collections Content */}
-            {activeTab === 'collections' && (
-                <div className="collections-section">
-                    <h2 style={{color: '#fff', fontSize: '1.5rem', marginBottom: '2rem', textAlign: 'center'}}>My Note Collections</h2>
-                    {collections.length > 0 ? (
-                        <div style={{maxWidth: '800px', margin: '0 auto'}}>
-                            {collections.map(collection => (
-                                <div key={collection._id} style={styles.collectionItem} onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'} onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}>
-                                    <div style={{display: 'flex', alignItems: 'center'}}>
-                                        <Link to={`/collections/${collection._id}`} style={styles.collectionLink}>
-                                            <FaList style={{color: '#00d4ff'}} /> {collection.name}
-                                        </Link>
-                                        <span style={{marginLeft: '10px', color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem'}}>({collection.notes.length} notes)</span>
-                                    </div>
-                                    <button 
-                                        onClick={() => handleDeleteCollection(collection._id, collection.name)}
-                                        style={styles.deleteBtn}
-                                        title="Delete Collection"
-                                        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 0, 85, 0.2)'} 
-                                        onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255, 0, 85, 0.1)'}
-                                    >
-                                        <FaTrashAlt />
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <p style={{textAlign: 'center', color: 'rgba(255,255,255,0.5)', fontSize: '1.1rem'}}>You haven't created any collections yet. Start organizing your notes!</p>
-                    )}
-                </div>
-            )}
+                                ))}
+                            </div>
+                        ) : (
+                            <p style={{textAlign: 'center', color: 'rgba(255,255,255,0.5)', fontSize: '1.1rem'}}>You haven't created any collections yet. Start organizing your notes!</p>
+                        )}
+                    </div>
+                )}
+            </section>
 
             {/* --- Render the Edit Modal conditionally --- */}
             {editingNote && (
@@ -511,7 +534,7 @@ const ProfilePage = () => {
                     onClose={() => setEditingNote(null)}
                 />
             )}
-        </div>
+        </main>
     );
 };
 
