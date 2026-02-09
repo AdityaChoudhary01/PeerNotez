@@ -4,7 +4,7 @@ import useAuth from '../hooks/useAuth';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import Pagination from '../components/common/Pagination';
-import { FaFeatherAlt, FaUsers, FaFileAlt, FaTools, FaTrash, FaUserShield, FaStar, FaEye, FaExclamationTriangle, FaImage } from 'react-icons/fa';
+import { FaFeatherAlt, FaUsers, FaFileAlt, FaTools, FaTrash, FaUserShield, FaStar, FaEye, FaExclamationTriangle, FaImage, FaLock } from 'react-icons/fa';
 
 const AdminDashboardPage = () => {
     const [users, setUsers] = useState([]);
@@ -15,6 +15,9 @@ const AdminDashboardPage = () => {
     const [error, setError] = useState(''); 
     const { token, user: adminUser } = useAuth();
     const cloudName = process.env.REACT_APP_CLOUDINARY_CLOUD_NAME;
+    
+    // --- SUPER ADMIN CONFIG ---
+    const MAIN_ADMIN_EMAIL = process.env.REACT_APP_MAIN_ADMIN_EMAIL;
 
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
@@ -128,7 +131,6 @@ const AdminDashboardPage = () => {
             marginRight: '1rem',
             border: '1px solid rgba(255, 255, 255, 0.1)'
         },
-        // NEW: Placeholder for blogs without images
         placeholderThumb: {
             width: '80px',
             height: '60px',
@@ -174,6 +176,13 @@ const AdminDashboardPage = () => {
             background: 'rgba(188, 19, 254, 0.15)',
             color: '#bc13fe'
         },
+        // DISABLED BUTTON STYLE
+        disabledBtn: {
+            background: 'rgba(255, 255, 255, 0.05)',
+            color: 'rgba(255, 255, 255, 0.2)',
+            cursor: 'not-allowed',
+            border: '1px solid rgba(255, 255, 255, 0.05)'
+        },
         badge: {
             display: 'inline-block',
             padding: '2px 8px',
@@ -199,7 +208,6 @@ const AdminDashboardPage = () => {
         const fetchUsers = async () => {
             setLoading(true);
             try {
-                // Use relative path for proxy
                 const { data } = await axios.get('/users', config);
                 setUsers(data);
             } catch (error) {
@@ -244,8 +252,7 @@ const AdminDashboardPage = () => {
         }
     }, [activeTab, token, currentPage, refetchIndex]);
     
-    // --- Handlers (Delete, Role Change, Feature Toggle) ---
-    // (Logic remains same, just updated API paths to relative for proxy)
+    // --- Handlers ---
 
     const handleDeleteUser = async (userId) => {
         if (window.confirm('Are you sure you want to delete this user permanently?')) {
@@ -253,7 +260,11 @@ const AdminDashboardPage = () => {
                 const config = { headers: { Authorization: `Bearer ${token}` } };
                 await axios.delete(`/users/${userId}`, config);
                 setUsers(users.filter(u => u._id !== userId));
-            } catch (error) { setError('Failed to delete user.'); }
+            } catch (error) { 
+                // Show specific backend error (e.g. "Main Admin cannot be deleted")
+                const errMsg = error.response?.data?.message || 'Failed to delete user.';
+                alert(errMsg);
+            }
         }
     };
     
@@ -262,7 +273,10 @@ const AdminDashboardPage = () => {
             const config = { headers: { Authorization: `Bearer ${token}` } };
             await axios.put(`/users/${userId}/role`, {}, config);
             setUsers(users.map(u => u._id === userId ? { ...u, role: u.role === 'admin' ? 'user' : 'admin' } : u));
-        } catch (error) { setError('Failed to update user role.'); }
+        } catch (error) { 
+            const errMsg = error.response?.data?.message || 'Failed to update user role.';
+            alert(errMsg);
+        }
     };
 
     const handleDeleteNote = async (noteId) => {
@@ -323,7 +337,6 @@ const AdminDashboardPage = () => {
                     </div>
                 </div>
                 <div style={styles.actions}>
-                    {/* ENHANCED FEATURE BUTTON FOR NOTES (Matches Blogs) */}
                     <button
                         onClick={() => handleToggleFeatured(note._id, note.isFeatured, 'note')}
                         style={{...styles.actionBtn, ...styles.featureBtn}}
@@ -345,7 +358,6 @@ const AdminDashboardPage = () => {
         return (
             <div key={blog._id} style={styles.listItem}>
                 <div style={{display: 'flex', alignItems: 'center'}}>
-                    {/* --- 🚀 NEW: BANNER IMAGE DISPLAY --- */}
                     {blog.coverImage ? (
                         <img src={blog.coverImage} alt="Banner" style={styles.thumbnail} />
                     ) : (
@@ -424,34 +436,53 @@ const AdminDashboardPage = () => {
                     {activeTab === 'users' ? (
                         <>
                             <h3 style={{color: '#fff', marginBottom: '1rem'}}>All Users ({users.length})</h3>
-                            {users.map(user => (
-                                <div key={user._id} style={styles.listItem}>
-                                    <div style={{display: 'flex', alignItems: 'center'}}>
-                                        <img src={user.avatar || 'https://via.placeholder.com/50'} alt="Avatar" style={styles.avatar} />
-                                        <div style={styles.itemInfo}>
-                                            <strong style={styles.itemTitle}>{user.name}</strong>
-                                            <span style={styles.itemMeta}>{user.email}</span>
-                                            <span style={styles.badge}>{user.role}</span>
+                            {users.map(user => {
+                                // --- CHECK IF THIS USER IS THE SUPER ADMIN ---
+                                const isMainAdmin = user.email === MAIN_ADMIN_EMAIL;
+                                // --- CHECK IF THIS USER IS ME (CURRENT ADMIN) ---
+                                const isMe = user._id === adminUser._id;
+
+                                return (
+                                    <div key={user._id} style={styles.listItem}>
+                                        <div style={{display: 'flex', alignItems: 'center'}}>
+                                            <img src={user.avatar || 'https://via.placeholder.com/50'} alt="Avatar" style={styles.avatar} />
+                                            <div style={styles.itemInfo}>
+                                                <strong style={styles.itemTitle}>{user.name}</strong>
+                                                <span style={styles.itemMeta}>{user.email}</span>
+                                                <span style={{
+                                                    ...styles.badge, 
+                                                    background: user.role === 'admin' ? '#00d4ff' : 'rgba(255,255,255,0.1)',
+                                                    color: user.role === 'admin' ? '#000' : '#fff'
+                                                }}>
+                                                    {isMainAdmin ? 'SUPER ADMIN' : user.role.toUpperCase()}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div style={styles.actions}>
+                                            <button
+                                                onClick={() => handleRoleChange(user._id)}
+                                                // Disable if it's Me OR the Main Admin
+                                                disabled={isMe || isMainAdmin}
+                                                style={isMe || isMainAdmin ? {...styles.actionBtn, ...styles.disabledBtn} : {...styles.actionBtn, ...styles.roleBtn}}
+                                                title={isMainAdmin ? "Super Admin cannot be demoted" : "Change Role"}
+                                            >
+                                                {isMainAdmin ? <FaLock /> : <FaUserShield />} 
+                                                {user.role === 'admin' ? 'Demote' : 'Promote'}
+                                            </button>
+                                            <button
+                                                onClick={() => handleDeleteUser(user._id)}
+                                                // Disable if it's Me OR the Main Admin
+                                                disabled={isMe || isMainAdmin}
+                                                style={isMe || isMainAdmin ? {...styles.actionBtn, ...styles.disabledBtn} : {...styles.actionBtn, ...styles.deleteBtn}}
+                                                title={isMainAdmin ? "Super Admin cannot be deleted" : "Delete User"}
+                                            >
+                                                {isMainAdmin ? <FaLock /> : <FaTrash />} 
+                                                Delete
+                                            </button>
                                         </div>
                                     </div>
-                                    <div style={styles.actions}>
-                                        <button
-                                            onClick={() => handleRoleChange(user._id)}
-                                            style={{...styles.actionBtn, ...styles.roleBtn}}
-                                            disabled={user._id === adminUser._id}
-                                        >
-                                            <FaUserShield /> {user.role === 'admin' ? 'Demote' : 'Promote'}
-                                        </button>
-                                        <button
-                                            onClick={() => handleDeleteUser(user._id)}
-                                            style={{...styles.actionBtn, ...styles.deleteBtn}}
-                                            disabled={user._id === adminUser._id}
-                                        >
-                                            <FaTrash /> Delete
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </>
                     ) : activeTab === 'notes' ? (
                         <>
@@ -468,7 +499,6 @@ const AdminDashboardPage = () => {
                     )}
                 </div>
             )}
-            {/* Inline CSS for Hover Effects */}
             <style>{`
                 .admin-btn:hover { opacity: 0.8; transform: translateY(-2px); }
             `}</style>
