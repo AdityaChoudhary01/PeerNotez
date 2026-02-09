@@ -3,10 +3,16 @@ import { Link } from 'react-router-dom';
 import { FaEye, FaCalendarAlt, FaEdit, FaTrash, FaArrowRight, FaImage } from 'react-icons/fa';
 import StarRating from '../common/StarRating';
 import { optimizeCloudinaryUrl } from '../../utils/cloudinaryHelper';
+import RoleBadge from '../common/RoleBadge'; // Import Badge Component
 
 const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () => {} }) => {
     
-    // --- 1. SAFE DATA HANDLING ---
+    // --- 1. SUPER ADMIN CHECK ---
+    const MAIN_ADMIN_EMAIL = process.env.REACT_APP_MAIN_ADMIN_EMAIL;
+    // Ensure author object exists before checking email
+    const isSuperAdmin = blog.author?.email === MAIN_ADMIN_EMAIL;
+
+    // --- 2. SAFE DATA HANDLING ---
     const dateToFormat = blog.createdAt ? new Date(blog.createdAt) : new Date();
     const formattedDate = dateToFormat.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
     const views = (blog.views || blog.downloadCount || 0).toLocaleString();
@@ -25,7 +31,7 @@ const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () 
 
     const summaryText = getSummary();
 
-    // --- 2. HOLOGRAPHIC STYLES ---
+    // --- 3. HOLOGRAPHIC STYLES ---
     const styles = {
         card: {
             background: 'rgba(255, 255, 255, 0.03)',
@@ -33,7 +39,7 @@ const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () 
             WebkitBackdropFilter: 'blur(16px)',
             border: '1px solid rgba(255, 255, 255, 0.05)',
             borderRadius: '20px',
-            overflow: 'hidden', // Ensures image stays inside radius
+            overflow: 'hidden', 
             transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
             display: 'flex',
             flexDirection: 'column',
@@ -51,7 +57,7 @@ const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () 
             height: '180px',
             position: 'relative',
             overflow: 'hidden',
-            background: '#1e293b' // Placeholder color
+            background: '#1e293b' 
         },
         bannerImage: {
             width: '100%',
@@ -110,12 +116,30 @@ const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () 
             height: '36px',
             borderRadius: '50%',
             objectFit: 'cover',
-            border: '2px solid rgba(0, 212, 255, 0.5)'
+            // Gold border for Super Admin
+            border: isSuperAdmin ? '2px solid #FFD700' : '2px solid rgba(0, 212, 255, 0.5)'
         },
         authorName: {
             fontSize: '0.85rem',
             color: '#fff',
-            fontWeight: '600'
+            fontWeight: '600',
+            display: 'flex',
+            alignItems: 'center'
+        },
+        // Static style for Super Admin (non-link)
+        staticContainer: {
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            cursor: 'default'
+        },
+        // Link style for normal users
+        linkContainer: {
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            textDecoration: 'none',
+            cursor: 'pointer'
         },
         statsColumn: {
             display: 'flex',
@@ -170,6 +194,12 @@ const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () 
         }
     };
 
+    // --- CONDITIONAL RENDERING FOR AUTHOR LINK ---
+    const AuthorWrapper = isSuperAdmin ? 'div' : Link;
+    const authorWrapperProps = isSuperAdmin 
+        ? { style: styles.staticContainer }
+        : { to: `/profile/${blog.author?._id}`, style: styles.linkContainer };
+
     return (
         <div 
             style={styles.card}
@@ -218,7 +248,8 @@ const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () 
                 </p>
                 
                 <div style={styles.metaList}>
-                    <div style={styles.authorDetails}>
+                    {/* AUTHOR BLOCK */}
+                    <AuthorWrapper {...authorWrapperProps}>
                         <img 
                             src={optimizeCloudinaryUrl(blog.author?.avatar || 'https://via.placeholder.com/40', { width: 80, height: 80, crop: 'thumb', isProfile: true })} 
                             alt={`Avatar of ${blog.author?.name}`} 
@@ -228,13 +259,15 @@ const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () 
                         <div>
                             <div style={styles.authorName}>
                                 {blog.author?.name || 'Deleted User'}
+                                {/* DISPLAY BADGE */}
+                                <RoleBadge user={blog.author} />
                             </div>
                             <div style={{fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', marginTop: '2px'}}>
                                 <FaCalendarAlt style={{fontSize: '0.7rem', marginRight: '4px'}} /> 
                                 {formattedDate}
                             </div>
                         </div>
-                    </div>
+                    </AuthorWrapper>
 
                     <div style={styles.statsColumn}>
                         <div style={styles.statRow}>
