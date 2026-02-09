@@ -14,8 +14,8 @@ import SearchPage from './pages/SearchPage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
 import DonatePage from './pages/DonatePage';
-import ProfilePage from './pages/ProfilePage'; // Private "My Profile"
-import PublicProfilePage from './pages/PublicProfilePage'; // Public "User Profile"
+import ProfilePage from './pages/ProfilePage'; 
+import PublicProfilePage from './pages/PublicProfilePage'; 
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import SupportersPage from './pages/SupportersPage'; 
 import BlogPage from './pages/BlogPage';
@@ -28,6 +28,11 @@ import DMCAPolicyPage from './pages/DMCAPolicyPage';
 import TermsOfServicePage from './pages/TermsOfServicePage'; 
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 
+// --- CHAT IMPORTS ---
+import ChatListPage from './pages/ChatListPage';
+import ChatPage from './pages/ChatPage';
+import ChatLayout from './components/layout/ChatLayout'; // NEW IMPORT
+
 // Utils
 import PrivateRoute from './utils/PrivateRoute';
 import AdminRoute from './utils/AdminRoute';
@@ -37,14 +42,12 @@ import './App.css';
 function App() {
   return (
     <AuthProvider>
+      {/* Removed PresenceManager (We now manage presence locally in ChatLayout) */}
+
       <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <div className="app-wrapper">
           <Navbar />
           
-          {/* FIX: Increased marginTop to 130px 
-              Navbar (Fixed) occupies ~90px (20px top + 70px height).
-              130px ensures clean separation for forms and text on all pages.
-          */}
           <main 
             className="container main-content" 
             style={{ 
@@ -52,7 +55,7 @@ function App() {
               flex: 1, 
               position: 'relative', 
               zIndex: 1,
-              minHeight: '80vh' // Ensures footer is pushed down on empty pages
+              minHeight: '80vh' 
             }}
           >
             <Routes>
@@ -66,11 +69,11 @@ function App() {
               <Route path="/donate" element={<DonatePage />} />
               <Route path="/supporters" element={<SupportersPage />} />
               
-              {/* Content Viewing (Public) */}
+              {/* Content Viewing */}
               <Route path="/view/:noteId" element={<ViewNotePage />} />
-              <Route path="/profile/:userId" element={<PublicProfilePage />} /> {/* New Public Profile Route */}
+              <Route path="/profile/:userId" element={<PublicProfilePage />} />
               
-              {/* Blog System (Public) */}
+              {/* Blog System */}
               <Route path="/blogs" element={<BlogPage />} />
               <Route path="/blogs/:slug" element={<BlogPage />} />
 
@@ -80,13 +83,19 @@ function App() {
               <Route path="/privacy" element={<PrivacyPolicyPage />} />
               
               {/* --- PROTECTED ROUTES --- */}
-              {/* Note: /profile points to the logged-in user's dashboard */}
               <Route path="/profile" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
               <Route path="/upload" element={<PrivateRoute><UploadPage /></PrivateRoute>} />
               <Route path="/feed" element={<PrivateRoute><MyFeedPage /></PrivateRoute>} />
               <Route path="/collections/:collectionId" element={<PrivateRoute><ViewCollectionPage /></PrivateRoute>} />
               
-              {/* Blog Management (Private) */}
+              {/* --- CHAT SYSTEM (Optimization applied) --- */}
+              {/* Presence is only active when inside these routes */}
+              <Route element={<PrivateRoute><ChatLayout /></PrivateRoute>}>
+                  <Route path="/chat" element={<ChatListPage />} />
+                  <Route path="/chat/:userId" element={<ChatPage />} />
+              </Route>
+
+              {/* Blog Management */}
               <Route path="/blogs/post" element={<PrivateRoute><PostBlogPage /></PrivateRoute>} />
               <Route path="/blogs/my-blogs" element={<PrivateRoute><MyBlogsPage /></PrivateRoute>} />
 
