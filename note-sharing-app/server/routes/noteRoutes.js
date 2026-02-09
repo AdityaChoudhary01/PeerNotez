@@ -865,10 +865,12 @@ router.delete('/collections/:collectionId', protect, async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const note = await Note.findById(req.params.id)
-      .populate('user', 'name avatar')
+      // 1. Populate Note Author (for AuthorInfoBlock)
+      .populate('user', 'name avatar role email') 
+      // 2. Populate Review Authors (for Reviews Section Badges)
       .populate({
         path: 'reviews.user',
-        select: 'name avatar'
+        select: 'name avatar role email' // <--- Added 'role' and 'email' here
       });
 
     if (!note) {
