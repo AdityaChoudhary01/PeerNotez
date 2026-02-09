@@ -22,7 +22,7 @@ const styles = {
     },
     header: {
         textAlign: 'center',
-        marginBottom: '4rem',
+        marginBottom: '3rem',
         padding: '3rem 1rem',
         background: 'rgba(255, 255, 255, 0.03)',
         backdropFilter: 'blur(10px)',
@@ -111,12 +111,12 @@ const styles = {
     grid: {
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-        gap: '2rem'
+        gap: '1.5rem'
     },
     articleContainer: {
         maxWidth: '900px',
         margin: '0 auto',
-        padding: '2rem 0'
+        padding: '1.5rem 0'
     },
     backLink: {
         display: 'inline-flex',
@@ -124,7 +124,7 @@ const styles = {
         gap: '8px',
         color: 'rgba(255, 255, 255, 0.7)',
         textDecoration: 'none',
-        marginBottom: '2rem',
+        marginBottom: '1.5rem',
         fontSize: '1rem',
         transition: 'color 0.2s',
         fontWeight: '600'
@@ -153,7 +153,7 @@ const styles = {
         fontSize: 'clamp(2rem, 5vw, 3.5rem)',
         fontWeight: '800',
         color: '#fff',
-        marginBottom: '1.5rem',
+        marginBottom: '1.2rem',
         lineHeight: 1.2,
         letterSpacing: '-0.02em',
         textShadow: '0 0 30px rgba(0, 212, 255, 0.3)'
@@ -163,8 +163,8 @@ const styles = {
         alignItems: 'center',
         justifyContent: 'space-between',
         flexWrap: 'wrap',
-        gap: '1.5rem',
-        marginBottom: '3rem',
+        gap: '1rem',
+        marginBottom: '2.5rem',
         paddingBottom: '1.5rem',
         borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
         color: 'rgba(255, 255, 255, 0.6)',
@@ -189,40 +189,40 @@ const styles = {
         fontFamily: "'Spline Sans', sans-serif"
     },
     secondarySection: {
-        marginTop: '3rem',
+        marginTop: '2rem',
         textAlign: 'center',
         padding: '2rem',
         background: 'rgba(0,0,0,0.2)',
         borderRadius: '16px'
     },
     authorBlockWrapper: {
-        marginTop: '1.5rem',
-        marginBottom: '2rem'
+        marginTop: '1rem',
+        marginBottom: '1.5rem'
     }
 };
 
 // --- CUSTOM MARKDOWN RENDERERS ---
 const markdownComponents = {
-    h1: ({node, children, ...props}) => <h1 style={{fontSize: '2.5rem', fontWeight: '800', margin: '2.5rem 0 1.5rem', background: 'linear-gradient(to right, #00d4ff, #ff00cc)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', lineHeight: 1.2}} {...props}>{children}</h1>,
-    h2: ({node, children, ...props}) => <h2 style={{fontSize: '2rem', fontWeight: '700', color: '#fff', margin: '2.5rem 0 1.2rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem'}} {...props}>{children}</h2>,
-    h3: ({node, children, ...props}) => <h3 style={{fontSize: '1.6rem', fontWeight: '600', color: '#00d4ff', margin: '2rem 0 1rem'}} {...props}>{children}</h3>,
-    h4: ({node, children, ...props}) => <h4 style={{fontSize: '1.3rem', fontWeight: '600', color: '#ff00cc', margin: '1.5rem 0 0.8rem'}} {...props}>{children}</h4>,
-    p: ({node, children, ...props}) => <p style={{fontSize: '1.15rem', lineHeight: '1.9', color: 'rgba(255, 255, 255, 0.85)', marginBottom: '1.5rem'}} {...props}>{children}</p>,
+    h1: ({node, children, ...props}) => <h1 style={{fontSize: '2.2rem', fontWeight: '800', margin: '2rem 0 1rem', background: 'linear-gradient(to right, #00d4ff, #ff00cc)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', lineHeight: 1.2}} {...props}>{children}</h1>,
+    h2: ({node, children, ...props}) => <h2 style={{fontSize: '1.8rem', fontWeight: '700', color: '#fff', margin: '1.8rem 0 1rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.4rem'}} {...props}>{children}</h2>,
+    h3: ({node, children, ...props}) => <h3 style={{fontSize: '1.5rem', fontWeight: '600', color: '#00d4ff', margin: '1.5rem 0 0.8rem'}} {...props}>{children}</h3>,
+    h4: ({node, children, ...props}) => <h4 style={{fontSize: '1.2rem', fontWeight: '600', color: '#ff00cc', margin: '1.2rem 0 0.6rem'}} {...props}>{children}</h4>,
+    p: ({node, children, ...props}) => <p style={{fontSize: '1.1rem', lineHeight: '1.7', color: 'rgba(255, 255, 255, 0.85)', marginBottom: '1.2rem'}} {...props}>{children}</p>,
     strong: ({node, children, ...props}) => <strong style={{color: '#fff', fontWeight: '700'}} {...props}>{children}</strong>,
     em: ({node, children, ...props}) => <em style={{color: 'rgba(255, 255, 255, 0.9)', fontStyle: 'italic'}} {...props}>{children}</em>,
-    ul: ({node, children, ...props}) => <ul style={{marginLeft: '1.5rem', marginBottom: '1.5rem', listStyleType: 'disc', color: 'rgba(255, 255, 255, 0.85)', fontSize: '1.1rem', lineHeight: '1.8'}} {...props}>{children}</ul>,
-    ol: ({node, children, ...props}) => <ol style={{marginLeft: '1.5rem', marginBottom: '1.5rem', listStyleType: 'decimal', color: 'rgba(255, 255, 255, 0.85)', fontSize: '1.1rem', lineHeight: '1.8'}} {...props}>{children}</ol>,
-    li: ({node, children, ...props}) => <li style={{marginBottom: '0.5rem', paddingLeft: '0.5rem'}} {...props}>{children}</li>,
+    ul: ({node, children, ...props}) => <ul style={{marginLeft: '1.2rem', marginBottom: '1.2rem', listStyleType: 'disc', color: 'rgba(255, 255, 255, 0.85)', fontSize: '1.05rem', lineHeight: '1.7'}} {...props}>{children}</ul>,
+    ol: ({node, children, ...props}) => <ol style={{marginLeft: '1.2rem', marginBottom: '1.2rem', listStyleType: 'decimal', color: 'rgba(255, 255, 255, 0.85)', fontSize: '1.05rem', lineHeight: '1.7'}} {...props}>{children}</ol>,
+    li: ({node, children, ...props}) => <li style={{marginBottom: '0.4rem', paddingLeft: '0.3rem'}} {...props}>{children}</li>,
     blockquote: ({node, children, ...props}) => (
         <blockquote style={{
             borderLeft: '4px solid #00d4ff',
-            padding: '1.5rem',
-            margin: '2rem 0',
+            padding: '1rem 1.5rem',
+            margin: '1.5rem 0',
             background: 'rgba(0, 212, 255, 0.05)',
             borderRadius: '0 12px 12px 0',
             fontStyle: 'italic',
             color: 'rgba(255, 255, 255, 0.9)',
-            fontSize: '1.1rem'
+            fontSize: '1.05rem'
         }} {...props}>
             {children}
         </blockquote>
@@ -231,13 +231,13 @@ const markdownComponents = {
         return !inline ? (
             <div style={{
                 background: '#151520',
-                padding: '1.5rem',
+                padding: '1.2rem',
                 borderRadius: '12px',
                 border: '1px solid rgba(255, 255, 255, 0.1)',
-                margin: '2rem 0',
+                margin: '1.5rem 0',
                 overflowX: 'auto',
                 fontFamily: "'Fira Code', monospace",
-                fontSize: '0.95rem',
+                fontSize: '0.9rem',
                 color: '#e0e0e0',
                 boxShadow: 'inset 0 0 20px rgba(0,0,0,0.5)'
             }}>
@@ -257,8 +257,8 @@ const markdownComponents = {
         )
     },
     a: ({node, children, ...props}) => <a style={{color: '#00d4ff', textDecoration: 'underline', textUnderlineOffset: '4px', fontWeight: '500'}} {...props}>{children}</a>,
-    img: ({node, alt, ...props}) => <img alt={alt || 'Blog image'} loading="lazy" style={{maxWidth: '100%', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.4)', margin: '2rem 0', border: '1px solid rgba(255,255,255,0.1)'}} {...props} />,
-    hr: ({node, ...props}) => <hr style={{border: '0', height: '1px', background: 'linear-gradient(to right, transparent, rgba(255, 255, 255, 0.2), transparent)', margin: '4rem 0'}} {...props} />
+    img: ({node, alt, ...props}) => <img alt={alt || 'Blog image'} loading="lazy" style={{maxWidth: '100%', borderRadius: '16px', boxShadow: '0 10px 30px rgba(0,0,0,0.4)', margin: '1.5rem 0', border: '1px solid rgba(255,255,255,0.1)'}} {...props} />,
+    hr: ({node, ...props}) => <hr style={{border: '0', height: '1px', background: 'linear-gradient(to right, transparent, rgba(255, 255, 255, 0.2), transparent)', margin: '3rem 0'}} {...props} />
 };
 
 // --- FULL BLOG POST COMPONENT ---
@@ -267,7 +267,6 @@ const FullBlogContent = ({ blog, onRefetch }) => {
     const authorName = blog.author?.name || 'PeerNotez Contributor';
     const canonicalUrl = `https://peernotez.netlify.app/blogs/${blog.slug}`;
 
-    // Cloudinary Optimizations
     const optimizedBanner = optimizeCloudinaryUrl(blog.coverImage, { width: 1000, height: 500, crop: 'fill' });
     const optimizedMiniAvatar = optimizeCloudinaryUrl(blog.author?.avatar, { width: 90, height: 90, isProfile: true });
 
@@ -361,17 +360,18 @@ const FullBlogContent = ({ blog, onRefetch }) => {
             <style>{`
                 @media (max-width: 768px) {
                     .blog-article-wrapper {
-                        padding-left: 1rem;
-                        padding-right: 1rem;
+                        padding-left: 0.5rem;
+                        padding-right: 0.5rem;
                     }
                     .blog-article-card {
-                        padding: 1.5rem !important;
+                        padding: 1rem !important;
                         border-radius: 16px !important;
                     }
                     .blog-article-meta {
                         flex-direction: column;
                         align-items: flex-start !important;
-                        gap: 0.8rem !important;
+                        gap: 0.6rem !important;
+                        margin-bottom: 1.5rem !important;
                     }
                 }
             `}</style>
@@ -524,7 +524,7 @@ const BlogPage = () => {
                     .blog-list-controls {
                         flex-direction: column;
                         align-items: stretch !important;
-                        padding: 1.5rem !important;
+                        padding: 1rem !important;
                     }
                     .blog-search-form {
                         max-width: 100% !important;
