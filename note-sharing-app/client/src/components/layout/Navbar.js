@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
 import logo from '../../assets/peernotez-logo.png'; 
-import { FaBars, FaTimes, FaSearch, FaSignOutAlt } from 'react-icons/fa';
+import { FaBars, FaTimes, FaSearch, FaSignOutAlt, FaPaperPlane } from 'react-icons/fa';
 import { optimizeCloudinaryUrl } from '../../utils/cloudinaryHelper';
+import { ref, onValue } from 'firebase/database'; // Firebase Imports
+import { db } from '../../services/firebase';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -11,11 +13,12 @@ const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [unreadCount, setUnreadCount] = useState(0); // State for message count
   
   const navigate = useNavigate();
   const location = useLocation();
 
-  // --- INTERNAL CSS: HOLOGRAPHIC STYLE ---
+  // --- INTERNAL CSS ---
   const styles = {
     navWrapper: {
       position: 'fixed',
@@ -154,6 +157,35 @@ const Navbar = () => {
         justifyContent: 'center',
         cursor: 'pointer',
         transition: 'all 0.3s ease'
+    },
+    iconLink: {
+        color: 'rgba(255, 255, 255, 0.8)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '8px',
+        borderRadius: '50%',
+        transition: '0.3s',
+        fontSize: '1.1rem',
+        textDecoration: 'none',
+        background: 'rgba(255, 255, 255, 0.05)',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        position: 'relative' // Needed for badge positioning
+    },
+    badge: {
+        position: 'absolute',
+        top: '-15px',
+        right: '-15px',
+        background: '#ff0055',
+        color: 'white',
+        borderRadius: '50%',
+        padding: '2px 6px',
+        fontSize: '0.7rem',
+        fontWeight: 'bold',
+        minWidth: '18px',
+        textAlign: 'center',
+        border: '2px solid #0f0c29', // Matches navbar bg to create a "cutout" look
+        boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
     }
   };
 
@@ -172,6 +204,30 @@ const Navbar = () => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // --- NEW: LISTEN FOR UNREAD MESSAGES ---
+  useEffect(() => {
+    if (!user?._id) return;
+
+    // Listen to my chat inbox
+    const inboxRef = ref(db, `user_chats/${user._id}`);
+    
+    const unsubscribe = onValue(inboxRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        // Sum up the 'unreadCount' from all chats
+        let totalUnread = 0;
+        Object.values(data).forEach(chat => {
+          totalUnread += (chat.unreadCount || 0);
+        });
+        setUnreadCount(totalUnread);
+      } else {
+        setUnreadCount(0);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [user]);
 
   const handleLogout = () => {
     logout();
@@ -242,6 +298,24 @@ const Navbar = () => {
                user ? (
                   <>
                     <Link to="/upload" className="liquid-btn" style={{padding: '8px 20px', fontSize: '0.9rem'}}>+ New</Link>
+                    
+                    {/* MESSAGE ICON - DESKTOP */}
+                    <Link 
+                        to="/chat" 
+                        className="nav-icon-link" 
+                        style={styles.iconLink} 
+                        title="Messages"
+                    >
+                        <div style={{ position: 'relative', display: 'flex' }}>
+                            <FaPaperPlane />
+                            {unreadCount > 0 && (
+                                <span style={styles.badge}>
+                                    {unreadCount > 9 ? '9+' : unreadCount}
+                                </span>
+                            )}
+                        </div>
+                    </Link>
+
                     <Link to="/profile" title="My Profile">
                         <img src={optimizedAvatar} alt="My Avatar" loading="lazy" style={styles.avatar} />
                     </Link>
@@ -249,15 +323,6 @@ const Navbar = () => {
                         onClick={handleLogout} 
                         style={styles.logoutBtnDesktop} 
                         title="Logout"
-                        aria-label="Logout from PeerNotez"
-                        onMouseOver={(e) => {
-                            e.currentTarget.style.background = 'rgba(255, 0, 85, 0.2)';
-                            e.currentTarget.style.transform = 'scale(1.1)';
-                        }}
-                        onMouseOut={(e) => {
-                            e.currentTarget.style.background = 'rgba(255, 0, 85, 0.1)';
-                            e.currentTarget.style.transform = 'scale(1)';
-                        }}
                     >
                         <FaSignOutAlt />
                     </button>
@@ -290,7 +355,6 @@ const Navbar = () => {
               <input 
                   type="text" 
                   placeholder="Search notes..." 
-                  aria-label="Search academic notes mobile"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   style={{...styles.searchInput, width: '80%'}}
@@ -308,10 +372,6 @@ const Navbar = () => {
             </Link>
           ))}
           
-          {user && user.role === 'admin' && (
-            <Link to="/admin" onClick={() => setMenuOpen(false)} style={{...styles.link, color: '#ffcc00', fontSize: '1.2rem'}}>Admin Dashboard</Link>
-          )}
-
           <div style={{width: '100%', height: '1px', background: 'rgba(255,255,255,0.1)', margin: '10px 0'}}></div>
 
           {user ? (
@@ -320,9 +380,26 @@ const Navbar = () => {
                 <img src={optimizedAvatar} alt="Profile" loading="lazy" style={styles.avatar} />
                 <span style={{color: 'white', fontWeight: '600'}}>{user.name}</span>
               </div>
+              
+              {/* MESSAGE ICON - MOBILE */}
+              <Link to="/chat" onClick={() => setMenuOpen(false)} style={{...styles.link, display: 'flex', alignItems: 'center', gap: '8px'}}>
+                  <div style={{position: 'relative', display: 'flex', alignItems: 'center', gap: '8px'}}>
+                      <FaPaperPlane /> 
+                      Messages
+                      {unreadCount > 0 && (
+                          <span style={{
+                              background: '#ff0055', color: '#fff', fontSize: '0.7rem', 
+                              padding: '2px 6px', borderRadius: '10px', fontWeight: 'bold'
+                          }}>
+                              {unreadCount}
+                          </span>
+                      )}
+                  </div>
+              </Link>
+
               <Link to="/profile" onClick={() => setMenuOpen(false)} style={styles.link}>My Profile</Link>
               <Link to="/upload" onClick={() => setMenuOpen(false)} className="liquid-btn" style={{width: '100%', textAlign: 'center'}}>Upload Note</Link>
-              <button onClick={handleLogout} style={{...styles.link, background: 'none', border: 'none', color: '#ff0055', cursor: 'pointer', fontSize: '1.1rem'}} aria-label="Logout mobile">Logout</button>
+              <button onClick={handleLogout} style={{...styles.link, background: 'none', border: 'none', color: '#ff0055', cursor: 'pointer', fontSize: '1.1rem'}}>Logout</button>
             </>
           ) : (
             <div style={{display: 'flex', flexDirection: 'column', gap: '15px', width: '100%', alignItems: 'center'}}>
