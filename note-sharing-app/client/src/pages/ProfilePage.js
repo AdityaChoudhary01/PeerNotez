@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'; // Removed useCallback
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import useAuth from '../hooks/useAuth';
 import NoteCard from '../components/notes/NoteCard';
@@ -7,21 +7,18 @@ import EditNoteModal from '../components/notes/EditNoteModal';
 import { Link } from 'react-router-dom';
 import { FaRss, FaStar, FaEdit, FaList, FaTrashAlt, FaUpload, FaBookmark, FaPenNib } from 'react-icons/fa';
 import { optimizeCloudinaryUrl } from '../utils/cloudinaryHelper';
+import RoleBadge from '../components/common/RoleBadge'; // Import Badge
 
 const ProfilePage = () => {
-    // Existing States
     const [myNotes, setMyNotes] = useState([]);
     const [savedNotes, setSavedNotes] = useState([]);
     const [activeTab, setActiveTab] = useState('uploads');
     const [loadingNotes, setLoadingNotes] = useState(true);
-    
-    // NEW STATE for Collections
     const [collections, setCollections] = useState([]); 
 
     const [currentPageUploads, setCurrentPageUploads] = useState(1);
     const [totalPagesUploads, setTotalPagesUploads] = useState(0);
     
-    // Separate state for counts to ensure they update immediately
     const [totalNotesUploads, setTotalNotesUploads] = useState(0);
     const [totalNotesSaved, setTotalNotesSaved] = useState(0);
     const [totalCollections, setTotalCollections] = useState(0);
@@ -31,44 +28,39 @@ const ProfilePage = () => {
     const [totalPagesSaved, setTotalPagesSaved] = useState(0);
 
     const [refetchIndex, setRefetchIndex] = useState(0);
-
     const [isEditingName, setIsEditingName] = useState(false);
     const [newName, setNewName] = useState('');
-
     const [editingNote, setEditingNote] = useState(null);
 
     const { user, token, loading: authLoading, updateUser } = useAuth();
 
-    // --- INTERNAL CSS: HOLOGRAPHIC THEME ---
+    // --- INTERNAL CSS ---
     const styles = {
         wrapper: {
             paddingTop: '2rem',
             paddingBottom: '5rem',
-            minHeight: '80vh',
-            paddingLeft: '1rem',
-            paddingRight: '1rem'
+            minHeight: '80vh'
         },
         headerCard: {
             background: 'rgba(255, 255, 255, 0.03)',
             backdropFilter: 'blur(10px)',
             borderRadius: '24px',
             border: '1px solid rgba(255, 255, 255, 0.1)',
-            padding: '2rem 1rem', // Reduced padding for mobile
+            padding: '3rem',
             marginBottom: '3rem',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             textAlign: 'center',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-            overflow: 'hidden' // Prevents glow/content leakage
+            boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
         },
         avatarContainer: {
             position: 'relative',
             marginBottom: '1.5rem'
         },
         avatar: {
-            width: '120px', // Slightly smaller for better mobile fit
-            height: '120px',
+            width: '140px',
+            height: '140px',
             borderRadius: '50%',
             objectFit: 'cover',
             border: '4px solid rgba(255,255,255,0.1)',
@@ -82,29 +74,24 @@ const ProfilePage = () => {
             color: '#000',
             padding: '5px 10px',
             borderRadius: '20px',
-            fontSize: '0.7rem',
+            fontSize: '0.8rem',
             fontWeight: '700',
             cursor: 'pointer',
             boxShadow: '0 2px 10px rgba(0,0,0,0.2)'
         },
         userName: {
-            fontSize: 'clamp(1.5rem, 8vw, 2.5rem)', // Fluid typography
+            fontSize: '2.5rem',
             fontWeight: '800',
             marginBottom: '0.5rem',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '10px',
-            width: '100%',
-            overflowWrap: 'break-word', // Handles long names
-            wordBreak: 'break-word'
+            gap: '10px'
         },
         userEmail: {
             color: 'rgba(255,255,255,0.6)',
             marginBottom: '1.5rem',
-            fontSize: '1rem',
-            width: '100%',
-            overflowWrap: 'break-word'
+            fontSize: '1.1rem'
         },
         editBtn: {
             background: 'transparent',
@@ -112,13 +99,11 @@ const ProfilePage = () => {
             color: 'rgba(255,255,255,0.5)',
             cursor: 'pointer',
             fontSize: '1rem',
-            transition: 'color 0.2s',
-            display: 'flex',
-            alignItems: 'center'
+            transition: 'color 0.2s'
         },
         badges: {
             display: 'flex',
-            gap: '8px',
+            gap: '10px',
             justifyContent: 'center',
             flexWrap: 'wrap',
             marginBottom: '2rem'
@@ -127,9 +112,9 @@ const ProfilePage = () => {
             background: 'rgba(255, 215, 0, 0.1)',
             color: '#ffd700',
             border: '1px solid rgba(255, 215, 0, 0.3)',
-            padding: '4px 10px',
+            padding: '5px 12px',
             borderRadius: '20px',
-            fontSize: '0.8rem',
+            fontSize: '0.9rem',
             display: 'flex',
             alignItems: 'center',
             gap: '5px'
@@ -137,7 +122,7 @@ const ProfilePage = () => {
         tabs: {
             display: 'flex',
             justifyContent: 'center',
-            gap: '0.5rem', // Tighter gap for mobile
+            gap: '1rem',
             marginBottom: '3rem',
             flexWrap: 'wrap'
         },
@@ -145,15 +130,15 @@ const ProfilePage = () => {
             background: 'rgba(255,255,255,0.05)',
             border: '1px solid rgba(255,255,255,0.1)',
             color: 'rgba(255,255,255,0.7)',
-            padding: '10px 18px',
+            padding: '12px 24px',
             borderRadius: '50px',
             cursor: 'pointer',
-            fontSize: '0.9rem',
+            fontSize: '1rem',
             fontWeight: '600',
             transition: 'all 0.3s',
             display: 'flex',
             alignItems: 'center',
-            gap: '6px'
+            gap: '8px'
         },
         activeTab: {
             background: 'linear-gradient(135deg, #00d4ff 0%, #333399 100%)',
@@ -163,32 +148,28 @@ const ProfilePage = () => {
         },
         grid: {
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-            gap: '1.5rem'
+            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+            gap: '2rem'
         },
         collectionItem: {
             background: 'rgba(255, 255, 255, 0.02)',
             border: '1px solid rgba(255, 255, 255, 0.05)',
             borderRadius: '16px',
-            padding: '1.2rem',
+            padding: '1.5rem',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
             marginBottom: '1rem',
-            transition: 'background 0.2s',
-            gap: '10px'
+            transition: 'background 0.2s'
         },
         collectionLink: {
             color: '#fff',
             textDecoration: 'none',
-            fontSize: '1rem',
+            fontSize: '1.1rem',
             fontWeight: '600',
             display: 'flex',
             alignItems: 'center',
-            gap: '8px',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap'
+            gap: '10px'
         },
         deleteBtn: {
             background: 'rgba(255, 0, 85, 0.1)',
@@ -197,8 +178,7 @@ const ProfilePage = () => {
             borderRadius: '8px',
             padding: '8px',
             cursor: 'pointer',
-            transition: 'background 0.2s',
-            flexShrink: 0
+            transition: 'background 0.2s'
         },
         editInput: {
             background: 'rgba(0,0,0,0.3)',
@@ -206,11 +186,9 @@ const ProfilePage = () => {
             color: '#fff',
             padding: '8px 12px',
             borderRadius: '8px',
-            fontSize: '1.1rem',
+            fontSize: '1.2rem',
             textAlign: 'center',
-            marginBottom: '0.5rem',
-            width: '90%',
-            maxWidth: '300px'
+            marginBottom: '0.5rem'
         },
         saveBtn: {
             background: '#00d4ff',
@@ -220,7 +198,7 @@ const ProfilePage = () => {
             borderRadius: '4px',
             cursor: 'pointer',
             fontWeight: '700',
-            fontSize: '0.85rem',
+            fontSize: '0.9rem',
             margin: '0 5px'
         },
         cancelBtn: {
@@ -230,19 +208,17 @@ const ProfilePage = () => {
             padding: '5px 15px',
             borderRadius: '4px',
             cursor: 'pointer',
-            fontSize: '0.85rem',
+            fontSize: '0.9rem',
             margin: '0 5px'
         }
     };
 
-    // --- 1. NEW: Fetch ALL Counts on Mount ---
     useEffect(() => {
         if (!token || authLoading) return;
 
         const fetchGlobalCounts = async () => {
             const config = { headers: { Authorization: `Bearer ${token}` } };
             try {
-                // Fetch counts concurrently for speed
                 const [uploadsRes, savedRes, collectionsRes, blogsRes] = await Promise.all([
                     axios.get('/notes/mynotes?page=1&limit=1', config),
                     axios.get('/users/savednotes?page=1&limit=1', config),
@@ -264,8 +240,6 @@ const ProfilePage = () => {
         fetchGlobalCounts();
     }, [token, authLoading, refetchIndex]);
 
-
-    // --- 2. Main List Fetcher (Only fetches CURRENT tab content) ---
     useEffect(() => {
         if (authLoading || !token || activeTab === 'blogs' || activeTab === 'collections') return;
 
@@ -295,7 +269,6 @@ const ProfilePage = () => {
         fetchData();
     }, [token, authLoading, activeTab, currentPageUploads, currentPageSaved, refetchIndex]); 
 
-    // --- Handlers ---
     const handleDeleteCollection = async (collectionId, name) => {
         if (window.confirm(`Are you sure you want to delete the collection: "${name}"? This cannot be undone.`)) {
             try {
@@ -375,16 +348,14 @@ const ProfilePage = () => {
 
     const displayNotes = activeTab === 'uploads' ? myNotes : savedNotes;
     const currentTotalPages = activeTab === 'uploads' ? totalPagesUploads : totalPagesSaved;
-    const currentPageState = activeTab === 'uploads' ? currentPageUploads : currentPageSaved;
+    const currentPageState = activeTab === 'uploads' ? currentPageUploads : currentPageUploads;
     const setCurrentPageState = activeTab === 'uploads' ? setCurrentPageUploads : setCurrentPageSaved;
     const emptyMessage = activeTab === 'uploads' ? 'You have not uploaded any notes yet.' : 'You have no saved notes.';
 
-    // Optimized Profile Image
     const optimizedAvatar = optimizeCloudinaryUrl(user?.avatar, { width: 280, height: 280, isProfile: true });
 
     return (
         <main style={styles.wrapper}>
-            {/* Profile Header */}
             <header style={styles.headerCard}>
                 <div style={styles.avatarContainer}>
                     <img 
@@ -398,7 +369,11 @@ const ProfilePage = () => {
                 
                 {!isEditingName ? (
                     <div style={styles.userName}>
-                        <h1 style={{fontSize: 'inherit', margin: 0}}>{user?.name}</h1>
+                        <h1>{user?.name}</h1>
+                        
+                        {/* 1. ADMIN ROLE BADGE (Gold/Blue) */}
+                        <RoleBadge user={user} />
+
                         <button 
                             onClick={() => setIsEditingName(true)} 
                             style={styles.editBtn} 
@@ -409,7 +384,7 @@ const ProfilePage = () => {
                         </button>
                     </div>
                 ) : (
-                    <form onSubmit={handleNameSave} style={{marginBottom: '1rem', width: '100%'}}>
+                    <form onSubmit={handleNameSave} style={{marginBottom: '1rem'}}>
                         <input 
                             type="text" 
                             value={newName} 
@@ -418,15 +393,15 @@ const ProfilePage = () => {
                             autoFocus 
                             aria-label="New name"
                         />
-                        <div style={{display: 'flex', justifyContent: 'center', gap: '10px'}}>
-                            <button type="submit" style={styles.saveBtn}>Save</button>
-                            <button type="button" onClick={() => setIsEditingName(false)} style={styles.cancelBtn}>Cancel</button>
-                        </div>
+                        <br/>
+                        <button type="submit" style={styles.saveBtn}>Save</button>
+                        <button type="button" onClick={() => setIsEditingName(false)} style={styles.cancelBtn}>Cancel</button>
                     </form>
                 )}
                 
                 <p style={styles.userEmail}>{user?.email}</p>
                 
+                {/* 2. ACTIVITY BADGES (Purple/Elite) */}
                 {user?.badges?.length > 0 && (
                     <div style={styles.badges}> 
                         {user.badges.map((badge, index) => (
@@ -437,12 +412,11 @@ const ProfilePage = () => {
                     </div>
                 )}
 
-                <Link to="/feed" style={{...styles.tabBtn, ...styles.activeTab, textDecoration: 'none', marginTop: '1rem', width: 'fit-content'}}>
-                    <FaRss aria-hidden="true" /> Personalized Feed
+                <Link to="/feed" style={{...styles.tabBtn, ...styles.activeTab, textDecoration: 'none', marginTop: '1rem'}}>
+                    <FaRss aria-hidden="true" /> My Personalized Feed
                 </Link>
             </header>
 
-            {/* Tabs */}
             <nav style={styles.tabs} aria-label="Profile section tabs">
                 <button 
                     onClick={() => setActiveTab('uploads')} 
@@ -469,11 +443,10 @@ const ProfilePage = () => {
                     to="/blogs/my-blogs" 
                     style={{...styles.tabBtn, textDecoration: 'none', ...(activeTab === 'blogs' ? styles.activeTab : {})}}
                 >
-                    <FaPenNib aria-hidden="true" /> Blogs ({totalMyBlogs}) 
+                    <FaPenNib aria-hidden="true" /> My Blogs ({totalMyBlogs}) 
                 </Link>
             </nav>
 
-            {/* Content Section */}
             <section aria-live="polite">
                 {activeTab !== 'blogs' && activeTab !== 'collections' && (
                     <>
@@ -481,7 +454,7 @@ const ProfilePage = () => {
                             <div style={{textAlign: 'center', padding: '3rem', color: 'rgba(255,255,255,0.6)'}}>Loading notes...</div>
                         ) : (
                             <div>
-                                <h2 style={{color: '#fff', fontSize: '1.25rem', marginBottom: '2rem', textAlign: 'center'}}>
+                                <h2 style={{color: '#fff', fontSize: '1.5rem', marginBottom: '2rem', textAlign: 'center'}}>
                                     {activeTab === 'uploads' ? 'My Uploaded Notes' : 'My Saved Notes'}
                                 </h2>
                                 {displayNotes.length > 0 ? (
@@ -509,26 +482,26 @@ const ProfilePage = () => {
                     </>
                 )}
                 
-                {/* Collections Content */}
                 {activeTab === 'collections' && (
                     <div className="collections-section">
-                        <h2 style={{color: '#fff', fontSize: '1.25rem', marginBottom: '2rem', textAlign: 'center'}}>My Note Collections</h2>
+                        <h2 style={{color: '#fff', fontSize: '1.5rem', marginBottom: '2rem', textAlign: 'center'}}>My Note Collections</h2>
                         {collections.length > 0 ? (
                             <div style={{maxWidth: '800px', margin: '0 auto'}}>
                                 {collections.map(collection => (
-                                    <div key={collection._id} style={styles.collectionItem}>
-                                        <div style={{display: 'flex', alignItems: 'center', overflow: 'hidden'}}>
+                                    <div key={collection._id} style={styles.collectionItem} onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'} onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}>
+                                        <div style={{display: 'flex', alignItems: 'center'}}>
                                             <Link to={`/collections/${collection._id}`} style={styles.collectionLink}>
-                                                <FaList style={{color: '#00d4ff', flexShrink: 0}} aria-hidden="true" /> 
-                                                <span style={{overflow: 'hidden', textOverflow: 'ellipsis'}}>{collection.name}</span>
+                                                <FaList style={{color: '#00d4ff'}} aria-hidden="true" /> {collection.name}
                                             </Link>
-                                            <span style={{marginLeft: '10px', color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem', flexShrink: 0}}>({collection.notes.length})</span>
+                                            <span style={{marginLeft: '10px', color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem'}}>({collection.notes.length} notes)</span>
                                         </div>
                                         <button 
                                             onClick={() => handleDeleteCollection(collection._id, collection.name)}
                                             style={styles.deleteBtn}
                                             title="Delete Collection"
                                             aria-label={`Delete collection ${collection.name}`}
+                                            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 0, 85, 0.2)'} 
+                                            onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255, 0, 85, 0.1)'}
                                         >
                                             <FaTrashAlt aria-hidden="true" />
                                         </button>
@@ -536,13 +509,12 @@ const ProfilePage = () => {
                                 ))}
                             </div>
                         ) : (
-                            <p style={{textAlign: 'center', color: 'rgba(255,255,255,0.5)', fontSize: '1.1rem'}}>You haven't created any collections yet.</p>
+                            <p style={{textAlign: 'center', color: 'rgba(255,255,255,0.5)', fontSize: '1.1rem'}}>You haven't created any collections yet. Start organizing your notes!</p>
                         )}
                     </div>
                 )}
             </section>
 
-            {/* --- Render the Edit Modal conditionally --- */}
             {editingNote && (
                 <EditNoteModal
                     note={editingNote}
