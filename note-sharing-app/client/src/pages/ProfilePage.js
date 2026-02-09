@@ -7,7 +7,7 @@ import EditNoteModal from '../components/notes/EditNoteModal';
 import { Link } from 'react-router-dom';
 import { FaRss, FaStar, FaEdit, FaList, FaTrashAlt, FaUpload, FaBookmark, FaPenNib } from 'react-icons/fa';
 import { optimizeCloudinaryUrl } from '../utils/cloudinaryHelper';
-import RoleBadge from '../components/common/RoleBadge'; // Import Badge
+import RoleBadge from '../components/common/RoleBadge';
 
 const ProfilePage = () => {
     const [myNotes, setMyNotes] = useState([]);
@@ -32,35 +32,52 @@ const ProfilePage = () => {
     const [newName, setNewName] = useState('');
     const [editingNote, setEditingNote] = useState(null);
 
+    // Responsive State
+    const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+    const isMobile = windowWidth < 768;
+
     const { user, token, loading: authLoading, updateUser } = useAuth();
+
+    // --- RESPONSIVE LISTENER ---
+    useEffect(() => {
+        const handleResize = () => setWindowWidth(window.innerWidth);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     // --- INTERNAL CSS ---
     const styles = {
         wrapper: {
-            paddingTop: '2rem',
+            paddingTop: isMobile ? '1rem' : '2rem',
             paddingBottom: '5rem',
-            minHeight: '80vh'
+            paddingLeft: isMobile ? '0.5rem' : '2rem',
+            paddingRight: isMobile ? '0.5rem' : '2rem',
+            minHeight: '80vh',
+            maxWidth: '100vw',
+            overflowX: 'hidden'
         },
         headerCard: {
             background: 'rgba(255, 255, 255, 0.03)',
             backdropFilter: 'blur(10px)',
-            borderRadius: '24px',
+            borderRadius: isMobile ? '16px' : '24px',
             border: '1px solid rgba(255, 255, 255, 0.1)',
-            padding: '3rem',
-            marginBottom: '3rem',
+            padding: isMobile ? '1.5rem 1rem' : '3rem', // Reduced padding on mobile
+            marginBottom: isMobile ? '1.5rem' : '3rem',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             textAlign: 'center',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
+            boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+            width: '100%',
+            boxSizing: 'border-box'
         },
         avatarContainer: {
             position: 'relative',
-            marginBottom: '1.5rem'
+            marginBottom: '1rem'
         },
         avatar: {
-            width: '140px',
-            height: '140px',
+            width: isMobile ? '100px' : '140px', // Smaller avatar on mobile
+            height: isMobile ? '100px' : '140px',
             borderRadius: '50%',
             objectFit: 'cover',
             border: '4px solid rgba(255,255,255,0.1)',
@@ -68,30 +85,35 @@ const ProfilePage = () => {
         },
         avatarLabel: {
             position: 'absolute',
-            bottom: '5px',
-            right: '5px',
+            bottom: '0px',
+            right: '0px',
             background: '#00d4ff',
             color: '#000',
-            padding: '5px 10px',
+            padding: '4px 8px',
             borderRadius: '20px',
-            fontSize: '0.8rem',
+            fontSize: '0.75rem',
             fontWeight: '700',
             cursor: 'pointer',
             boxShadow: '0 2px 10px rgba(0,0,0,0.2)'
         },
         userName: {
-            fontSize: '2.5rem',
+            fontSize: isMobile ? '1.5rem' : '2.5rem', // reduced font size
             fontWeight: '800',
             marginBottom: '0.5rem',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '10px'
+            gap: '10px',
+            flexWrap: 'wrap', // Allow wrapping
+            wordBreak: 'break-word', // Prevent overflow
+            lineHeight: 1.2,
+            maxWidth: '100%'
         },
         userEmail: {
             color: 'rgba(255,255,255,0.6)',
             marginBottom: '1.5rem',
-            fontSize: '1.1rem'
+            fontSize: isMobile ? '0.9rem' : '1.1rem',
+            wordBreak: 'break-all' // Ensure long emails don't break layout
         },
         editBtn: {
             background: 'transparent',
@@ -99,22 +121,23 @@ const ProfilePage = () => {
             color: 'rgba(255,255,255,0.5)',
             cursor: 'pointer',
             fontSize: '1rem',
-            transition: 'color 0.2s'
+            transition: 'color 0.2s',
+            flexShrink: 0
         },
         badges: {
             display: 'flex',
-            gap: '10px',
+            gap: '8px',
             justifyContent: 'center',
             flexWrap: 'wrap',
-            marginBottom: '2rem'
+            marginBottom: '1.5rem'
         },
         badge: {
             background: 'rgba(255, 215, 0, 0.1)',
             color: '#ffd700',
             border: '1px solid rgba(255, 215, 0, 0.3)',
-            padding: '5px 12px',
+            padding: '4px 10px',
             borderRadius: '20px',
-            fontSize: '0.9rem',
+            fontSize: isMobile ? '0.8rem' : '0.9rem',
             display: 'flex',
             alignItems: 'center',
             gap: '5px'
@@ -122,23 +145,25 @@ const ProfilePage = () => {
         tabs: {
             display: 'flex',
             justifyContent: 'center',
-            gap: '1rem',
-            marginBottom: '3rem',
+            gap: isMobile ? '0.5rem' : '1rem', // Reduced gap
+            marginBottom: '2rem',
             flexWrap: 'wrap'
         },
         tabBtn: {
             background: 'rgba(255,255,255,0.05)',
             border: '1px solid rgba(255,255,255,0.1)',
             color: 'rgba(255,255,255,0.7)',
-            padding: '12px 24px',
+            padding: isMobile ? '8px 16px' : '12px 24px', // Smaller buttons on mobile
             borderRadius: '50px',
             cursor: 'pointer',
-            fontSize: '1rem',
+            fontSize: isMobile ? '0.85rem' : '1rem',
             fontWeight: '600',
             transition: 'all 0.3s',
             display: 'flex',
             alignItems: 'center',
-            gap: '8px'
+            gap: '6px',
+            flex: isMobile ? '1 1 auto' : 'unset', // Allow buttons to grow evenly on mobile
+            justifyContent: 'center'
         },
         activeTab: {
             background: 'linear-gradient(135deg, #00d4ff 0%, #333399 100%)',
@@ -148,28 +173,34 @@ const ProfilePage = () => {
         },
         grid: {
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-            gap: '2rem'
+            // Changed minmax from 300px to 260px to fit smaller screens without scroll
+            gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+            gap: isMobile ? '1rem' : '2rem'
         },
         collectionItem: {
             background: 'rgba(255, 255, 255, 0.02)',
             border: '1px solid rgba(255, 255, 255, 0.05)',
             borderRadius: '16px',
-            padding: '1.5rem',
+            padding: isMobile ? '1rem' : '1.5rem',
             display: 'flex',
+            flexDirection: isMobile ? 'column' : 'row', // Stack on mobile
+            gap: isMobile ? '1rem' : '0',
             justifyContent: 'space-between',
-            alignItems: 'center',
+            alignItems: isMobile ? 'flex-start' : 'center',
             marginBottom: '1rem',
-            transition: 'background 0.2s'
+            transition: 'background 0.2s',
+            width: '100%',
+            boxSizing: 'border-box'
         },
         collectionLink: {
             color: '#fff',
             textDecoration: 'none',
-            fontSize: '1.1rem',
+            fontSize: isMobile ? '1rem' : '1.1rem',
             fontWeight: '600',
             display: 'flex',
             alignItems: 'center',
-            gap: '10px'
+            gap: '10px',
+            wordBreak: 'break-word'
         },
         deleteBtn: {
             background: 'rgba(255, 0, 85, 0.1)',
@@ -178,7 +209,8 @@ const ProfilePage = () => {
             borderRadius: '8px',
             padding: '8px',
             cursor: 'pointer',
-            transition: 'background 0.2s'
+            transition: 'background 0.2s',
+            alignSelf: isMobile ? 'flex-end' : 'auto' // Align right on mobile stack
         },
         editInput: {
             background: 'rgba(0,0,0,0.3)',
@@ -186,15 +218,18 @@ const ProfilePage = () => {
             color: '#fff',
             padding: '8px 12px',
             borderRadius: '8px',
-            fontSize: '1.2rem',
+            fontSize: isMobile ? '1rem' : '1.2rem',
             textAlign: 'center',
-            marginBottom: '0.5rem'
+            marginBottom: '0.5rem',
+            width: '100%',
+            maxWidth: '300px',
+            boxSizing: 'border-box'
         },
         saveBtn: {
             background: '#00d4ff',
             color: '#000',
             border: 'none',
-            padding: '5px 15px',
+            padding: '6px 16px',
             borderRadius: '4px',
             cursor: 'pointer',
             fontWeight: '700',
@@ -205,7 +240,7 @@ const ProfilePage = () => {
             background: 'rgba(255,255,255,0.1)',
             color: '#fff',
             border: 'none',
-            padding: '5px 15px',
+            padding: '6px 16px',
             borderRadius: '4px',
             cursor: 'pointer',
             fontSize: '0.9rem',
@@ -369,7 +404,7 @@ const ProfilePage = () => {
                 
                 {!isEditingName ? (
                     <div style={styles.userName}>
-                        <h1>{user?.name}</h1>
+                        <span>{user?.name}</span>
                         
                         {/* 1. ADMIN ROLE BADGE (Gold/Blue) */}
                         <RoleBadge user={user} />
@@ -384,7 +419,7 @@ const ProfilePage = () => {
                         </button>
                     </div>
                 ) : (
-                    <form onSubmit={handleNameSave} style={{marginBottom: '1rem'}}>
+                    <form onSubmit={handleNameSave} style={{marginBottom: '1rem', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
                         <input 
                             type="text" 
                             value={newName} 
@@ -393,9 +428,10 @@ const ProfilePage = () => {
                             autoFocus 
                             aria-label="New name"
                         />
-                        <br/>
-                        <button type="submit" style={styles.saveBtn}>Save</button>
-                        <button type="button" onClick={() => setIsEditingName(false)} style={styles.cancelBtn}>Cancel</button>
+                        <div style={{marginTop: '5px'}}>
+                            <button type="submit" style={styles.saveBtn}>Save</button>
+                            <button type="button" onClick={() => setIsEditingName(false)} style={styles.cancelBtn}>Cancel</button>
+                        </div>
                     </form>
                 )}
                 
@@ -412,7 +448,7 @@ const ProfilePage = () => {
                     </div>
                 )}
 
-                <Link to="/feed" style={{...styles.tabBtn, ...styles.activeTab, textDecoration: 'none', marginTop: '1rem'}}>
+                <Link to="/feed" style={{...styles.tabBtn, ...styles.activeTab, textDecoration: 'none', marginTop: '1rem', width: isMobile ? '100%' : 'auto'}}>
                     <FaRss aria-hidden="true" /> My Personalized Feed
                 </Link>
             </header>
@@ -423,27 +459,27 @@ const ProfilePage = () => {
                     style={{...styles.tabBtn, ...(activeTab === 'uploads' ? styles.activeTab : {})}}
                     aria-current={activeTab === 'uploads' ? 'page' : undefined}
                 >
-                    <FaUpload aria-hidden="true" /> Uploads ({totalNotesUploads}) 
+                    <FaUpload aria-hidden="true" /> {isMobile ? 'Uploads' : `Uploads (${totalNotesUploads})`} 
                 </button>
                 <button 
                     onClick={() => setActiveTab('saved')} 
                     style={{...styles.tabBtn, ...(activeTab === 'saved' ? styles.activeTab : {})}}
                     aria-current={activeTab === 'saved' ? 'page' : undefined}
                 >
-                    <FaBookmark aria-hidden="true" /> Saved ({totalNotesSaved}) 
+                    <FaBookmark aria-hidden="true" /> {isMobile ? 'Saved' : `Saved (${totalNotesSaved})`}
                 </button>
                 <button 
                     onClick={() => setActiveTab('collections')} 
                     style={{...styles.tabBtn, ...(activeTab === 'collections' ? styles.activeTab : {})}}
                     aria-current={activeTab === 'collections' ? 'page' : undefined}
                 >
-                    <FaList aria-hidden="true" /> Collections ({totalCollections}) 
+                    <FaList aria-hidden="true" /> {isMobile ? 'Collections' : `Collections (${totalCollections})`}
                 </button>
                 <Link 
                     to="/blogs/my-blogs" 
                     style={{...styles.tabBtn, textDecoration: 'none', ...(activeTab === 'blogs' ? styles.activeTab : {})}}
                 >
-                    <FaPenNib aria-hidden="true" /> My Blogs ({totalMyBlogs}) 
+                    <FaPenNib aria-hidden="true" /> {isMobile ? 'Blogs' : `My Blogs (${totalMyBlogs})`}
                 </Link>
             </nav>
 
@@ -489,11 +525,14 @@ const ProfilePage = () => {
                             <div style={{maxWidth: '800px', margin: '0 auto'}}>
                                 {collections.map(collection => (
                                     <div key={collection._id} style={styles.collectionItem} onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'} onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}>
-                                        <div style={{display: 'flex', alignItems: 'center'}}>
+                                        <div style={{display: 'flex', alignItems: 'center', flexWrap: 'wrap'}}>
                                             <Link to={`/collections/${collection._id}`} style={styles.collectionLink}>
-                                                <FaList style={{color: '#00d4ff'}} aria-hidden="true" /> {collection.name}
+                                                <FaList style={{color: '#00d4ff', flexShrink: 0}} aria-hidden="true" /> 
+                                                <span>{collection.name}</span>
                                             </Link>
-                                            <span style={{marginLeft: '10px', color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem'}}>({collection.notes.length} notes)</span>
+                                            <span style={{marginLeft: '10px', color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem', whiteSpace: 'nowrap'}}>
+                                                ({collection.notes.length} notes)
+                                            </span>
                                         </div>
                                         <button 
                                             onClick={() => handleDeleteCollection(collection._id, collection.name)}
