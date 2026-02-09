@@ -95,7 +95,26 @@ router.put('/profile', protect, async (req, res) => {
         const user = await User.findById(req.user.id);
 
         if (user) {
-            user.name = req.body.name || user.name;
+            // Helper to normalize strings
+            const normalize = (str) => str.replace(/\s+/g, '').toLowerCase();
+
+            // Check if name is being updated
+            if (req.body.name) {
+                const newName = req.body.name;
+                const reservedName = process.env.MAIN_ADMIN_NAME || '';
+
+                // --- SECURITY: NAME RESERVATION CHECK ---
+                // If the new name matches the reserved name...
+                if (normalize(newName) === normalize(reservedName)) {
+                    // ...AND the current user is NOT the Main Admin
+                    if (user.email !== process.env.MAIN_ADMIN_EMAIL) {
+                        return res.status(403).json({ 
+                            message: 'This name is reserved for the Super Admin.' 
+                        });
+                    }
+                }
+                user.name = newName;
+            }
 
             const updatedUser = await user.save();
 
@@ -205,8 +224,8 @@ router.get('/feed', protect, async (req, res) => {
 
         const blogPromise = Blog.find({ author: { $in: followedUsers } })
             // 🚀 FIX: Explicitly include 'summary' and 'content' for the mobile app's card preview.
-            .select('title slug createdAt downloadCount author rating summary content')
-            .populate('author', 'name avatar')
+            .select('title slug createdAt downloadCount author rating summary content coverImage numReviews')
+            .populate('author', 'name avatar role email')
             .sort({ createdAt: -1 })
             .limit(limit)
             .skip(skip)
@@ -333,9 +352,10 @@ router.get('/savednotes', protect, async (req, res) => {
 // @desc Get top contributors for the homepage (based on note count)
 router.get('/top-contributors', async (req, res) => {
     try {
-        // NOTE: This logic should be updated to use the cached noteCount field
-        // For now, retaining the aggregation for existing compatibility:
         const topContributors = await User.aggregate([
+            // --- SECURITY: FILTER OUT MAIN ADMIN FIRST ---
+            // Exclude the Main Admin so they don't appear on the leaderboard
+            { $match: { email: { $ne: process.env.MAIN_ADMIN_EMAIL } } },
             {
                 $lookup: {
                     from: 'notes', 
@@ -349,6 +369,8 @@ router.get('/top-contributors', async (req, res) => {
                     _id: 1,
                     name: 1,
                     avatar: 1,
+                    role: 1, // Include role for badge display
+                    email: 1, // Include email for badge logic
                     noteCount: { $size: '$notes' }
                 }
             },
@@ -428,6 +450,11 @@ router.delete('/:id', protect, admin, async (req, res) => {
 
         const user = await User.findById(req.params.id);
         if (user) {
+            // --- SECURITY CHECK: PREVENT DELETING MAIN ADMIN ---
+            if (user.email === process.env.MAIN_ADMIN_EMAIL) {
+                return res.status(403).json({ message: 'Permission Denied: Main Admin cannot be deleted.' });
+            }
+
             await user.deleteOne();
             res.json({ message: 'User removed successfully' });
         } else {
@@ -450,6 +477,11 @@ router.put('/:id/role', protect, admin, async (req, res) => {
 
         const user = await User.findById(req.params.id);
         if (user) {
+            // --- SECURITY CHECK: PREVENT DEMOTING MAIN ADMIN ---
+            if (user.email === process.env.MAIN_ADMIN_EMAIL) {
+                return res.status(403).json({ message: 'Permission Denied: Main Admin cannot be demoted.' });
+            }
+
             user.role = user.role === 'admin' ? 'user' : 'admin';
             await user.save();
             res.json({ message: `User role for ${user.name} updated to ${user.role}`, userId: user._id, newRole: user.role });
@@ -506,17 +538,20 @@ router.get('/:id/following', async (req, res) => {
     }
 });
 
-
 // @route   GET /api/users/search
+// @desc    Search for users (Excludes Main Admin)
 router.get('/search', async (req, res) => {
     const { q } = req.query;
     try {
         if (!q) return res.json({ users: [] });
         
         const users = await User.find({
-            name: { $regex: q, $options: 'i' } // Case-insensitive partial match
+            name: { $regex: q, $options: 'i' }, // Case-insensitive partial match
+            // --- SECURITY: EXCLUDE MAIN ADMIN FROM SEARCH ---
+            // Prevent users from finding the Main Admin via search
+            email: { $ne: process.env.MAIN_ADMIN_EMAIL } 
         })
-        .select('name avatar _id')
+        .select('name avatar _id role email') // Include role/email for frontend badge logic
         .limit(10);
         
         res.json({ users });
