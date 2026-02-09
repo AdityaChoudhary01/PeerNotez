@@ -5,14 +5,16 @@ import StarRating from '../common/StarRating';
 import { Link } from 'react-router-dom';
 import { FaReply, FaPaperPlane } from 'react-icons/fa';
 import { optimizeCloudinaryUrl } from '../../utils/cloudinaryHelper';
+import RoleBadge from '../common/RoleBadge'; // Import Badge
 
-// Helper function to format dates
+// Super Admin Config
+const MAIN_ADMIN_EMAIL = process.env.REACT_APP_MAIN_ADMIN_EMAIL;
+
 const formatDate = (dateString) => {
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
     return new Date(dateString).toLocaleDateString(undefined, options);
 };
 
-// --- INTERNAL CSS: HOLOGRAPHIC REVIEWS ---
 const styles = {
     sectionTitle: {
         fontSize: '1.8rem',
@@ -61,7 +63,9 @@ const styles = {
         fontWeight: '700',
         color: '#fff',
         fontSize: '1rem',
-        textDecoration: 'none'
+        textDecoration: 'none',
+        display: 'flex',
+        alignItems: 'center'
     },
     date: {
         fontSize: '0.8rem',
@@ -136,6 +140,15 @@ const styles = {
         color: '#ff00cc',
         fontWeight: '600',
         marginLeft: '4px'
+    },
+    // Static name style for Super Admin (non-link)
+    staticName: {
+        fontWeight: '700',
+        color: '#fff',
+        fontSize: '1rem',
+        display: 'flex',
+        alignItems: 'center',
+        cursor: 'default'
     }
 };
 
@@ -144,6 +157,9 @@ const ReplyCard = ({ reply, noteId, onReviewAdded, user, token }) => {
   const [isReplying, setIsReplying] = useState(false);
   const [replyComment, setReplyComment] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Check if this reply author is Super Admin
+  const isReplyAuthorSuperAdmin = reply.user?.email === MAIN_ADMIN_EMAIL;
 
   const handleReplySubmit = async (e) => {
     e.preventDefault();
@@ -168,19 +184,41 @@ const ReplyCard = ({ reply, noteId, onReviewAdded, user, token }) => {
   return (
     <div style={{...styles.reviewCard, ...styles.replyCard}}>
       <div style={styles.authorHeader}>
-        <Link to={`/profile/${reply.user?._id}`}>
-            <img
-            src={optimizeCloudinaryUrl(reply.user?.avatar || 'https://via.placeholder.com/40', { width: 80, height: 80, isProfile: true })}
-            alt={reply.user?.name || 'Deleted User'}
-            loading="lazy"
-            style={{...styles.avatar, width: '35px', height: '35px'}}
+        {/* CONDITIONAL LINK: Avatar */}
+        {isReplyAuthorSuperAdmin ? (
+             <img
+                src={optimizeCloudinaryUrl(reply.user?.avatar || 'https://via.placeholder.com/40', { width: 80, height: 80, isProfile: true })}
+                alt={reply.user?.name || 'Deleted User'}
+                loading="lazy"
+                style={{...styles.avatar, width: '35px', height: '35px', cursor: 'default', border: '2px solid #FFD700'}}
             />
-        </Link>
+        ) : (
+            <Link to={`/profile/${reply.user?._id}`}>
+                <img
+                src={optimizeCloudinaryUrl(reply.user?.avatar || 'https://via.placeholder.com/40', { width: 80, height: 80, isProfile: true })}
+                alt={reply.user?.name || 'Deleted User'}
+                loading="lazy"
+                style={{...styles.avatar, width: '35px', height: '35px'}}
+                />
+            </Link>
+        )}
+
         <div style={styles.authorInfo}>
           <div style={styles.authorName}>
-            <Link to={`/profile/${reply.user?._id}`} style={styles.authorName}>
-                {reply.user?.name || 'Deleted User'}
-            </Link>
+            {/* CONDITIONAL LINK: Name */}
+            {isReplyAuthorSuperAdmin ? (
+                <span style={styles.staticName}>
+                    {reply.user?.name || 'Deleted User'}
+                </span>
+            ) : (
+                <Link to={`/profile/${reply.user?._id}`} style={styles.authorName}>
+                    {reply.user?.name || 'Deleted User'}
+                </Link>
+            )}
+            
+            {/* BADGE */}
+            <RoleBadge user={reply.user} />
+
             {reply.parentUser?.name && (
               <span style={styles.replyingTo}> @{reply.parentUser.name}</span>
             )}
@@ -233,6 +271,9 @@ const CommentThread = ({ comment, noteId, onReviewAdded, user, token }) => {
     const [replyComment, setReplyComment] = useState('');
     const [loading, setLoading] = useState(false);
 
+    // Check if main comment author is Super Admin
+    const isCommentAuthorSuperAdmin = comment.user?.email === MAIN_ADMIN_EMAIL;
+
     const handleReplySubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -272,18 +313,43 @@ const CommentThread = ({ comment, noteId, onReviewAdded, user, token }) => {
         <div>
             <div style={styles.reviewCard}>
                 <div style={styles.authorHeader}>
-                    <Link to={`/profile/${comment.user?._id}`}>
+                    {/* CONDITIONAL LINK: Avatar */}
+                    {isCommentAuthorSuperAdmin ? (
                         <img 
                             src={optimizeCloudinaryUrl(comment.user?.avatar || 'https://via.placeholder.com/45/CCCCCC/FFFFFF?text=P', { width: 90, height: 90, isProfile: true })} 
                             alt={comment.user?.name || 'Deleted User'} 
                             loading="lazy"
-                            style={styles.avatar} 
+                            style={{...styles.avatar, cursor: 'default', border: '2px solid #FFD700'}} 
                         />
-                    </Link>
-                    <div style={styles.authorInfo}>
-                        <Link to={`/profile/${comment.user?._id}`} style={styles.authorName}>
-                            <strong style={styles.authorName}>{comment.user?.name || 'Deleted User'}</strong>
+                    ) : (
+                        <Link to={`/profile/${comment.user?._id}`}>
+                            <img 
+                                src={optimizeCloudinaryUrl(comment.user?.avatar || 'https://via.placeholder.com/45/CCCCCC/FFFFFF?text=P', { width: 90, height: 90, isProfile: true })} 
+                                alt={comment.user?.name || 'Deleted User'} 
+                                loading="lazy"
+                                style={styles.avatar} 
+                            />
                         </Link>
+                    )}
+
+                    <div style={styles.authorInfo}>
+                        {/* CONDITIONAL LINK: Name */}
+                        {isCommentAuthorSuperAdmin ? (
+                            <div style={styles.authorName}>
+                                <strong style={styles.staticName}>{comment.user?.name || 'Deleted User'}</strong>
+                                {/* BADGE */}
+                                <RoleBadge user={comment.user} />
+                            </div>
+                        ) : (
+                            <div style={styles.authorName}>
+                                <Link to={`/profile/${comment.user?._id}`} style={styles.authorName}>
+                                    <strong style={{color: '#fff'}}>{comment.user?.name || 'Deleted User'}</strong>
+                                </Link>
+                                {/* BADGE */}
+                                <RoleBadge user={comment.user} />
+                            </div>
+                        )}
+                        
                         <span style={styles.date}>{formatDate(comment.createdAt)}</span>
                     </div>
                 </div>
