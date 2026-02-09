@@ -18,9 +18,7 @@ const styles = {
         paddingTop: '2rem',
         paddingBottom: '5rem',
         overflowX: 'hidden',
-        minHeight: '80vh',
-        // FIX: Creates a new stacking context for the whole page
-        isolation: 'isolate' 
+        minHeight: '80vh'
     },
     header: {
         textAlign: 'center',
@@ -28,13 +26,9 @@ const styles = {
         padding: '3rem 1rem',
         background: 'rgba(255, 255, 255, 0.03)',
         backdropFilter: 'blur(10px)',
-        WebkitBackdropFilter: 'blur(10px)', // Safari support
         border: '1px solid rgba(255, 255, 255, 0.1)',
         borderRadius: '24px',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-        // FIX: Force GPU rendering
-        transform: 'translateZ(0)',
-        WebkitTransform: 'translateZ(0)'
+        boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
     },
     title: {
         fontSize: 'clamp(2rem, 5vw, 4rem)', 
@@ -137,19 +131,18 @@ const styles = {
     },
     articleCard: {
         background: 'rgba(255, 255, 255, 0.03)',
-        backdropFilter: 'blur(10px)',
-        WebkitBackdropFilter: 'blur(10px)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
         border: '1px solid rgba(255, 255, 255, 0.1)',
         borderRadius: '24px',
         padding: '3rem',
         boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
         marginBottom: '3rem',
         overflow: 'hidden',
-        // FIX: Essential hardware acceleration for mobile Chrome
-        transform: 'translateZ(0)',
-        WebkitTransform: 'translateZ(0)',
-        WebkitBackfaceVisibility: 'hidden',
-        backfaceVisibility: 'hidden'
+        // GPU acceleration to prevent mobile flickering
+        WebkitTransform: 'translate3d(0,0,0)',
+        transform: 'translate3d(0,0,0)',
+        willChange: 'transform'
     },
     articleBanner: {
         width: '100%',
@@ -378,20 +371,20 @@ const FullBlogContent = ({ blog, onRefetch }) => {
                     .blog-article-card {
                         padding: 1.5rem !important;
                         border-radius: 16px !important;
-                        /* FIX: Remove high-cost blur on mobile to stop flickering */
-                        backdrop-filter: none !important;
-                        -webkit-backdrop-filter: none !important;
-                        background: rgba(20, 20, 25, 0.98) !important;
+                        
+                        /* RESTORED HOLOGRAPHIC EFFECT */
+                        background: rgba(255, 255, 255, 0.05) !important;
+                        backdrop-filter: blur(8px) !important;
+                        -webkit-backdrop-filter: blur(8px) !important;
+                        
+                        /* Fixes potential flicker during scroll */
+                        background-attachment: scroll !important;
                     }
                     .blog-article-meta {
                         flex-direction: column;
                         align-items: flex-start !important;
-                        gap: 0.6rem !important;
+                        gap: 0.8rem !important;
                         margin-bottom: 1.5rem !important;
-                    }
-                    /* FIX: Ensure markdown images don't cause layout shift glitches */
-                    .blog-article-card img {
-                        height: auto !important;
                     }
                 }
             `}</style>
@@ -540,9 +533,11 @@ const BlogPage = () => {
                     .blog-list-header {
                         padding: 2rem 1rem !important;
                         margin-bottom: 2rem !important;
-                        backdrop-filter: none !important;
-                        -webkit-backdrop-filter: none !important;
-                        background: rgba(20, 20, 25, 0.98) !important;
+                        
+                        /* Holographic header on mobile */
+                        background: rgba(255, 255, 255, 0.05) !important;
+                        backdrop-filter: blur(10px) !important;
+                        -webkit-backdrop-filter: blur(10px) !important;
                     }
                     .blog-list-controls {
                         flex-direction: column;
