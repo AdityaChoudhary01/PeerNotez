@@ -14,11 +14,10 @@ const InboxItem = ({ chat, currentUserId, onDelete }) => {
     const navigate = useNavigate();
     const [status, setStatus] = useState(null);
     const [isHovered, setIsHovered] = useState(false);
-    const longPressTimer = useRef(null); // Timer for long press
+    const longPressTimer = useRef(null);
 
     const isUnread = chat.unreadCount > 0;
 
-    // Listen to partner's status
     useEffect(() => {
         const statusRef = ref(db, `status/${chat.partnerId}`);
         const listener = onValue(statusRef, (snapshot) => {
@@ -27,7 +26,6 @@ const InboxItem = ({ chat, currentUserId, onDelete }) => {
         return () => off(statusRef, 'value', listener);
     }, [chat.partnerId]);
 
-    // Format "Last Seen"
     const getStatusText = () => {
         if (!status) return '';
         if (status.state === 'online') return 'Online';
@@ -45,24 +43,20 @@ const InboxItem = ({ chat, currentUserId, onDelete }) => {
 
     const isOnline = status?.state === 'online';
 
-    // --- LONG PRESS HANDLERS (Mobile) ---
     const handleTouchStart = () => {
         longPressTimer.current = setTimeout(() => {
             if (window.confirm(`Delete conversation with ${chat.partnerName}?`)) {
                 onDelete(chat.partnerId);
             }
-        }, 800); // 800ms hold time
+        }, 800);
     };
 
     const handleTouchEnd = () => {
-        if (longPressTimer.current) {
-            clearTimeout(longPressTimer.current);
-        }
+        if (longPressTimer.current) clearTimeout(longPressTimer.current);
     };
 
-    // --- DELETE HANDLER (Desktop) ---
     const handleDeleteClick = (e) => {
-        e.stopPropagation(); // Prevent navigating to chat
+        e.stopPropagation();
         if (window.confirm(`Delete conversation with ${chat.partnerName}?`)) {
             onDelete(chat.partnerId);
         }
@@ -82,8 +76,7 @@ const InboxItem = ({ chat, currentUserId, onDelete }) => {
                 background: isUnread ? 'rgba(0, 212, 255, 0.08)' : 'rgba(255, 255, 255, 0.02)',
                 border: isUnread ? '1px solid rgba(0, 212, 255, 0.2)' : '1px solid transparent', 
                 cursor: 'pointer', transition: 'all 0.2s ease',
-                marginBottom: '0.5rem',
-                position: 'relative' // For absolute positioning of delete btn
+                marginBottom: '0.5rem', position: 'relative'
             }}
         >
             <div style={{ position: 'relative' }}>
@@ -107,10 +100,8 @@ const InboxItem = ({ chat, currentUserId, onDelete }) => {
             <div style={{ flex: 1, overflow: 'hidden' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ 
-                        color: '#fff', 
-                        fontWeight: isUnread ? '800' : '600', 
-                        fontSize: '1rem',
-                        display: 'flex', alignItems: 'center'
+                        color: '#fff', fontWeight: isUnread ? '800' : '600', 
+                        fontSize: '1rem', display: 'flex', alignItems: 'center'
                     }}>
                         {chat.partnerName}
                         <RoleBadge user={chat.partnerDetails} />
@@ -127,17 +118,13 @@ const InboxItem = ({ chat, currentUserId, onDelete }) => {
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '4px' }}>
                     <div style={{
                         color: isUnread ? '#fff' : 'rgba(255, 255, 255, 0.6)', 
-                        fontSize: '0.9rem', 
-                        whiteSpace: 'nowrap', 
-                        overflow: 'hidden', 
-                        textOverflow: 'ellipsis',
-                        fontWeight: isUnread ? '700' : '400',
-                        flex: 1
+                        fontSize: '0.9rem', whiteSpace: 'nowrap', 
+                        overflow: 'hidden', textOverflow: 'ellipsis',
+                        fontWeight: isUnread ? '700' : '400', flex: 1
                     }}>
                         {chat.lastMessage}
                     </div>
 
-                    {/* Desktop Delete Button (Visible on Hover) */}
                     {isHovered && (
                         <button 
                             className="delete-chat-btn"
@@ -145,7 +132,7 @@ const InboxItem = ({ chat, currentUserId, onDelete }) => {
                             style={{
                                 background: 'none', border: 'none', color: '#ff0055', 
                                 cursor: 'pointer', fontSize: '1rem', marginLeft: '10px',
-                                display: window.matchMedia('(hover: hover)').matches ? 'block' : 'none' // Hide on touch devices via CSS logic
+                                display: window.matchMedia('(hover: hover)').matches ? 'block' : 'none'
                             }}
                             title="Delete Chat"
                         >
@@ -195,14 +182,21 @@ const ChatListPage = () => {
                             ...chat,
                             partnerName: userProfile.name,
                             partnerAvatar: userProfile.avatar,
-                            partnerDetails: userProfile // Pass full profile for Badge
+                            partnerDetails: userProfile
                         };
                     } catch (err) {
-                        return { ...chat, partnerName: 'Unknown User' };
+                        // --- OPTION 1: PERMANENT AUTO-CLEANUP ---
+                        if (err.response && err.response.status === 404) {
+                            console.warn(`Deleting orphaned chat reference for: ${chat.partnerId}`);
+                            const orphanRef = ref(db, `user_chats/${currentUser._id}/${chat.partnerId}`);
+                            remove(orphanRef); // Removes from Firebase
+                        }
+                        return null; // Filter these out of the UI
                     }
                 }));
 
-                setInbox(enrichedChats);
+                // Set only valid, non-null chats
+                setInbox(enrichedChats.filter(chat => chat !== null));
             } else {
                 setInbox([]);
             }
@@ -232,12 +226,10 @@ const ChatListPage = () => {
         return () => clearTimeout(delayDebounceFn);
     }, [searchTerm]);
 
-    // --- DELETE CHAT HANDLER ---
     const handleDeleteChat = async (partnerId) => {
         try {
             const chatRef = ref(db, `user_chats/${currentUser._id}/${partnerId}`);
             await remove(chatRef);
-            // State updates automatically via listener
         } catch (error) {
             console.error("Failed to delete chat", error);
             alert("Failed to delete chat. Please try again.");
