@@ -1,19 +1,21 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import { 
-    FaMapMarkerAlt, FaCalendarAlt, FaBook, FaRss, 
-    FaUserPlus, FaUserCheck, FaSpinner, FaUniversity, FaTimes 
+    FaMapMarkerAlt, FaCalendarAlt, FaBook, FaRss, FaStar, // Added FaStar
+    FaUserPlus, FaUserCheck, FaSpinner, FaUniversity, FaTimes, FaEnvelope 
 } from 'react-icons/fa';
 import NoteCard from '../components/notes/NoteCard';
 import BlogCard from '../components/blog/BlogCard';
 import useAuth from '../hooks/useAuth';
 import { optimizeCloudinaryUrl } from '../utils/cloudinaryHelper';
+import RoleBadge from '../components/common/RoleBadge'; // 1. Import RoleBadge
 
 const PublicProfilePage = () => {
     const { userId } = useParams();
     const { user: currentUser, token, updateUser } = useAuth();
+    const navigate = useNavigate(); 
     
     const [profile, setProfile] = useState(null);
     const [notes, setNotes] = useState([]);
@@ -62,7 +64,12 @@ const PublicProfilePage = () => {
     }, [fetchProfileData]);
 
     const handleFollowToggle = async () => {
-        if (!currentUser) return alert("Please log in to follow.");
+        if (!currentUser) {
+            if(window.confirm("You must be logged in to follow users. Go to login?")) {
+                navigate('/login');
+            }
+            return;
+        }
         setFollowLoading(true);
         try {
             const config = { headers: { Authorization: `Bearer ${token}` } };
@@ -85,6 +92,17 @@ const PublicProfilePage = () => {
         }
     };
 
+    // --- MESSAGE HANDLER ---
+    const handleMessage = () => {
+        if (!currentUser) {
+            if (window.confirm("Login required to chat. Would you like to login now?")) {
+                navigate('/login');
+            }
+            return;
+        }
+        navigate(`/chat/${userId}`);
+    };
+
     const openUserList = async (type) => {
         setModalConfig({ isOpen: true, type, data: [] });
         setModalLoading(true);
@@ -103,7 +121,7 @@ const PublicProfilePage = () => {
 
     const isOwnProfile = currentUser?._id === profile._id;
 
-    // --- SEO ENHANCEMENT ---
+    // --- SEO DATA ---
     const seoTitle = `${profile.name} | Student Profile at PeerNotez`;
     const seoDescription = `View ${profile.name}'s academic contributions on PeerNotez. Exploring ${notes.length} notes and ${blogs.length} blogs from ${profile.university || 'their university'}.`;
     const profileUrl = `https://peernotez.netlify.app/profile/${userId}`;
@@ -119,14 +137,7 @@ const PublicProfilePage = () => {
         "affiliation": {
             "@type": "Organization",
             "name": profile.university || "PeerNotez Contributor"
-        },
-        "interactionStatistic": [
-            {
-                "@type": "InteractionCounter",
-                "interactionType": "https://schema.org/FollowAction",
-                "userInteractionCount": profile.followersCount || 0
-            }
-        ]
+        }
     };
 
     return (
@@ -142,31 +153,56 @@ const PublicProfilePage = () => {
                 <div className="gradient-overlay"></div>
                 <div className="header-flex">
                     <div className="avatar-section">
-                    <img 
-    src={profileImage || `https://api.dicebear.com/7.x/initials/svg?seed=${profile.name}&backgroundColor=00d4ff`} 
-    alt={profile.name} // <--- Better: Screen reader says "Image, Aditya Choudhary"
-    className="main-avatar"
-/>
+                        <img 
+                            src={profileImage || `https://api.dicebear.com/7.x/initials/svg?seed=${profile.name}&backgroundColor=00d4ff`} 
+                            alt={profile.name} 
+                            className="main-avatar"
+                        />
                     </div>
 
                     <div className="info-section">
                         <div className="title-row">
                             <div className="name-box">
-                                <h1>{profile.name}</h1>
-                                <span className="role-badge">Verified Contributor</span>
+                                <div style={{display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap'}}>
+                                    <h1>{profile.name}</h1>
+                                    {/* 2. Admin Role Badge */}
+                                    <RoleBadge user={profile} />
+                                </div>
+                                <span className="role-badge-text">Verified Contributor</span>
                             </div>
                             
                             {!isOwnProfile && (
-                                <button 
-                                    onClick={handleFollowToggle} 
-                                    disabled={followLoading}
-                                    className={`follow-btn ${isFollowing ? 'following' : ''}`}
-                                    aria-label={isFollowing ? `Unfollow ${profile.name}` : `Follow ${profile.name}`}
-                                >
-                                    {followLoading ? '...' : (isFollowing ? <><FaUserCheck /> Following</> : <><FaUserPlus /> Follow</>)}
-                                </button>
+                                <div className="action-buttons">
+                                    <button 
+                                        onClick={handleMessage}
+                                        className="message-btn"
+                                        aria-label={`Send message to ${profile.name}`}
+                                    >
+                                        <FaEnvelope /> Message
+                                    </button>
+
+                                    <button 
+                                        onClick={handleFollowToggle} 
+                                        disabled={followLoading}
+                                        className={`follow-btn ${isFollowing ? 'following' : ''}`}
+                                        aria-label={isFollowing ? `Unfollow ${profile.name}` : `Follow ${profile.name}`}
+                                    >
+                                        {followLoading ? '...' : (isFollowing ? <><FaUserCheck /> Following</> : <><FaUserPlus /> Follow</>)}
+                                    </button>
+                                </div>
                             )}
                         </div>
+
+                        {/* 3. Gamification Badges List */}
+                        {profile.badges && profile.badges.length > 0 && (
+                            <div className="gamification-badges">
+                                {profile.badges.map((badge, index) => (
+                                    <span key={index} className="g-badge" title={badge.description}>
+                                        <FaStar className="star-icon" /> {badge.name}
+                                    </span>
+                                ))}
+                            </div>
+                        )}
 
                         <div className="meta-list">
                             {profile.university && <span><FaUniversity aria-hidden="true" /> {profile.university}</span>}
@@ -262,7 +298,23 @@ const PublicProfilePage = () => {
                 .info-section { flex: 1; }
                 .title-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
                 .name-box h1 { margin: 0; font-size: clamp(1.5rem, 4vw, 2.5rem); color: #fff; }
-                .role-badge { color: #00d4ff; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; }
+                .role-badge-text { color: rgba(255,255,255,0.5); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; margin-top: 5px; display: block; }
+                
+                /* Gamification Badges Styles */
+                .gamification-badges { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+                .g-badge { 
+                    background: rgba(255, 215, 0, 0.1); 
+                    color: #ffd700; 
+                    border: 1px solid rgba(255, 215, 0, 0.3); 
+                    padding: 4px 10px; 
+                    borderRadius: 20px; 
+                    font-size: 0.8rem; 
+                    display: flex; 
+                    align-items: center; 
+                    gap: 5px; 
+                }
+                .star-icon { color: gold; }
+
                 .meta-list { display: flex; flex-wrap: wrap; gap: 1.5rem; color: rgba(255,255,255,0.5); margin: 1.5rem 0; font-size: 0.9rem; }
                 .bio-text { color: rgba(255,255,255,0.8); line-height: 1.6; margin-bottom: 2rem; max-width: 800px; }
                 .stats-grid { display: flex; gap: 3rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1.5rem; }
@@ -272,8 +324,32 @@ const PublicProfilePage = () => {
                 .stat.clickable { cursor: pointer; transition: 0.2s; }
                 .stat.clickable:hover .val { color: #00d4ff; }
 
-                .follow-btn { padding: 12px 28px; border-radius: 50px; border: none; background: linear-gradient(135deg, #00d4ff, #333399); color: #fff; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.3s; }
-                .follow-btn.following { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); }
+                /* --- ACTION BUTTONS CSS --- */
+                .action-buttons { display: flex; gap: 10px; align-items: center; }
+
+                .follow-btn { padding: 12px 28px; border-radius: 50px; border: none; background: linear-gradient(135deg, #00d4ff, #333399); color: #fff; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.3s; box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3); }
+                .follow-btn.following { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); box-shadow: none; }
+                
+                .message-btn {
+                    padding: 12px 24px;
+                    border-radius: 50px;
+                    border: 1px solid rgba(255, 255, 255, 0.2);
+                    background: rgba(255, 255, 255, 0.05);
+                    color: #fff;
+                    font-weight: 600;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    transition: 0.3s;
+                    backdrop-filter: blur(5px);
+                }
+                .message-btn:hover {
+                    background: rgba(255, 255, 255, 0.15);
+                    border-color: #00d4ff;
+                    transform: translateY(-2px);
+                }
+
                 .tab-bar { display: flex; gap: 1rem; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 20px; width: fit-content; margin: 0 auto 2rem; border: 1px solid rgba(255,255,255,0.05); }
                 .tab-btn { background: transparent; border: none; padding: 12px 25px; color: rgba(255,255,255,0.5); cursor: pointer; border-radius: 15px; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: 0.3s; }
                 .tab-btn.active { background: rgba(255,255,255,0.1); color: #fff; }
@@ -297,8 +373,10 @@ const PublicProfilePage = () => {
                     .header-flex { flex-direction: column; align-items: center; text-align: center; gap: 1.5rem; }
                     .stats-grid { justify-content: center; gap: 1.5rem; width: 100%; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1.5rem; }
                     .meta-list { justify-content: center; }
-                    .follow-btn { width: 100%; justify-content: center; order: 2; }
+                    .action-buttons { width: 100%; justify-content: center; order: 2; flex-wrap: wrap; }
+                    .follow-btn, .message-btn { flex: 1; justify-content: center; }
                     .profile-header-card { padding: 1.5rem; }
+                    .gamification-badges { justify-content: center; }
                 }
                 @media (max-width: 480px) {
                     .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
