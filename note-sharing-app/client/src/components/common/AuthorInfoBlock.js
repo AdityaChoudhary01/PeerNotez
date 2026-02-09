@@ -4,10 +4,16 @@ import { Link } from 'react-router-dom';
 import { FaUserPlus, FaUserCheck, FaCrown, FaInfoCircle } from 'react-icons/fa'; 
 import useAuth from '../../hooks/useAuth'; 
 import { optimizeCloudinaryUrl } from '../../utils/cloudinaryHelper';
+import RoleBadge from './RoleBadge'; // Make sure this path is correct!
 
 const AuthorInfoBlock = ({ author }) => {
     const { user, token, updateUser } = useAuth();
     
+    // --- SUPER ADMIN LOGIC ---
+    // If author is missing, default to false to prevent errors
+    const MAIN_ADMIN_EMAIL = process.env.REACT_APP_MAIN_ADMIN_EMAIL;
+    const isSuperAdmin = author?.email === MAIN_ADMIN_EMAIL;
+
     // Determine if the current viewer is the author
     const isOwner = user?._id === author?._id;
     
@@ -21,6 +27,7 @@ const AuthorInfoBlock = ({ author }) => {
         }
     }, [user, author, isOwner]);
 
+    // --- STYLES ---
     const styles = {
         card: {
             background: 'rgba(255, 255, 255, 0.05)',
@@ -57,13 +64,23 @@ const AuthorInfoBlock = ({ author }) => {
             zIndex: 1,
             cursor: 'pointer'
         },
+        // Static style for Super Admin (disabled cursor)
+        staticContainer: {
+            display: 'flex',
+            alignItems: 'center',
+            gap: '15px',
+            zIndex: 1,
+            cursor: 'default', // Arrow cursor
+            pointerEvents: 'none' // Disables clicking entirely on this container
+        },
         avatar: {
             width: '60px',
             height: '60px',
             borderRadius: '50%',
             border: isOwner ? '2px solid #6366f1' : '2px solid rgba(0, 212, 255, 0.6)',
             objectFit: 'cover',
-            boxShadow: isOwner ? '0 0 15px rgba(99, 102, 241, 0.3)' : '0 0 15px rgba(0, 212, 255, 0.3)'
+            boxShadow: isOwner ? '0 0 15px rgba(99, 102, 241, 0.3)' : '0 0 15px rgba(0, 212, 255, 0.3)',
+            pointerEvents: 'auto' // Re-enable pointer events for the image itself if needed, but wrapper blocks link
         },
         name: {
             fontSize: '1.1rem',
@@ -72,24 +89,26 @@ const AuthorInfoBlock = ({ author }) => {
             marginBottom: '4px',
             display: 'flex',
             alignItems: 'center',
-            gap: '8px'
+            gap: '8px',
+            flexWrap: 'wrap'
         },
         stats: {
             fontSize: '0.85rem',
             color: 'rgba(255, 255, 255, 0.6)',
             fontFamily: "'Spline Sans', sans-serif"
         },
-        badge: {
+        // Legacy Elite Badge
+        eliteBadge: {
             fontSize: '0.7rem',
-            background: 'linear-gradient(45deg, #ffd700, #ffaa00)',
-            color: '#000',
+            background: 'linear-gradient(45deg, #bc13fe, #7a00cc)', 
+            color: '#fff',
             padding: '2px 8px',
             borderRadius: '10px',
             fontWeight: 'bold',
             display: 'inline-flex',
             alignItems: 'center',
             gap: '4px',
-            marginLeft: '8px'
+            marginLeft: '5px'
         },
         btnWrapper: {
             display: 'flex',
@@ -154,23 +173,32 @@ const AuthorInfoBlock = ({ author }) => {
     
     if (!author) return null;
 
-    // Optimized Avatar URL: 120px for high-density displays, auto-format, centered on face
     const optimizedAvatar = optimizeCloudinaryUrl(author.avatar || 'https://via.placeholder.com/60', { 
         width: 120, 
         height: 120, 
         isProfile: true 
     });
 
+    // --- CONDITIONAL RENDERER ---
+    // If Super Admin, use 'div' (not clickable). Else use 'Link'.
+    const ContentWrapper = isSuperAdmin ? 'div' : Link;
+    
+    // Props based on type
+    const wrapperProps = isSuperAdmin 
+        ? { style: styles.staticContainer, className: "author-link-wrapper" }
+        : { to: `/profile/${author._id}`, style: styles.link, className: "author-link-wrapper" };
+
     return (
         <div 
             className="author-info-card"
             style={styles.card}
-            onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-            onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+            // Disable hover lift effect for Super Admin
+            onMouseEnter={(e) => !isSuperAdmin && (e.currentTarget.style.transform = 'translateY(-2px)')}
+            onMouseLeave={(e) => !isSuperAdmin && (e.currentTarget.style.transform = 'translateY(0)')}
         >
             <div style={styles.glow}></div>
 
-            <Link to={`/profile/${author._id}`} style={styles.link} className="author-link-wrapper">
+            <ContentWrapper {...wrapperProps}>
                 <img 
                     src={optimizedAvatar} 
                     alt={`Avatar of ${author.name}`} 
@@ -180,10 +208,17 @@ const AuthorInfoBlock = ({ author }) => {
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <div style={styles.name}>
                         {author.name}
+                        
+                        {/* 1. ROLE BADGE (Super Admin / Admin) */}
+                        {/* Ensure 'author' object has 'role' and 'email' fields! */}
+                        <RoleBadge user={author} />
+
+                        {/* 2. ACTIVITY BADGE (Elite) */}
                         {author.noteCount >= 50 && (
-                            <span style={styles.badge}><FaCrown /> Elite</span>
+                            <span style={styles.eliteBadge}><FaCrown /> Elite</span>
                         )}
                     </div>
+                    
                     <span style={styles.stats}>
                         {author.noteCount > 0 && `${author.noteCount} Notes`} 
                         {author.noteCount > 0 && author.blogCount > 0 && ` • `}
@@ -191,29 +226,33 @@ const AuthorInfoBlock = ({ author }) => {
                         {(author.noteCount === 0 && author.blogCount === 0) && "New Contributor"}
                     </span>
                 </div>
-            </Link>
+            </ContentWrapper>
             
-            <div style={styles.btnWrapper} className="author-action-wrapper">
-                {isOwner ? (
-                    <div style={styles.authorStatus}>
-                        <FaInfoCircle /> You are the Author
-                    </div>
-                ) : (
-                    <>
-                        <button 
-                            onClick={handleFollowToggle} 
-                            style={isFollowing ? {...styles.btn, ...styles.followingBtn} : {...styles.btn, ...styles.followBtn}}
-                            disabled={loading}
-                            aria-label={isFollowing ? `Unfollow ${author.name}` : `Follow ${author.name}`}
-                        >
-                            {loading ? 'Updating...' : (
-                                isFollowing ? <><FaUserCheck /> Following</> : <><FaUserPlus /> Follow</>
-                            )}
-                        </button>
-                        {!user && <span style={{fontSize: '0.8rem', color: 'rgba(255, 255, 255, 0.5)', marginTop: '5px'}}>Log in to follow</span>}
-                    </>
-                )}
-            </div>
+            {/* ACTION BUTTONS */}
+            {/* If Super Admin, HIDE the buttons completely */}
+            {!isSuperAdmin && (
+                <div style={styles.btnWrapper} className="author-action-wrapper">
+                    {isOwner ? (
+                        <div style={styles.authorStatus}>
+                            <FaInfoCircle /> You are the Author
+                        </div>
+                    ) : (
+                        <>
+                            <button 
+                                onClick={handleFollowToggle} 
+                                style={isFollowing ? {...styles.btn, ...styles.followingBtn} : {...styles.btn, ...styles.followBtn}}
+                                disabled={loading}
+                                aria-label={isFollowing ? `Unfollow ${author.name}` : `Follow ${author.name}`}
+                            >
+                                {loading ? 'Updating...' : (
+                                    isFollowing ? <><FaUserCheck /> Following</> : <><FaUserPlus /> Follow</>
+                                )}
+                            </button>
+                            {!user && <span style={{fontSize: '0.8rem', color: 'rgba(255, 255, 255, 0.5)', marginTop: '5px'}}>Log in to follow</span>}
+                        </>
+                    )}
+                </div>
+            )}
 
             <style>{`
                 @media (max-width: 600px) {
