@@ -196,6 +196,7 @@ const LoginPage = () => {
             <Helmet>
                 <title>Login | PeerNotez</title>
                 <meta name="description" content="Log in to PeerNotez." />
+     <link rel="canonical" href="https://peernotez.netlify.app/login" />
             </Helmet>
 
             <div style={styles.splitLayout} className="login-split-layout">
@@ -300,3 +301,4 @@ const LoginPage = () => {
 };
 
 export default LoginPage;
+
