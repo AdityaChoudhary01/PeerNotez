@@ -122,7 +122,6 @@ const HomePage = () => {
 
     return (
         <main className="homepage-wrapper">
-            <Helmet>
              {/* --- MERGED SEO DATA --- */}
             <Helmet>
                 <title>PeerNotez | Discover & Share Student Handwritten Notes Online</title>
