@@ -129,7 +129,6 @@ const styles = {
         transition: 'color 0.2s',
         fontWeight: '600'
     },
-    // --- UPDATED CARD STYLE TO FIX GLITCH ---
     articleCard: {
         background: 'rgba(255, 255, 255, 0.03)',
         backdropFilter: 'blur(12px)',
@@ -139,10 +138,11 @@ const styles = {
         padding: '3rem',
         boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
         marginBottom: '3rem',
-        // IMPORTANT: Removed translate3d, transform, and willChange
-        // These properties force GPU composition which crashes Chrome Mobile on long pages
-        position: 'relative', 
-        zIndex: 1
+        overflow: 'hidden',
+        // GPU acceleration to prevent mobile flickering
+        WebkitTransform: 'translate3d(0,0,0)',
+        transform: 'translate3d(0,0,0)',
+        willChange: 'transform'
     },
     articleBanner: {
         width: '100%',
@@ -372,15 +372,13 @@ const FullBlogContent = ({ blog, onRefetch }) => {
                         padding: 1.5rem !important;
                         border-radius: 16px !important;
                         
-                        /* FIX FOR CHROME MOBILE GLITCHES */
-                        /* 1. We reset transform to stop GPU texture limit issues */
-                        transform: none !important;
-                        will-change: auto !important;
+                        /* RESTORED HOLOGRAPHIC EFFECT */
+                        background: rgba(255, 255, 255, 0.05) !important;
+                        backdrop-filter: blur(8px) !important;
+                        -webkit-backdrop-filter: blur(8px) !important;
                         
-                        /* 2. We use a darker background with less blur to reduce "Paint" cost */
-                        background: rgba(15, 15, 25, 0.9) !important;
-                        backdrop-filter: blur(5px) !important;
-                        -webkit-backdrop-filter: blur(5px) !important;
+                        /* Fixes potential flicker during scroll */
+                        background-attachment: scroll !important;
                     }
                     .blog-article-meta {
                         flex-direction: column;
@@ -468,7 +466,7 @@ const BlogPage = () => {
         <div style={styles.wrapper}>
             <Helmet>
                 <title>PeerNotez Blog | Insights on Education and Tech</title>
-                <meta name="description" content="Explore articles on study hacks, developer insights, and community stories, and open education written by the PeerNotez community." />
+                <meta name="description" content="Explore articles on study hacks, developer insights, community stories, and open education written by the PeerNotez community." />
                 <link rel="canonical" href="https://peernotez.netlify.app/blogs" />
             </Helmet>
 
@@ -535,6 +533,8 @@ const BlogPage = () => {
                     .blog-list-header {
                         padding: 2rem 1rem !important;
                         margin-bottom: 2rem !important;
+                        
+                        /* Holographic header on mobile */
                         background: rgba(255, 255, 255, 0.05) !important;
                         backdrop-filter: blur(10px) !important;
                         -webkit-backdrop-filter: blur(10px) !important;
