@@ -222,12 +222,3 @@ input:focus, select:focus, textarea:focus {
   50% { transform: translateY(-15px); }
   100% { transform: translateY(0px); }
 }
-/* ADD THIS TO THE BOTTOM OF src/App.css */
-@media (max-width: 768px) {
-  body::before {
-    /* Stop the heavy animation on mobile to prevent vibrating/lag */
-    animation: none; 
-    /* Use a static gradient or just the background color */
-    background: radial-gradient(circle at 50% 50%, rgba(61, 61, 179, 0.15), transparent 70%); 
-  }
-}
