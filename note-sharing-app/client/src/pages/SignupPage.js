@@ -389,6 +389,9 @@ const SignupPage = () => {
                         flex-direction: column !important; 
                         min-height: auto !important;
                     }
+                    .container {
+                        width: 100% !important;
+                }
                 }
             `}</style>
         </main>
@@ -396,4 +399,5 @@ const SignupPage = () => {
 };
 
 export default SignupPage;
+
 
