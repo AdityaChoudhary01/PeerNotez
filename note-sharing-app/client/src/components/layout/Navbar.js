@@ -116,6 +116,8 @@ const Navbar = () => {
       cursor: 'pointer',
       zIndex: 1002,
     },
+
+    // ✅ FIXED: make mobile menu scrollable and capped to viewport
     mobileMenu: {
       position: 'absolute',
       top: '80px',
@@ -125,6 +127,7 @@ const Navbar = () => {
       backdropFilter: 'blur(20px)',
       borderRadius: '20px',
       padding: '2rem',
+      paddingBottom: '2.5rem', // extra space so logout isn't stuck at the edge
       border: '1px solid rgba(255,255,255,0.1)',
       display: 'flex',
       flexDirection: 'column',
@@ -135,7 +138,12 @@ const Navbar = () => {
       pointerEvents: menuOpen ? 'all' : 'none',
       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
       boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
+
+      maxHeight: 'calc(100vh - 120px)', // ✅ keeps it inside screen
+      overflowY: 'auto', // ✅ allows scrolling
+      WebkitOverflowScrolling: 'touch', // ✅ smooth iOS scrolling
     },
+
     avatar: {
       width: '40px',
       height: '40px',
@@ -188,12 +196,11 @@ const Navbar = () => {
       boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
     },
 
-    // UPDATED: center-aligned clickable profile row in mobile menu
     mobileProfileLink: {
       display: 'flex',
-      flexDirection: 'column',     // stack avatar + name
-      alignItems: 'center',        // center horizontally
-      justifyContent: 'center',    // center vertically
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
       gap: '10px',
       textDecoration: 'none',
       padding: '14px 14px',
@@ -228,10 +235,8 @@ const Navbar = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // --- LISTEN FOR UNREAD MESSAGES ---
   useEffect(() => {
     if (!user?._id) return;
-
     const inboxRef = ref(db, `user_chats/${user._id}`);
 
     const unsubscribe = onValue(inboxRef, (snapshot) => {
@@ -405,7 +410,6 @@ const Navbar = () => {
 
           {user ? (
             <>
-              {/* Center aligned: avatar + username clickable to profile */}
               <Link
                 to="/profile"
                 onClick={() => setMenuOpen(false)}
@@ -416,7 +420,6 @@ const Navbar = () => {
                 <span style={styles.mobileProfileName}>{user.name}</span>
               </Link>
 
-              {/* MESSAGE ICON - MOBILE */}
               <Link
                 to="/chat"
                 onClick={() => setMenuOpen(false)}
