@@ -1,9 +1,10 @@
-/**
- * Automatically optimizes Cloudinary URLs with f_auto, q_auto and custom dimensions.
- * Works for existing and future uploads.
- */
 export const optimizeCloudinaryUrl = (url, { width, height, crop = 'fill', pg } = {}) => {
     if (!url || !url.includes('res.cloudinary.com')) return url;
+
+    // 1. Force HTTPS
+    if (url.startsWith('http://')) {
+        url = url.replace('http://', 'https://');
+    }
 
     // Parameters:
     // f_auto: Optimal format (WebP)
