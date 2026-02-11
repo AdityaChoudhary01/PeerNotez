@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
-import logo from '../../assets/peernotez-logo.png'; 
+import logo from '../../assets/peernotez-logo.png';
 import { FaBars, FaTimes, FaSearch, FaSignOutAlt, FaPaperPlane } from 'react-icons/fa';
 import { optimizeCloudinaryUrl } from '../../utils/cloudinaryHelper';
-import { ref, onValue } from 'firebase/database'; // Firebase Imports
+import { ref, onValue } from 'firebase/database';
 import { db } from '../../services/firebase';
 
 const Navbar = () => {
@@ -13,8 +13,8 @@ const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-  const [unreadCount, setUnreadCount] = useState(0); // State for message count
-  
+  const [unreadCount, setUnreadCount] = useState(0);
+
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -29,7 +29,7 @@ const Navbar = () => {
       display: 'flex',
       justifyContent: 'center',
       padding: '0 20px',
-      pointerEvents: 'none' 
+      pointerEvents: 'none',
     },
     glassBar: {
       pointerEvents: 'auto',
@@ -47,12 +47,12 @@ const Navbar = () => {
       padding: '10px 30px',
       height: '70px',
       transition: 'all 0.4s ease',
-      position: 'relative'
+      position: 'relative',
     },
     logo: {
       height: '40px',
       filter: 'brightness(1.2) drop-shadow(0 0 8px rgba(255,255,255,0.3))',
-      transition: 'transform 0.3s ease'
+      transition: 'transform 0.3s ease',
     },
     desktopMenu: {
       display: 'flex',
@@ -68,45 +68,45 @@ const Navbar = () => {
       padding: '5px 0',
       opacity: 0.8,
       transition: 'all 0.2s',
-      fontFamily: "'Spline Sans', sans-serif"
+      fontFamily: "'Spline Sans', sans-serif",
     },
     activeLink: {
       opacity: 1,
       color: '#00d4ff',
-      textShadow: '0 0 10px rgba(0, 212, 255, 0.4)'
+      textShadow: '0 0 10px rgba(0, 212, 255, 0.4)',
     },
     activeIndicator: {
-      position: 'absolute', 
-      bottom: '-2px', 
-      left: 0, 
-      width: '100%', 
-      height: '2px', 
-      background: 'linear-gradient(90deg, #00d4ff, #ff00cc)', 
-      borderRadius: '2px'
+      position: 'absolute',
+      bottom: '-2px',
+      left: 0,
+      width: '100%',
+      height: '2px',
+      background: 'linear-gradient(90deg, #00d4ff, #ff00cc)',
+      borderRadius: '2px',
     },
     searchContainer: {
-        background: 'rgba(255,255,255,0.1)',
-        borderRadius: '50px',
-        padding: '5px 15px',
-        display: 'flex',
-        alignItems: 'center',
-        border: '1px solid rgba(255,255,255,0.05)',
-        transition: 'all 0.3s ease'
+      background: 'rgba(255,255,255,0.1)',
+      borderRadius: '50px',
+      padding: '5px 15px',
+      display: 'flex',
+      alignItems: 'center',
+      border: '1px solid rgba(255,255,255,0.05)',
+      transition: 'all 0.3s ease',
     },
     searchInput: {
-        background: 'transparent',
-        border: 'none',
-        color: '#fff',
-        padding: '5px',
-        outline: 'none',
-        fontSize: '0.9rem',
-        width: '150px',
-        fontFamily: "'Spline Sans', sans-serif"
+      background: 'transparent',
+      border: 'none',
+      color: '#fff',
+      padding: '5px',
+      outline: 'none',
+      fontSize: '0.9rem',
+      width: '150px',
+      fontFamily: "'Spline Sans', sans-serif",
     },
     authContainer: {
-      display: 'flex', 
-      alignItems: 'center', 
-      gap: '15px'
+      display: 'flex',
+      alignItems: 'center',
+      gap: '15px',
     },
     mobileToggle: {
       background: 'none',
@@ -114,7 +114,7 @@ const Navbar = () => {
       color: 'white',
       fontSize: '1.5rem',
       cursor: 'pointer',
-      zIndex: 1002
+      zIndex: 1002,
     },
     mobileMenu: {
       position: 'absolute',
@@ -134,59 +134,82 @@ const Navbar = () => {
       transform: menuOpen ? 'translateY(0)' : 'translateY(-20px)',
       pointerEvents: menuOpen ? 'all' : 'none',
       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-      boxShadow: '0 20px 50px rgba(0,0,0,0.5)'
+      boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
     },
     avatar: {
-      width: '40px', 
-      height: '40px', 
-      borderRadius: '50%', 
-      border: '2px solid rgba(255,255,255,0.8)', 
+      width: '40px',
+      height: '40px',
+      borderRadius: '50%',
+      border: '2px solid rgba(255,255,255,0.8)',
       objectFit: 'cover',
       boxShadow: '0 0 10px rgba(0, 212, 255, 0.3)',
-      cursor: 'pointer'
+      cursor: 'pointer',
     },
     logoutBtnDesktop: {
-        background: 'rgba(255, 0, 85, 0.1)',
-        border: '1px solid rgba(255, 0, 85, 0.3)',
-        color: '#ff0055',
-        borderRadius: '50%',
-        width: '38px',
-        height: '38px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        cursor: 'pointer',
-        transition: 'all 0.3s ease'
+      background: 'rgba(255, 0, 85, 0.1)',
+      border: '1px solid rgba(255, 0, 85, 0.3)',
+      color: '#ff0055',
+      borderRadius: '50%',
+      width: '38px',
+      height: '38px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      cursor: 'pointer',
+      transition: 'all 0.3s ease',
     },
     iconLink: {
-        color: 'rgba(255, 255, 255, 0.8)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '8px',
-        borderRadius: '50%',
-        transition: '0.3s',
-        fontSize: '1.1rem',
-        textDecoration: 'none',
-        background: 'rgba(255, 255, 255, 0.05)',
-        border: '1px solid rgba(255, 255, 255, 0.1)',
-        position: 'relative' // Needed for badge positioning
+      color: 'rgba(255, 255, 255, 0.8)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '8px',
+      borderRadius: '50%',
+      transition: '0.3s',
+      fontSize: '1.1rem',
+      textDecoration: 'none',
+      background: 'rgba(255, 255, 255, 0.05)',
+      border: '1px solid rgba(255, 255, 255, 0.1)',
+      position: 'relative',
     },
     badge: {
-        position: 'absolute',
-        top: '-15px',
-        right: '-15px',
-        background: '#ff0055',
-        color: 'white',
-        borderRadius: '50%',
-        padding: '2px 6px',
-        fontSize: '0.7rem',
-        fontWeight: 'bold',
-        minWidth: '18px',
-        textAlign: 'center',
-        border: '2px solid #0f0c29', // Matches navbar bg to create a "cutout" look
-        boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
-    }
+      position: 'absolute',
+      top: '-15px',
+      right: '-15px',
+      background: '#ff0055',
+      color: 'white',
+      borderRadius: '50%',
+      padding: '2px 6px',
+      fontSize: '0.7rem',
+      fontWeight: 'bold',
+      minWidth: '18px',
+      textAlign: 'center',
+      border: '2px solid #0f0c29',
+      boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
+    },
+
+    // UPDATED: center-aligned clickable profile row in mobile menu
+    mobileProfileLink: {
+      display: 'flex',
+      flexDirection: 'column',     // stack avatar + name
+      alignItems: 'center',        // center horizontally
+      justifyContent: 'center',    // center vertically
+      gap: '10px',
+      textDecoration: 'none',
+      padding: '14px 14px',
+      borderRadius: '16px',
+      width: '100%',
+      background: 'rgba(255,255,255,0.04)',
+      border: '1px solid rgba(255,255,255,0.08)',
+      transition: '0.2s',
+      textAlign: 'center',
+    },
+    mobileProfileName: {
+      color: 'white',
+      fontWeight: '700',
+      opacity: 0.95,
+      textAlign: 'center',
+    },
   };
 
   useEffect(() => {
@@ -205,20 +228,18 @@ const Navbar = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // --- NEW: LISTEN FOR UNREAD MESSAGES ---
+  // --- LISTEN FOR UNREAD MESSAGES ---
   useEffect(() => {
     if (!user?._id) return;
 
-    // Listen to my chat inbox
     const inboxRef = ref(db, `user_chats/${user._id}`);
-    
+
     const unsubscribe = onValue(inboxRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
-        // Sum up the 'unreadCount' from all chats
         let totalUnread = 0;
-        Object.values(data).forEach(chat => {
-          totalUnread += (chat.unreadCount || 0);
+        Object.values(data).forEach((chat) => {
+          totalUnread += chat.unreadCount || 0;
         });
         setUnreadCount(totalUnread);
       } else {
@@ -244,8 +265,9 @@ const Navbar = () => {
     }
   };
 
-  // Optimize User Avatar
-  const optimizedAvatar = user ? optimizeCloudinaryUrl(user.avatar, { width: 80, height: 80, isProfile: true }) : null;
+  const optimizedAvatar = user
+    ? optimizeCloudinaryUrl(user.avatar, { width: 80, height: 80, isProfile: true })
+    : null;
 
   return (
     <div style={styles.navWrapper}>
@@ -258,153 +280,212 @@ const Navbar = () => {
         {/* DESKTOP LINKS */}
         {!isMobile && (
           <div style={styles.desktopMenu}>
-            {['Home', 'About', 'Blogs', 'Contact', 'Donate'].map(item => {
-               const path = item === 'Home' ? '/' : `/${item.toLowerCase()}`;
-               const isActive = location.pathname === path;
-               return (
-                   <Link 
-                    key={item} 
-                    to={path} 
-                    style={{...styles.link, ...(isActive ? styles.activeLink : {})}}
-                   >
-                       {item}
-                       {isActive && <span style={styles.activeIndicator}/>}
-                   </Link>
-               );
+            {['Home', 'About', 'Blogs', 'Contact', 'Donate'].map((item) => {
+              const path = item === 'Home' ? '/' : `/${item.toLowerCase()}`;
+              const isActive = location.pathname === path;
+              return (
+                <Link
+                  key={item}
+                  to={path}
+                  style={{ ...styles.link, ...(isActive ? styles.activeLink : {}) }}
+                >
+                  {item}
+                  {isActive && <span style={styles.activeIndicator} />}
+                </Link>
+              );
             })}
             {user && user.role === 'admin' && (
-              <Link to="/admin" style={{...styles.link, color: '#ffcc00'}}>Admin</Link>
+              <Link to="/admin" style={{ ...styles.link, color: '#ffcc00' }}>
+                Admin
+              </Link>
             )}
           </div>
         )}
 
         {/* AUTH & ACTIONS */}
         <div style={styles.authContainer}>
-            {!isMobile && (
-              <form onSubmit={handleSearch} style={styles.searchContainer}>
-                  <FaSearch color="rgba(255,255,255,0.5)" size={12} aria-hidden="true" />
-                  <input 
-                      type="text" 
-                      placeholder="Search..." 
-                      aria-label="Search academic notes"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      style={styles.searchInput}
-                  />
-              </form>
-            )}
+          {!isMobile && (
+            <form onSubmit={handleSearch} style={styles.searchContainer}>
+              <FaSearch color="rgba(255,255,255,0.5)" size={12} aria-hidden="true" />
+              <input
+                type="text"
+                placeholder="Search..."
+                aria-label="Search academic notes"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={styles.searchInput}
+              />
+            </form>
+          )}
 
-            {!isMobile && (
-               user ? (
-                  <>
-                    <Link to="/upload" className="liquid-btn" style={{padding: '8px 20px', fontSize: '0.9rem'}}>+ New</Link>
-                    
-                    {/* MESSAGE ICON - DESKTOP */}
-                    <Link 
-                        to="/chat" 
-                        className="nav-icon-link" 
-                        style={styles.iconLink} 
-                        title="Messages"
-                    >
-                        <div style={{ position: 'relative', display: 'flex' }}>
-                            <FaPaperPlane />
-                            {unreadCount > 0 && (
-                                <span style={styles.badge}>
-                                    {unreadCount > 9 ? '9+' : unreadCount}
-                                </span>
-                            )}
-                        </div>
-                    </Link>
+          {!isMobile &&
+            (user ? (
+              <>
+                <Link to="/upload" className="liquid-btn" style={{ padding: '8px 20px', fontSize: '0.9rem' }}>
+                  + New
+                </Link>
 
-                    <Link to="/profile" title="My Profile">
-                        <img src={optimizedAvatar} alt="My Avatar" loading="lazy" style={styles.avatar} />
-                    </Link>
-                    <button 
-                        onClick={handleLogout} 
-                        style={styles.logoutBtnDesktop} 
-                        title="Logout"
-                    >
-                        <FaSignOutAlt />
-                    </button>
-                  </>
-              ) : (
-                  <>
-                    <Link to="/login" style={{...styles.link, marginRight: '10px'}}>Login</Link>
-                    <Link to="/signup" className="liquid-btn" style={{padding: '8px 24px', fontSize: '0.9rem'}}>Join</Link>
-                  </>
-              )
-            )}
+                {/* MESSAGE ICON - DESKTOP */}
+                <Link to="/chat" className="nav-icon-link" style={styles.iconLink} title="Messages">
+                  <div style={{ position: 'relative', display: 'flex' }}>
+                    <FaPaperPlane />
+                    {unreadCount > 0 && (
+                      <span style={styles.badge}>{unreadCount > 9 ? '9+' : unreadCount}</span>
+                    )}
+                  </div>
+                </Link>
 
-            {/* MOBILE TOGGLE */}
-            {isMobile && (
-              <button 
-                style={styles.mobileToggle} 
-                onClick={() => setMenuOpen(!menuOpen)}
-                aria-label={menuOpen ? "Close menu" : "Open menu"}
-                aria-expanded={menuOpen}
-              >
-                {menuOpen ? <FaTimes /> : <FaBars />}
-              </button>
-            )}
+                <Link to="/profile" title="My Profile">
+                  <img src={optimizedAvatar} alt="My Avatar" loading="lazy" style={styles.avatar} />
+                </Link>
+
+                <button onClick={handleLogout} style={styles.logoutBtnDesktop} title="Logout">
+                  <FaSignOutAlt />
+                </button>
+              </>
+            ) : (
+              <>
+                <Link to="/login" style={{ ...styles.link, marginRight: '10px' }}>
+                  Login
+                </Link>
+                <Link to="/signup" className="liquid-btn" style={{ padding: '8px 24px', fontSize: '0.9rem' }}>
+                  Join
+                </Link>
+              </>
+            ))}
+
+          {/* MOBILE TOGGLE */}
+          {isMobile && (
+            <button
+              style={styles.mobileToggle}
+              onClick={() => setMenuOpen(!menuOpen)}
+              aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={menuOpen}
+            >
+              {menuOpen ? <FaTimes /> : <FaBars />}
+            </button>
+          )}
         </div>
 
         {/* MOBILE DROPDOWN MENU */}
         <div style={styles.mobileMenu}>
-          <form onSubmit={handleSearch} style={{...styles.searchContainer, width: '100%', justifyContent: 'center'}}>
-              <FaSearch color="rgba(255,255,255,0.5)" size={14} aria-hidden="true" />
-              <input 
-                  type="text" 
-                  placeholder="Search notes..." 
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  style={{...styles.searchInput, width: '80%'}}
-              />
+          <form
+            onSubmit={handleSearch}
+            style={{ ...styles.searchContainer, width: '100%', justifyContent: 'center' }}
+          >
+            <FaSearch color="rgba(255,255,255,0.5)" size={14} aria-hidden="true" />
+            <input
+              type="text"
+              placeholder="Search notes..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{ ...styles.searchInput, width: '80%' }}
+            />
           </form>
 
-          {['Home', 'About', 'Blogs', 'Contact', 'Donate'].map(item => (
-            <Link 
+          {['Home', 'About', 'Blogs', 'Contact', 'Donate'].map((item) => (
+            <Link
               key={item}
               to={item === 'Home' ? '/' : `/${item.toLowerCase()}`}
               onClick={() => setMenuOpen(false)}
-              style={{...styles.link, fontSize: '1.2rem'}}
+              style={{ ...styles.link, fontSize: '1.2rem' }}
             >
               {item}
             </Link>
           ))}
-          
-          <div style={{width: '100%', height: '1px', background: 'rgba(255,255,255,0.1)', margin: '10px 0'}}></div>
+
+          <div
+            style={{
+              width: '100%',
+              height: '1px',
+              background: 'rgba(255,255,255,0.1)',
+              margin: '10px 0',
+            }}
+          />
 
           {user ? (
             <>
-              <div style={{display: 'flex', alignItems: 'center', gap: '15px'}}>
+              {/* Center aligned: avatar + username clickable to profile */}
+              <Link
+                to="/profile"
+                onClick={() => setMenuOpen(false)}
+                style={styles.mobileProfileLink}
+                aria-label="Go to profile"
+              >
                 <img src={optimizedAvatar} alt="Profile" loading="lazy" style={styles.avatar} />
-                <span style={{color: 'white', fontWeight: '600'}}>{user.name}</span>
-              </div>
-              
-              {/* MESSAGE ICON - MOBILE */}
-              <Link to="/chat" onClick={() => setMenuOpen(false)} style={{...styles.link, display: 'flex', alignItems: 'center', gap: '8px'}}>
-                  <div style={{position: 'relative', display: 'flex', alignItems: 'center', gap: '8px'}}>
-                      <FaPaperPlane /> 
-                      Messages
-                      {unreadCount > 0 && (
-                          <span style={{
-                              background: '#ff0055', color: '#fff', fontSize: '0.7rem', 
-                              padding: '2px 6px', borderRadius: '10px', fontWeight: 'bold'
-                          }}>
-                              {unreadCount}
-                          </span>
-                      )}
-                  </div>
+                <span style={styles.mobileProfileName}>{user.name}</span>
               </Link>
 
-              <Link to="/profile" onClick={() => setMenuOpen(false)} style={styles.link}>My Profile</Link>
-              <Link to="/upload" onClick={() => setMenuOpen(false)} className="liquid-btn" style={{width: '100%', textAlign: 'center'}}>Upload Note</Link>
-              <button onClick={handleLogout} style={{...styles.link, background: 'none', border: 'none', color: '#ff0055', cursor: 'pointer', fontSize: '1.1rem'}}>Logout</button>
+              {/* MESSAGE ICON - MOBILE */}
+              <Link
+                to="/chat"
+                onClick={() => setMenuOpen(false)}
+                style={{ ...styles.link, display: 'flex', alignItems: 'center', gap: '8px' }}
+              >
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <FaPaperPlane />
+                  Messages
+                  {unreadCount > 0 && (
+                    <span
+                      style={{
+                        background: '#ff0055',
+                        color: '#fff',
+                        fontSize: '0.7rem',
+                        padding: '2px 6px',
+                        borderRadius: '10px',
+                        fontWeight: 'bold',
+                      }}
+                    >
+                      {unreadCount}
+                    </span>
+                  )}
+                </div>
+              </Link>
+
+              <Link
+                to="/upload"
+                onClick={() => setMenuOpen(false)}
+                className="liquid-btn"
+                style={{ width: '100%', textAlign: 'center' }}
+              >
+                Upload Note
+              </Link>
+
+              <button
+                onClick={handleLogout}
+                style={{
+                  ...styles.link,
+                  background: 'none',
+                  border: 'none',
+                  color: '#ff0055',
+                  cursor: 'pointer',
+                  fontSize: '1.1rem',
+                }}
+              >
+                Logout
+              </button>
             </>
           ) : (
-            <div style={{display: 'flex', flexDirection: 'column', gap: '15px', width: '100%', alignItems: 'center'}}>
-              <Link to="/login" onClick={() => setMenuOpen(false)} style={{...styles.link, fontSize: '1.1rem'}}>Login</Link>
-              <Link to="/signup" onClick={() => setMenuOpen(false)} className="liquid-btn" style={{width: '100%', textAlign: 'center'}}>Sign Up</Link>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '15px',
+                width: '100%',
+                alignItems: 'center',
+              }}
+            >
+              <Link to="/login" onClick={() => setMenuOpen(false)} style={{ ...styles.link, fontSize: '1.1rem' }}>
+                Login
+              </Link>
+              <Link
+                to="/signup"
+                onClick={() => setMenuOpen(false)}
+                className="liquid-btn"
+                style={{ width: '100%', textAlign: 'center' }}
+              >
+                Sign Up
+              </Link>
             </div>
           )}
         </div>
