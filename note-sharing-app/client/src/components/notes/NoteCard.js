@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import useAuth from '../../hooks/useAuth';
 import StarRating from '../common/StarRating';
@@ -8,6 +8,26 @@ import { optimizeCloudinaryUrl } from '../../utils/cloudinaryHelper';
 
 const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () => {} }) => {
     const { user, token, saveNote, unsaveNote } = useAuth();
+    const location = useLocation();
+    
+    // 1. Check if on Homepage
+    const isHomePage = location.pathname === '/';
+
+    // 2. Check if device is Mobile
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth < 768);
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    // 3. Apply compact styles ONLY if on Homepage AND Mobile
+    const isCompact = isHomePage && isMobile;
+
     // Safely check if savedNotes exists before checking includes
     const isSaved = user?.savedNotes ? user.savedNotes.includes(note._id) : false;
     const cloudName = process.env.REACT_APP_CLOUDINARY_CLOUD_NAME;
@@ -35,14 +55,16 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
             boxShadow: '0 15px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0, 212, 255, 0.1)'
         },
         thumbnailContainer: {
-            height: '180px',
+            // Only shorten height on Mobile Homepage
+            height: isCompact ? '150px' : '180px', 
             background: 'rgba(0,0,0,0.2)',
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
             overflow: 'hidden',
             position: 'relative',
-            borderBottom: '1px solid rgba(255,255,255,0.05)'
+            borderBottom: '1px solid rgba(255,255,255,0.05)',
+            transition: 'height 0.3s ease'
         },
         thumbnail: {
             width: '100%',
@@ -54,34 +76,40 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
             transform: 'scale(1.1)'
         },
         content: {
-            padding: '1.2rem',
+            // Only reduce padding on Mobile Homepage
+            padding: isCompact ? '0.8rem' : '1.2rem', 
             flex: 1,
             display: 'flex',
             flexDirection: 'column'
         },
         title: {
-            fontSize: '1.1rem',
+            // Only reduce font size on Mobile Homepage
+            fontSize: isCompact ? '1rem' : '1.1rem', 
             fontWeight: '700',
             color: '#fff',
             marginBottom: '0.5rem',
             lineHeight: 1.3,
             textDecoration: 'none',
-            display: 'block'
+            display: 'block',
+            // Truncate text only on Mobile Homepage to fit 2 columns
+            whiteSpace: isCompact ? 'nowrap' : 'normal',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis'
         },
         meta: {
-            fontSize: '0.85rem',
+            fontSize: isCompact ? '0.75rem' : '0.85rem',
             color: 'rgba(255,255,255,0.6)',
             marginBottom: '1rem',
             display: 'grid',
             gridTemplateColumns: '1fr 1fr',
-            gap: '5px'
+            gap: isCompact ? '2px' : '5px'
         },
         actions: {
             marginTop: 'auto',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            paddingTop: '1rem',
+            paddingTop: isCompact ? '0.8rem' : '1rem',
             borderTop: '1px solid rgba(255,255,255,0.1)'
         },
         actionBtn: {
@@ -94,16 +122,16 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
             alignItems: 'center',
             gap: '6px',
             fontSize: '0.9rem',
-            padding: '5px 8px',
+            padding: isCompact ? '4px' : '5px 8px',
             borderRadius: '6px'
         },
         viewBtn: {
             background: 'rgba(255,255,255,0.1)',
             color: '#fff',
-            padding: '6px 12px',
+            padding: isCompact ? '5px 10px' : '6px 12px',
             borderRadius: '50px',
             textDecoration: 'none',
-            fontSize: '0.85rem',
+            fontSize: isCompact ? '0.75rem' : '0.85rem',
             fontWeight: '600'
         },
         heartIcon: {
@@ -116,20 +144,14 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
     let thumbnailUrl = '/images/icons/document-icon.png';
     const fileType = note.fileType || '';
 
-    // Optimized Cloudinary Logic
     if (note.cloudinaryId) {
         const baseUrl = `https://res.cloudinary.com/${cloudName}/image/upload/${note.cloudinaryId}.jpg`;
-        
         if (fileType.startsWith('image/')) {
-            // Optimize image thumbnails
             thumbnailUrl = optimizeCloudinaryUrl(baseUrl, { width: 400, height: 300 });
         } else if (fileType === 'application/pdf') {
-            // Generate optimized PDF preview of page 1
             thumbnailUrl = optimizeCloudinaryUrl(baseUrl, { width: 400, height: 300, pg: 1, crop: 'pad' });
         }
-    } 
-    // Static Fallback Icons
-    else if (fileType.includes('msword') || fileType.includes('wordprocessingml')) {
+    } else if (fileType.includes('msword') || fileType.includes('wordprocessingml')) {
         thumbnailUrl = '/images/icons/word-icon.png';
     } else if (fileType.includes('ms-excel') || fileType.includes('spreadsheetml')) {
         thumbnailUrl = '/images/icons/excel-icon.png';
@@ -179,8 +201,7 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
                         alt={note.title} 
                         loading="lazy"
                         style={isHovered ? {...styles.thumbnail, ...styles.thumbnailHover} : styles.thumbnail}
-                        // Apply specific styling if using a static icon vs an image preview
-                        css={!note.cloudinaryId ? { objectFit: 'contain', padding: '20%' } : {}}
+                        {...(!note.cloudinaryId ? { style: { ...styles.thumbnail, objectFit: 'contain', padding: '20%' } } : {})}
                     />
                     {isHovered && (
                         <div style={{
@@ -194,7 +215,7 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
             </Link>
 
             <div style={styles.content}>
-                <Link to={`/view/${note._id}`} style={styles.title}>
+                <Link to={`/view/${note._id}`} style={styles.title} title={note.title}>
                     {note.title}
                 </Link>
                 
@@ -204,9 +225,9 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
                 </div>
 
                 <div style={styles.meta}>
-                    <span>🎓 {note.university}</span>
-                    <span>📚 {note.course}</span>
-                    <span>📝 {note.subject}</span>
+                    <span style={{whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>🎓 {note.university}</span>
+                    <span style={{whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>📚 {note.course}</span>
+                    <span style={{whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>📝 {note.subject}</span>
                     <span>📅 {note.year}</span>
                 </div>
 
@@ -249,7 +270,7 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
                     </button>
 
                     <Link to={`/view/${note._id}`} style={styles.viewBtn}>
-                        View Details
+                        {isCompact ? 'View' : 'View Details'}
                     </Link>
                 </div>
             </div>
