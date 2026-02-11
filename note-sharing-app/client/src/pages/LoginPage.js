@@ -294,6 +294,9 @@ const LoginPage = () => {
                         flex-direction: column !important; 
                         min-height: auto !important;
                     }
+                    .container {
+                        width: 100% !important;
+                }
                 }
             `}</style>
         </div>
@@ -301,4 +304,5 @@ const LoginPage = () => {
 };
 
 export default LoginPage;
+
 
