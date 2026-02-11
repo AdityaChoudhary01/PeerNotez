@@ -528,8 +528,6 @@ const BlogPage = () => {
                 )}
             </main>
 
-           // ... inside FullBlogContent component ...
-
 <style>{`
     @media (max-width: 768px) {
         .blog-article-wrapper {
