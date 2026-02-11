@@ -528,36 +528,27 @@ const BlogPage = () => {
                 )}
             </main>
 
-<style>{`
-    @media (max-width: 768px) {
-        .blog-article-wrapper {
-            padding-left: 0.5rem;
-            padding-right: 0.5rem;
-        }
-        .blog-article-card {
-            padding: 1.5rem !important;
-            border-radius: 16px !important;
-            
-            /* --- CRITICAL FIX: DISABLE BLUR ON MOBILE --- */
-            /* Remove backdrop-filter to stop the GPU vibrating glitch */
-            backdrop-filter: none !important;
-            -webkit-backdrop-filter: none !important;
-            
-            /* Make background darker/solid since we removed the blur */
-            background: #0a0a12 !important; 
-            border: 1px solid rgba(255, 255, 255, 0.15) !important;
-            
-            /* Ensure hardware acceleration stops fighting the scroll */
-            transform: none !important;
-            will-change: auto !important;
-        }
-        
-        /* Fix the header title gradient clipping on some mobiles */
-        h1 {
-            background-attachment: scroll !important;
-        }
-    }
-`}</style>
+            <style>{`
+                @media (max-width: 768px) {
+                    .blog-list-header {
+                        padding: 2rem 1rem !important;
+                        margin-bottom: 2rem !important;
+                        
+                        /* Holographic header on mobile */
+                        background: rgba(255, 255, 255, 0.05) !important;
+                        backdrop-filter: blur(10px) !important;
+                        -webkit-backdrop-filter: blur(10px) !important;
+                    }
+                    .blog-list-controls {
+                        flex-direction: column;
+                        align-items: stretch !important;
+                        padding: 1rem !important;
+                    }
+                    .blog-search-form {
+                        max-width: 100% !important;
+                    }
+                }
+            `}</style>
         </div>
     );
 };
