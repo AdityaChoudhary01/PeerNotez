@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo} from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import axios from 'axios';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
@@ -445,7 +445,7 @@ const HomePage = () => {
           position: absolute;
           inset: -2px;
           background: radial-gradient(circle at 20% 10%, rgba(0,212,255,0.18), transparent 45%),
-                      radial-gradient(circle at 80% 90%, rgba(255,0,204,0.12), transparent 50%);
+                              radial-gradient(circle at 80% 90%, rgba(255,0,204,0.12), transparent 50%);
           filter: blur(20px);
           opacity: 0.9;
           pointer-events: none;
@@ -824,6 +824,10 @@ const HomePage = () => {
                     <img
                       src={avatarUrl}
                       alt={contributor.name}
+                      loading="lazy"
+                      decoding="async"
+                      width="72"
+                      height="72"
                       style={{
                         width: '72px',
                         height: '72px',
