@@ -399,8 +399,19 @@ const Navbar = () => {
                       
                       <Link to="/profile" title="View Profile">
                         <img
-                          src={user.profilePicture || user.avatar ? optimizeCloudinaryUrl(user.profilePicture || user.avatar, 80) : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&size=80`}
+                          /* OPTIMIZED: 
+                             1. Passed dimensions as Object {width: 80, height: 80}.
+                             2. Added decoding="async" for smoother UI.
+                             3. Added explicit width/height for layout stability.
+                          */
+                          src={user.profilePicture || user.avatar 
+                            ? optimizeCloudinaryUrl(user.profilePicture || user.avatar, { width: 80, height: 80 }) 
+                            : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&size=80`
+                          }
                           alt={user.name}
+                          width="38"
+                          height="38"
+                          decoding="async"
                           style={styles.userAvatar}
                         />
                       </Link>
@@ -517,7 +528,17 @@ const Navbar = () => {
 
                 <Link to="/profile" onClick={() => setMenuOpen(false)} style={styles.mobileLink}>
                   <img 
-                    src={user.profilePicture || user.avatar ? optimizeCloudinaryUrl(user.profilePicture || user.avatar, 40) : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}`}
+                    /* OPTIMIZED: 
+                       1. Passed dimensions as Object {width: 40, height: 40}.
+                       2. Added decoding="async".
+                    */
+                    src={user.profilePicture || user.avatar 
+                        ? optimizeCloudinaryUrl(user.profilePicture || user.avatar, { width: 40, height: 40 }) 
+                        : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}`
+                    }
+                    width="24"
+                    height="24"
+                    decoding="async"
                     style={{width: '24px', height: '24px', borderRadius: '50%'}}
                     alt="profile"
                   />
