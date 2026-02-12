@@ -3,8 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import { FaSearch, FaRegComments, FaSpinner, FaTrash } from 'react-icons/fa';
-// ✅ Added 'update' and 'serverTimestamp'
-import { ref, onValue, off, update, serverTimestamp, remove } from 'firebase/database';
+import { ref, onValue, off, update, serverTimestamp, remove, goOnline } from 'firebase/database'; // Added goOnline
 import { db } from '../services/firebase';
 import useAuth from '../hooks/useAuth';
 import { optimizeCloudinaryUrl } from '../utils/cloudinaryHelper';
@@ -17,6 +16,8 @@ const InboxItem = ({ chat, currentUserId, onDelete }) => {
     const [isHovered, setIsHovered] = useState(false);
     const longPressTimer = useRef(null);
 
+    // Logic: Unread if count > 0 AND the last message wasn't sent by me
+    // (Though usually your own backend logic handles the count, this is a safe check)
     const isUnread = chat.unreadCount > 0;
 
     useEffect(() => {
@@ -74,6 +75,7 @@ const InboxItem = ({ chat, currentUserId, onDelete }) => {
             style={{
                 display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem',
                 borderRadius: '16px', 
+                // Unread Background Highlight
                 background: isUnread ? 'rgba(0, 212, 255, 0.08)' : 'rgba(255, 255, 255, 0.02)',
                 border: isUnread ? '1px solid rgba(0, 212, 255, 0.2)' : '1px solid transparent', 
                 cursor: 'pointer', transition: 'all 0.2s ease',
@@ -107,13 +109,25 @@ const InboxItem = ({ chat, currentUserId, onDelete }) => {
                         {chat.partnerName}
                         <RoleBadge user={chat.partnerDetails} />
                     </span>
-                    <span style={{ 
-                        fontSize: '0.75rem', 
-                        color: isOnline ? '#00ffaa' : 'rgba(255,255,255,0.4)',
-                        fontWeight: isUnread ? '600' : '400' 
-                    }}>
-                        {isOnline ? 'Online' : getStatusText()}
-                    </span>
+                    
+                    {/* Time or Unread Dot */}
+                    <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-end'}}>
+                         {/* ✅ RESTORED: Blue Dot for Unread Messages */}
+                        {isUnread && (
+                            <div style={{
+                                width: '10px', height: '10px', borderRadius: '50%',
+                                background: '#00d4ff', marginBottom: '4px',
+                                boxShadow: '0 0 8px rgba(0, 212, 255, 0.6)'
+                            }} />
+                        )}
+                        <span style={{ 
+                            fontSize: '0.75rem', 
+                            color: isOnline ? '#00ffaa' : 'rgba(255,255,255,0.4)',
+                            fontWeight: isUnread ? '600' : '400' 
+                        }}>
+                            {isOnline ? 'Online' : getStatusText()}
+                        </span>
+                    </div>
                 </div>
                 
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '4px' }}>
@@ -140,14 +154,6 @@ const InboxItem = ({ chat, currentUserId, onDelete }) => {
                             <FaTrash />
                         </button>
                     )}
-
-                    {isUnread && (
-                        <div style={{
-                            width: '10px', height: '10px', borderRadius: '50%',
-                            background: '#00d4ff', marginLeft: '10px',
-                            boxShadow: '0 0 8px rgba(0, 212, 255, 0.6)'
-                        }} />
-                    )}
                 </div>
             </div>
         </div>
@@ -168,6 +174,9 @@ const ChatListPage = () => {
     useEffect(() => {
         if (!currentUser?._id) return;
 
+        // ✅ FORCE ONLINE: Ensure we receive updates even if previously offline
+        try { goOnline(db); } catch (e) { console.error(e); }
+
         const inboxRef = ref(db, `user_chats/${currentUser._id}`);
         
         const unsubscribe = onValue(inboxRef, async (snapshot) => {
@@ -177,12 +186,13 @@ const ChatListPage = () => {
                 const rawChats = Object.values(data).sort((a, b) => b.timestamp - a.timestamp);
 
                 const enrichedChats = await Promise.all(rawChats.map(async (chat) => {
-                    // ✅ FILTER: Skip chats that are "cleared" (empty last message)
+                    // Skip cleared chats
                     if (!chat.lastMessage || chat.lastMessage === "") {
                          return null;
                     }
 
                     try {
+                        // Optimistically check cache or fetch fresh
                         const { data: userProfile } = await axios.get(`/users/${chat.partnerId}/profile`);
                         return {
                             ...chat,
@@ -191,17 +201,15 @@ const ChatListPage = () => {
                             partnerDetails: userProfile
                         };
                     } catch (err) {
-                        // --- OPTION 1: PERMANENT AUTO-CLEANUP ---
                         if (err.response && err.response.status === 404) {
-                            console.warn(`Deleting orphaned chat reference for: ${chat.partnerId}`);
+                            // Cleanup orphaned chat
                             const orphanRef = ref(db, `user_chats/${currentUser._id}/${chat.partnerId}`);
-                            remove(orphanRef); // Removes from Firebase
+                            remove(orphanRef);
                         }
-                        return null; // Filter these out of the UI
+                        return null;
                     }
                 }));
 
-                // Set only valid, non-null chats
                 setInbox(enrichedChats.filter(chat => chat !== null));
             } else {
                 setInbox([]);
@@ -232,16 +240,14 @@ const ChatListPage = () => {
         return () => clearTimeout(delayDebounceFn);
     }, [searchTerm]);
 
-    // ✅ UPDATED: Clear Chat History Logic
     const handleDeleteChat = async (partnerId) => {
         try {
             const chatRef = ref(db, `user_chats/${currentUser._id}/${partnerId}`);
             
-            // Instead of remove(), we update it to hide history
             await update(chatRef, {
-                lastMessage: "",       // Clear the preview so it disappears from list
-                unreadCount: 0,        // Reset unread
-                hiddenBefore: serverTimestamp() // Hides old messages in the chat window
+                lastMessage: "",       
+                unreadCount: 0,        
+                hiddenBefore: serverTimestamp() 
             });
             
         } catch (error) {
