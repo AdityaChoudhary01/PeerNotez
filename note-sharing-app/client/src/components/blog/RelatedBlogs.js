@@ -1,49 +1,62 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import BlogCard from './BlogCard';
-import { FaCompass } from 'react-icons/fa';
+import { FaCompass, FaSpinner } from 'react-icons/fa';
 
 const RelatedBlogs = ({ currentBlogId }) => {
     const [blogs, setBlogs] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    // --- INTERNAL CSS: HOLOGRAPHIC STYLE ---
+    // --- INTERNAL CSS: DEEP SPACE HOLOGRAPHIC THEME ---
     const styles = {
         section: {
             marginTop: '4rem',
             marginBottom: '4rem',
             padding: '2rem',
-            background: 'rgba(255, 255, 255, 0.02)',
-            backdropFilter: 'blur(10px)',
+            background: 'rgba(255, 255, 255, 0.03)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
             borderRadius: '24px',
-            border: '1px solid rgba(255, 255, 255, 0.05)',
-            overflow: 'hidden' // Ensure scrollbar doesn't break container
+            border: '1px solid rgba(255, 255, 255, 0.08)',
+            overflow: 'hidden',
+            boxShadow: '0 10px 40px rgba(0, 0, 0, 0.2)'
         },
         title: {
             fontSize: '1.8rem',
             fontWeight: '700',
-            color: '#fff',
+            background: 'linear-gradient(to right, #00d4ff, #ff00cc)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
             marginBottom: '2rem',
             display: 'flex',
             alignItems: 'center',
             gap: '12px',
             borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-            paddingBottom: '1rem'
+            paddingBottom: '1rem',
+            fontFamily: "'Space Grotesk', sans-serif"
         },
         icon: {
-            color: '#00d4ff', // Cyan accent
-            filter: 'drop-shadow(0 0 5px rgba(0, 212, 255, 0.5))'
+            color: '#00d4ff',
+            filter: 'drop-shadow(0 0 5px rgba(0, 212, 255, 0.5))',
+            fontSize: '1.6rem'
         },
-        // DEFAULT GRID (Desktop)
         grid: {
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
             gap: '2rem'
+        },
+        loadingContainer: {
+            display: 'flex',
+            justifyContent: 'center',
+            padding: '3rem',
+            color: '#00d4ff'
         }
     };
 
     useEffect(() => {
         const fetchRelated = async () => {
+            if (!currentBlogId) return;
+            setLoading(true);
             try {
                 const { data } = await axios.get(`/blogs/related/${currentBlogId}`);
                 setBlogs(data);
@@ -54,64 +67,77 @@ const RelatedBlogs = ({ currentBlogId }) => {
             }
         };
 
-        if (currentBlogId) {
-            fetchRelated();
-        }
+        fetchRelated();
     }, [currentBlogId]);
 
-    if (loading || blogs.length === 0) return null;
+    // SEO & UX: Handle loading state or empty results
+    if (loading) {
+        return (
+            <div style={styles.loadingContainer}>
+                <FaSpinner className="fa-spin" size={30} />
+            </div>
+        );
+    }
+
+    if (blogs.length === 0) return null;
 
     return (
-        <div style={styles.section} className="related-blogs-section">
-            <h3 style={styles.title}>
-                <FaCompass style={styles.icon} /> Read Next
+        <section style={styles.section} className="related-blogs-section" aria-labelledby="related-blogs-title">
+            <h3 style={styles.title} id="related-blogs-title">
+                <FaCompass style={styles.icon} aria-hidden="true" /> Read Next
             </h3>
             
             <div className="related-blogs-grid" style={styles.grid}>
                 {blogs.map(blog => (
-                    <div key={blog._id} className="related-blog-card-wrapper">
+                    <article key={blog._id} className="related-blog-card-wrapper">
+                        {/* BlogCard now internally calculates 'readingTime' 
+                           based on 'blog.content' using the WPM logic 
+                        */}
                         <BlogCard blog={blog} />
-                    </div>
+                    </article>
                 ))}
             </div>
 
             <style>{`
-                /* MOBILE: Horizontal Scroll Snap */
                 @media (max-width: 768px) {
                     .related-blogs-section {
-                        padding: 1.5rem 1rem !important; /* Reduce padding */
+                        padding: 1.5rem 1rem !important;
+                        background: transparent !important;
+                        border: none !important;
+                        box-shadow: none !important;
+                        backdrop-filter: none !important;
                     }
                     
                     .related-blogs-grid {
-                        display: flex !important; /* Override grid */
+                        display: flex !important;
                         overflow-x: auto;
                         scroll-snap-type: x mandatory;
                         gap: 1rem !important;
-                        padding-bottom: 1rem; /* Space for scrollbar */
+                        padding-bottom: 1.5rem;
                         -webkit-overflow-scrolling: touch;
+                        scrollbar-width: thin;
                     }
 
-                    /* Hide scrollbar for cleaner look (optional, remove if you want scrollbar) */
                     .related-blogs-grid::-webkit-scrollbar {
-                        height: 6px;
+                        height: 4px;
                     }
                     .related-blogs-grid::-webkit-scrollbar-track {
                         background: rgba(255,255,255,0.05);
-                        border-radius: 3px;
+                        border-radius: 10px;
                     }
                     .related-blogs-grid::-webkit-scrollbar-thumb {
-                        background: rgba(255,255,255,0.2);
-                        border-radius: 3px;
+                        background: linear-gradient(90deg, #00d4ff, #ff00cc);
+                        border-radius: 10px;
                     }
 
                     .related-blog-card-wrapper {
-                        flex: 0 0 85%; /* Show 85% of card to hint at scrolling */
+                        flex: 0 0 85%;
                         scroll-snap-align: center;
-                        min-width: 280px; /* Ensure cards don't get too small */
+                        min-width: 280px;
                     }
                 }
             `}</style>
-        </div>
+        </section>
     );
 };
 
