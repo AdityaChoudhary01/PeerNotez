@@ -10,7 +10,7 @@ const FilterBar = ({ onFilterSubmit, className }) => {
         year: ''
     });
 
-    // --- INTERNAL CSS: HOLOGRAPHIC FILTER BAR ---
+    // --- INTERNAL CSS: DEEP SPACE HOLOGRAPHIC FILTER BAR ---
     const styles = {
         container: {
             background: 'rgba(255, 255, 255, 0.03)',
@@ -232,6 +232,13 @@ const FilterBar = ({ onFilterSubmit, className }) => {
                     <FaSearch /> Apply Filters
                 </button>
             </div>
+            
+            {/* Inject Placeholder Styles via Style Tag */}
+            <style>{`
+                .filter-bar input::placeholder {
+                    color: rgba(255, 255, 255, 0.5);
+                }
+            `}</style>
         </form>
     );
 };
