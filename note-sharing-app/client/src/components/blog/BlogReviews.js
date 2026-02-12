@@ -1,16 +1,16 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import useAuth from '../../hooks/useAuth';
-import StarRating from '../common/StarRating';
 import { Link } from 'react-router-dom';
 import { FaReply, FaPaperPlane } from 'react-icons/fa';
+import useAuth from '../../hooks/useAuth';
+import StarRating from '../common/StarRating';
+import RoleBadge from '../common/RoleBadge';
 import { optimizeCloudinaryUrl } from '../../utils/cloudinaryHelper';
-import RoleBadge from '../common/RoleBadge'; // Import the badge component
 
-// Super Admin Config
+// --- CONFIGURATION ---
 const MAIN_ADMIN_EMAIL = process.env.REACT_APP_MAIN_ADMIN_EMAIL;
 
-// Utility for formatting dates
+// --- UTILITIES ---
 const formatDate = (dateString) =>
   new Date(dateString).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
 
@@ -59,21 +59,22 @@ const styles = {
         display: 'flex',
         flexDirection: 'column'
     },
-    authorName: {
+    authorNameLink: {
         fontWeight: '700',
         color: '#fff',
         fontSize: '1rem',
         textDecoration: 'none',
         display: 'flex',
-        alignItems: 'center'
+        alignItems: 'center',
+        gap: '8px'
     },
-    // Static name for Super Admin (non-link)
-    staticName: {
+    authorNameStatic: {
         fontWeight: '700',
         color: '#fff',
         fontSize: '1rem',
         display: 'flex',
         alignItems: 'center',
+        gap: '8px',
         cursor: 'default'
     },
     date: {
@@ -148,7 +149,8 @@ const styles = {
     replyingTo: {
         color: '#ff00cc',
         fontWeight: '600',
-        marginLeft: '4px'
+        marginLeft: '4px',
+        fontSize: '0.9rem'
     }
 };
 
@@ -183,51 +185,39 @@ const ReplyCard = ({ reply, postId, onReviewAdded, user, token }) => {
     }
   };
 
+  // Avatar Logic
+  const avatarUrl = optimizeCloudinaryUrl(reply.user?.avatar || 'https://via.placeholder.com/40', { width: 80, height: 80, isProfile: true });
+  const avatarStyle = { ...styles.avatar, width: '35px', height: '35px', border: isReplyAuthorSuperAdmin ? '2px solid #FFD700' : '2px solid rgba(0, 212, 255, 0.5)' };
+
   return (
     <div style={{...styles.reviewCard, ...styles.replyCard}}>
       <div style={styles.authorHeader}>
-        {/* CONDITIONAL LINK: Avatar */}
+        {/* Avatar */}
         {isReplyAuthorSuperAdmin ? (
-             <img
-                src={optimizeCloudinaryUrl(reply.user?.avatar || 'https://via.placeholder.com/40', { width: 80, height: 80, isProfile: true })}
-                alt={reply.user?.name || 'Deleted User'}
-                loading="lazy"
-                style={{...styles.avatar, width: '35px', height: '35px', cursor: 'default', border: '2px solid #FFD700'}}
-            />
+             <img src={avatarUrl} alt="Admin" style={{...avatarStyle, cursor: 'default'}} loading="lazy" />
         ) : (
             <Link to={`/profile/${reply.user?._id}`}>
-                <img
-                src={optimizeCloudinaryUrl(reply.user?.avatar || 'https://via.placeholder.com/40', { width: 80, height: 80, isProfile: true })}
-                alt={reply.user?.name || 'Deleted User'}
-                loading="lazy"
-                style={{...styles.avatar, width: '35px', height: '35px'}}
-                />
+                <img src={avatarUrl} alt={reply.user?.name} style={avatarStyle} loading="lazy" />
             </Link>
         )}
 
         <div style={styles.authorInfo}>
-          <div style={styles.authorName}>
-            {/* CONDITIONAL LINK: Name */}
-            {isReplyAuthorSuperAdmin ? (
-                <div style={{display:'flex', alignItems:'center'}}>
-                    <span style={styles.staticName}>
-                        {reply.user?.name || 'Deleted User'}
-                    </span>
-                    <RoleBadge user={reply.user} />
-                </div>
-            ) : (
-                <div style={{display:'flex', alignItems:'center'}}>
-                    <Link to={`/profile/${reply.user?._id}`} style={styles.authorName}>
-                        {reply.user?.name || 'Deleted User'}
-                    </Link>
-                    <RoleBadge user={reply.user} />
-                </div>
-            )}
-
-            {reply.parentUser?.name && (
-              <span style={styles.replyingTo}> @{reply.parentUser.name}</span>
-            )}
-          </div>
+          {/* Name & Badge */}
+          {isReplyAuthorSuperAdmin ? (
+             <div style={styles.authorNameStatic}>
+                 {reply.user?.name || 'Deleted User'}
+                 <RoleBadge user={reply.user} />
+                 {reply.parentUser?.name && <span style={styles.replyingTo}>@{reply.parentUser.name}</span>}
+             </div>
+          ) : (
+             <div style={{display: 'flex', alignItems: 'center'}}>
+                 <Link to={`/profile/${reply.user?._id}`} style={styles.authorNameLink}>
+                     {reply.user?.name || 'Deleted User'}
+                 </Link>
+                 <span style={{marginLeft: '8px'}}><RoleBadge user={reply.user} /></span>
+                 {reply.parentUser?.name && <span style={styles.replyingTo}>@{reply.parentUser.name}</span>}
+             </div>
+          )}
           <span style={styles.date}>{formatDate(reply.createdAt)}</span>
         </div>
       </div>
@@ -242,7 +232,6 @@ const ReplyCard = ({ reply, postId, onReviewAdded, user, token }) => {
                 onClick={() => setIsReplying(prev => !prev)}
                 onMouseEnter={(e) => e.currentTarget.style.color = '#ff00cc'}
                 onMouseLeave={(e) => e.currentTarget.style.color = '#00d4ff'}
-                aria-label="Reply to comment"
             >
               <FaReply /> {isReplying ? 'Cancel' : 'Reply'}
             </button>
@@ -313,45 +302,38 @@ const CommentThread = ({ comment, postId, onReviewAdded, user, token }) => {
 
   const allFlatReplies = flattenReplies(comment.replies);
 
+  // Avatar Logic
+  const avatarUrl = optimizeCloudinaryUrl(comment.user?.avatar || 'https://via.placeholder.com/45', { width: 90, height: 90, isProfile: true });
+  const avatarStyle = { ...styles.avatar, border: isCommentAuthorSuperAdmin ? '2px solid #FFD700' : '2px solid rgba(0, 212, 255, 0.5)' };
+
   return (
     <div>
       <div style={styles.reviewCard}>
         <div style={styles.authorHeader}>
-          {/* CONDITIONAL LINK: Avatar */}
+          {/* Avatar */}
           {isCommentAuthorSuperAdmin ? (
-                <img
-                src={optimizeCloudinaryUrl(comment.user?.avatar || 'https://via.placeholder.com/45', { width: 90, height: 90, isProfile: true })}
-                alt={comment.user?.name || 'Deleted User'}
-                loading="lazy"
-                style={{...styles.avatar, cursor: 'default', border: '2px solid #FFD700'}}
-                />
+             <img src={avatarUrl} alt="Admin" style={{...avatarStyle, cursor: 'default'}} loading="lazy" />
           ) : (
-              <Link to={`/profile/${comment.user?._id}`}>
-                <img
-                src={optimizeCloudinaryUrl(comment.user?.avatar || 'https://via.placeholder.com/45', { width: 90, height: 90, isProfile: true })}
-                alt={comment.user?.name || 'Deleted User'}
-                loading="lazy"
-                style={styles.avatar}
-                />
-              </Link>
+             <Link to={`/profile/${comment.user?._id}`}>
+                 <img src={avatarUrl} alt={comment.user?.name} style={avatarStyle} loading="lazy" />
+             </Link>
           )}
 
           <div style={styles.authorInfo}>
-            {/* CONDITIONAL LINK: Name */}
+            {/* Name */}
             {isCommentAuthorSuperAdmin ? (
-                <div style={styles.authorName}>
-                    <strong style={styles.staticName}>{comment.user?.name || 'Deleted User'}</strong>
+                <div style={styles.authorNameStatic}>
+                    {comment.user?.name || 'Deleted User'}
                     <RoleBadge user={comment.user} />
                 </div>
             ) : (
-                <div style={styles.authorName}>
-                    <Link to={`/profile/${comment.user?._id}`} style={styles.authorName}>
-                        <strong style={styles.authorName}>{comment.user?.name || 'Deleted User'}</strong>
+                <div style={{display: 'flex', alignItems: 'center'}}>
+                    <Link to={`/profile/${comment.user?._id}`} style={styles.authorNameLink}>
+                        {comment.user?.name || 'Deleted User'}
                     </Link>
-                    <RoleBadge user={comment.user} />
+                    <span style={{marginLeft: '8px'}}><RoleBadge user={comment.user} /></span>
                 </div>
             )}
-            
             <span style={styles.date}>{formatDate(comment.createdAt)}</span>
           </div>
         </div>
@@ -371,7 +353,6 @@ const CommentThread = ({ comment, postId, onReviewAdded, user, token }) => {
                 onClick={() => setIsReplying(prev => !prev)}
                 onMouseEnter={(e) => e.currentTarget.style.color = '#ff00cc'}
                 onMouseLeave={(e) => e.currentTarget.style.color = '#00d4ff'}
-                aria-label="Reply to comment"
               >
                 <FaReply /> {isReplying ? 'Cancel' : 'Reply'}
               </button>
@@ -418,41 +399,51 @@ const BlogReviews = ({ blogId, reviews, onReviewAdded }) => {
   const [comment, setComment] = useState('');
   const [loading, setLoading] = useState(false);
   const { user, token } = useAuth();
+  const [commentThreads, setCommentThreads] = useState([]);
 
-  const buildCommentThreads = useCallback((flatReviews) => {
-    const map = {};
-    const rootComments = [];
+  useEffect(() => {
+    // Helper to organize threads
+    const buildCommentThreads = (flatReviews) => {
+        const map = {};
+        const rootComments = [];
+    
+        flatReviews.forEach(r => { 
+            // Find parent user details for the @reply display
+            const parentComment = r.parentReviewId 
+                ? flatReviews.find(p => p._id === r.parentReviewId) 
+                : null;
+            
+            let parentUser = null;
+            if (parentComment && parentComment.user) {
+                 parentUser = parentComment.user;
+            } 
+    
+            map[r._id] = { ...r, replies: [], parentUser: parentUser }; 
+        });
+    
+        Object.values(map).forEach(r => {
+          if (r.parentReviewId) {
+            const parent = map[r.parentReviewId];
+            if (parent) {
+                parent.replies.push(r);
+            } else {
+                rootComments.push(r); 
+            }
+          } else {
+            rootComments.push(r);
+          }
+        });
+    
+        return rootComments;
+    };
 
-    flatReviews.forEach(r => { 
-        const parentComment = r.parentReviewId 
-            ? flatReviews.find(p => p._id === r.parentReviewId) 
-            : null;
-        
-        let parentUser = null;
-        if (parentComment && parentComment.user) {
-             parentUser = parentComment.user;
-        } 
+    if (reviews && reviews.length > 0) {
+        setCommentThreads(buildCommentThreads(reviews));
+    } else {
+        setCommentThreads([]);
+    }
+  }, [reviews]);
 
-        map[r._id] = { ...r, replies: [], parentUser: parentUser }; 
-    });
-
-    Object.values(map).forEach(r => {
-      if (r.parentReviewId) {
-        const parent = map[r.parentReviewId];
-        if (parent) {
-            parent.replies.push(r);
-        } else {
-            rootComments.push(r); 
-        }
-      } else {
-        rootComments.push(r);
-      }
-    });
-
-    return rootComments;
-  }, []);
-
-  const commentThreads = buildCommentThreads(reviews);
   const alreadyReviewedTopLevel = reviews.some(r => r.user?._id === user?._id && !r.parentReviewId);
 
   const handleSubmit = async (e) => {
@@ -519,8 +510,8 @@ const BlogReviews = ({ blogId, reviews, onReviewAdded }) => {
 
       {!user && (
         <div style={{...styles.mainForm, textAlign: 'center'}}>
-            <p>
-                Please <Link to="/login" style={{ color: '#00d4ff', fontWeight: 'bold' }}>log in</Link> to share your feedback.
+            <p style={{color: 'rgba(255,255,255,0.8)'}}>
+                Please <Link to="/login" style={{ color: '#00d4ff', fontWeight: 'bold', textDecoration: 'none' }}>log in</Link> to share your feedback.
             </p>
         </div>
       )}
