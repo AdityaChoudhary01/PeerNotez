@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import axios from 'axios'; // ✅ IMPORT AXIOS
 import useAuth from '../../hooks/useAuth';
 import logo from '../../assets/peernotez-logo.png';
 import { FaBars, FaTimes, FaSearch, FaSignOutAlt, FaPaperPlane } from 'react-icons/fa';
 import { optimizeCloudinaryUrl } from '../../utils/cloudinaryHelper';
 import { ref, onValue } from 'firebase/database';
+import { getAuth } from 'firebase/auth'; // ✅ IMPORT getAuth for Token
 import { db } from '../../services/firebase';
 
 const Navbar = () => {
@@ -17,6 +19,10 @@ const Navbar = () => {
 
   const navigate = useNavigate();
   const location = useLocation();
+  const auth = getAuth();
+  
+  // Database URL for REST API calls
+  const DB_URL = process.env.REACT_APP_FIREBASE_DATABASE_URL;
 
   // --- Event Listeners ---
   useEffect(() => {
@@ -34,24 +40,52 @@ const Navbar = () => {
     };
   }, []);
 
-  // --- Firebase Logic ---
+  // --- HYBRID NOTIFICATION LOGIC ---
   useEffect(() => {
     if (!user?._id) return;
-    const inboxRef = ref(db, `user_chats/${user._id}`);
-    const unsubscribe = onValue(inboxRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        let totalUnread = 0;
+
+    const isChatPage = location.pathname.startsWith('/chat');
+
+    // Helper to calculate count from data object
+    const calcCount = (data) => {
+        if (!data) return 0;
+        let total = 0;
         Object.values(data).forEach((chat) => {
-          totalUnread += chat.unreadCount || 0;
+            total += Number(chat.unreadCount) || 0;
         });
-        setUnreadCount(totalUnread);
-      } else {
-        setUnreadCount(0);
-      }
-    });
-    return () => unsubscribe();
-  }, [user]);
+        return total;
+    };
+
+    if (isChatPage) {
+        // SCENARIO A: User is in Chat (Connection is ALREADY open via ChatLayout)
+        // We can safely use onValue (Real-time)
+        const inboxRef = ref(db, `user_chats/${user._id}`);
+        const unsubscribe = onValue(inboxRef, (snapshot) => {
+            setUnreadCount(calcCount(snapshot.val()));
+        });
+        return () => unsubscribe();
+    } else {
+        // SCENARIO B: User is Browsing (Connection is CLOSED to save quota)
+        // We use REST API (HTTP Request) to fetch count without opening a socket.
+        const fetchUnreadREST = async () => {
+            try {
+                // We need the ID Token to authorize the REST request
+                const token = await auth.currentUser?.getIdToken();
+                if (!token || !DB_URL) return;
+
+                const response = await axios.get(`${DB_URL}/user_chats/${user._id}.json?auth=${token}`);
+                setUnreadCount(calcCount(response.data));
+            } catch (error) {
+                console.error("Notification fetch error:", error);
+            }
+        };
+
+        fetchUnreadREST();
+        // Optional: Poll every 2 minutes if you really want updates while browsing
+        // const interval = setInterval(fetchUnreadREST, 120000);
+        // return () => clearInterval(interval);
+    }
+  }, [user?._id, location.pathname, auth.currentUser, DB_URL]); 
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -91,7 +125,7 @@ const Navbar = () => {
       borderRadius: '50px',
       maxWidth: '1400px',
       margin: '0 auto',
-      padding: '0.4rem 1.5rem', // Reduced padding for tighter fit
+      padding: '0.4rem 1.5rem', 
       boxShadow: scrolled 
         ? '0 20px 60px rgba(0, 0, 0, 0.5), 0 0 20px rgba(102, 126, 234, 0.1)' 
         : '0 10px 30px rgba(0, 0, 0, 0.2)',
@@ -101,7 +135,7 @@ const Navbar = () => {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
-      gap: '0.5rem', // Reduced gap significantly
+      gap: '0.5rem', 
       height: '46px'
     },
     logoSection: {
@@ -119,12 +153,12 @@ const Navbar = () => {
     navLinks: {
       display: isMobile ? 'none' : 'flex',
       alignItems: 'center',
-      gap: '0.2rem', // Tighter link spacing
+      gap: '0.2rem', 
       flex: 1,
       justifyContent: 'center'
     },
     navLink: {
-      padding: '0.5rem 1rem', // Reduced padding
+      padding: '0.5rem 1rem', 
       color: '#e0e0e0',
       textDecoration: 'none',
       borderRadius: '20px',
@@ -156,7 +190,7 @@ const Navbar = () => {
       borderRadius: '50px',
       border: '1px solid rgba(255, 255, 255, 0.15)',
       transition: 'all 0.3s ease',
-      minWidth: '220px', // Slightly smaller width
+      minWidth: '220px', 
       boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.2)'
     },
     searchInput: {
@@ -167,7 +201,8 @@ const Navbar = () => {
       flex: 1,
       fontSize: '0.85rem',
       padding: '0 10px',
-      fontFamily: "'Inter', sans-serif"
+      fontFamily: "'Inter', sans-serif', system-ui",
+      minWidth: 0 // Allows flex shrink
     },
     searchButton: {
       background: 'linear-gradient(135deg, #667eea, #764ba2)',
@@ -175,6 +210,9 @@ const Navbar = () => {
       borderRadius: '50%',
       width: '30px',
       height: '30px',
+      minWidth: '30px',
+      minHeight: '30px',
+      flexShrink: 0,
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -186,14 +224,14 @@ const Navbar = () => {
     rightSection: {
       display: 'flex',
       alignItems: 'center',
-      gap: '0.5rem', // Tighter gap for buttons
+      gap: '0.5rem', 
       flexShrink: 0
     },
     iconButton: {
       background: 'rgba(255, 255, 255, 0.05)',
       border: '1px solid rgba(255, 255, 255, 0.1)',
       borderRadius: '50%',
-      width: '38px', // Slightly smaller
+      width: '38px', 
       height: '38px',
       display: 'flex',
       alignItems: 'center',
@@ -384,7 +422,6 @@ const Navbar = () => {
 
             {/* Right Section */}
             <div style={styles.rightSection}>
-              {/* Only show Desktop Icons if NOT mobile */}
               {!isMobile && (
                   user ? (
                     <>
@@ -399,11 +436,6 @@ const Navbar = () => {
                       
                       <Link to="/profile" title="View Profile">
                         <img
-                          /* OPTIMIZED: 
-                             1. Passed dimensions as Object {width: 80, height: 80}.
-                             2. Added decoding="async" for smoother UI.
-                             3. Added explicit width/height for layout stability.
-                          */
                           src={user.profilePicture || user.avatar 
                             ? optimizeCloudinaryUrl(user.profilePicture || user.avatar, { width: 80, height: 80 }) 
                             : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&size=80`
@@ -528,10 +560,6 @@ const Navbar = () => {
 
                 <Link to="/profile" onClick={() => setMenuOpen(false)} style={styles.mobileLink}>
                   <img 
-                    /* OPTIMIZED: 
-                       1. Passed dimensions as Object {width: 40, height: 40}.
-                       2. Added decoding="async".
-                    */
                     src={user.profilePicture || user.avatar 
                         ? optimizeCloudinaryUrl(user.profilePicture || user.avatar, { width: 40, height: 40 }) 
                         : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}`
