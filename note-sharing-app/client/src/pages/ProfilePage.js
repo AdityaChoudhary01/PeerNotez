@@ -387,15 +387,22 @@ const ProfilePage = () => {
     const setCurrentPageState = activeTab === 'uploads' ? setCurrentPageUploads : setCurrentPageSaved;
     const emptyMessage = activeTab === 'uploads' ? 'You have not uploaded any notes yet.' : 'You have no saved notes.';
 
-    const optimizedAvatar = optimizeCloudinaryUrl(user?.avatar, { width: 280, height: 280, isProfile: true });
-
     return (
         <main style={styles.wrapper}>
             <header style={styles.headerCard}>
                 <div style={styles.avatarContainer}>
                     <img 
-                        src={optimizedAvatar || 'https://via.placeholder.com/140/3f4451/ffffff?text=P'} 
+                        /* OPTIMIZATION:
+                           1. Use Cloudinary helper with correct object params: { width: 280, height: 280 }
+                           2. Add lazy loading and async decoding
+                        */
+                        src={user?.avatar 
+                            ? optimizeCloudinaryUrl(user.avatar, { width: 280, height: 280, isProfile: true }) 
+                            : 'https://via.placeholder.com/140/3f4451/ffffff?text=P'
+                        } 
                         alt={user?.name || "User profile"} 
+                        loading="lazy"
+                        decoding="async"
                         style={styles.avatar} 
                     />
                     <label htmlFor="avatar-upload" style={styles.avatarLabel} aria-label="Change profile picture">📸 Change</label>
@@ -525,25 +532,25 @@ const ProfilePage = () => {
                             <div style={{maxWidth: '800px', margin: '0 auto'}}>
                                 {collections.map(collection => (
                                     <div key={collection._id} style={styles.collectionItem} onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'} onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}>
-                                        <div style={{display: 'flex', alignItems: 'center', flexWrap: 'wrap'}}>
-                                            <Link to={`/collections/${collection._id}`} style={styles.collectionLink}>
-                                                <FaList style={{color: '#00d4ff', flexShrink: 0}} aria-hidden="true" /> 
-                                                <span>{collection.name}</span>
-                                            </Link>
-                                            <span style={{marginLeft: '10px', color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem', whiteSpace: 'nowrap'}}>
-                                                ({collection.notes.length} notes)
-                                            </span>
-                                        </div>
-                                        <button 
-                                            onClick={() => handleDeleteCollection(collection._id, collection.name)}
-                                            style={styles.deleteBtn}
-                                            title="Delete Collection"
-                                            aria-label={`Delete collection ${collection.name}`}
-                                            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 0, 85, 0.2)'} 
-                                            onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255, 0, 85, 0.1)'}
-                                        >
-                                            <FaTrashAlt aria-hidden="true" />
-                                        </button>
+                                            <div style={{display: 'flex', alignItems: 'center', flexWrap: 'wrap'}}>
+                                                <Link to={`/collections/${collection._id}`} style={styles.collectionLink}>
+                                                    <FaList style={{color: '#00d4ff', flexShrink: 0}} aria-hidden="true" /> 
+                                                    <span>{collection.name}</span>
+                                                </Link>
+                                                <span style={{marginLeft: '10px', color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem', whiteSpace: 'nowrap'}}>
+                                                    ({collection.notes.length} notes)
+                                                </span>
+                                            </div>
+                                            <button 
+                                                onClick={() => handleDeleteCollection(collection._id, collection.name)}
+                                                style={styles.deleteBtn}
+                                                title="Delete Collection"
+                                                aria-label={`Delete collection ${collection.name}`}
+                                                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 0, 85, 0.2)'} 
+                                                onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255, 0, 85, 0.1)'}
+                                            >
+                                                <FaTrashAlt aria-hidden="true" />
+                                            </button>
                                     </div>
                                 ))}
                             </div>
