@@ -3,7 +3,8 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import { FaSearch, FaRegComments, FaSpinner, FaTrash } from 'react-icons/fa';
-import { ref, onValue, off, remove } from 'firebase/database';
+// ✅ Added 'update' and 'serverTimestamp'
+import { ref, onValue, off, update, serverTimestamp, remove } from 'firebase/database';
 import { db } from '../services/firebase';
 import useAuth from '../hooks/useAuth';
 import { optimizeCloudinaryUrl } from '../utils/cloudinaryHelper';
@@ -57,7 +58,7 @@ const InboxItem = ({ chat, currentUserId, onDelete }) => {
 
     const handleDeleteClick = (e) => {
         e.stopPropagation();
-        if (window.confirm(`Delete conversation with ${chat.partnerName}?`)) {
+        if (window.confirm(`Delete conversation with ${chat.partnerName}? This will clear your history.`)) {
             onDelete(chat.partnerId);
         }
     };
@@ -122,7 +123,7 @@ const InboxItem = ({ chat, currentUserId, onDelete }) => {
                         overflow: 'hidden', textOverflow: 'ellipsis',
                         fontWeight: isUnread ? '700' : '400', flex: 1
                     }}>
-                        {chat.lastMessage}
+                        {chat.lastMessage || "Start a conversation"}
                     </div>
 
                     {isHovered && (
@@ -176,6 +177,11 @@ const ChatListPage = () => {
                 const rawChats = Object.values(data).sort((a, b) => b.timestamp - a.timestamp);
 
                 const enrichedChats = await Promise.all(rawChats.map(async (chat) => {
+                    // ✅ FILTER: Skip chats that are "cleared" (empty last message)
+                    if (!chat.lastMessage || chat.lastMessage === "") {
+                         return null;
+                    }
+
                     try {
                         const { data: userProfile } = await axios.get(`/users/${chat.partnerId}/profile`);
                         return {
@@ -226,10 +232,18 @@ const ChatListPage = () => {
         return () => clearTimeout(delayDebounceFn);
     }, [searchTerm]);
 
+    // ✅ UPDATED: Clear Chat History Logic
     const handleDeleteChat = async (partnerId) => {
         try {
             const chatRef = ref(db, `user_chats/${currentUser._id}/${partnerId}`);
-            await remove(chatRef);
+            
+            // Instead of remove(), we update it to hide history
+            await update(chatRef, {
+                lastMessage: "",       // Clear the preview so it disappears from list
+                unreadCount: 0,        // Reset unread
+                hiddenBefore: serverTimestamp() // Hides old messages in the chat window
+            });
+            
         } catch (error) {
             console.error("Failed to delete chat", error);
             alert("Failed to delete chat. Please try again.");
