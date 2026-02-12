@@ -1,11 +1,11 @@
 import React, { useState, useCallback } from 'react';
 import axios from 'axios';
-import useAuth from '../../hooks/useAuth';
-import StarRating from '../common/StarRating';
 import { Link } from 'react-router-dom';
 import { FaReply, FaPaperPlane } from 'react-icons/fa';
-import { optimizeCloudinaryUrl } from '../../utils/cloudinaryHelper';
+import useAuth from '../../hooks/useAuth';
+import StarRating from '../common/StarRating';
 import RoleBadge from '../common/RoleBadge'; // Import Badge
+import { optimizeCloudinaryUrl } from '../../utils/cloudinaryHelper';
 
 // Super Admin Config
 const MAIN_ADMIN_EMAIL = process.env.REACT_APP_MAIN_ADMIN_EMAIL;
@@ -59,13 +59,23 @@ const styles = {
         display: 'flex',
         flexDirection: 'column'
     },
-    authorName: {
+    authorNameLink: {
         fontWeight: '700',
         color: '#fff',
         fontSize: '1rem',
         textDecoration: 'none',
         display: 'flex',
-        alignItems: 'center'
+        alignItems: 'center',
+        gap: '8px'
+    },
+    authorNameStatic: {
+        fontWeight: '700',
+        color: '#fff',
+        fontSize: '1rem',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        cursor: 'default'
     },
     date: {
         fontSize: '0.8rem',
@@ -139,131 +149,113 @@ const styles = {
     replyingTo: {
         color: '#ff00cc',
         fontWeight: '600',
-        marginLeft: '4px'
-    },
-    // Static name style for Super Admin (non-link)
-    staticName: {
-        fontWeight: '700',
-        color: '#fff',
-        fontSize: '1rem',
-        display: 'flex',
-        alignItems: 'center',
-        cursor: 'default'
+        marginLeft: '4px',
+        fontSize: '0.9rem'
     }
 };
 
-// --- New Helper: ReplyCard Component ---
+// --- ReplyCard Component ---
 const ReplyCard = ({ reply, noteId, onReviewAdded, user, token }) => {
-  const [isReplying, setIsReplying] = useState(false);
-  const [replyComment, setReplyComment] = useState('');
-  const [loading, setLoading] = useState(false);
+    const [isReplying, setIsReplying] = useState(false);
+    const [replyComment, setReplyComment] = useState('');
+    const [loading, setLoading] = useState(false);
 
-  // Check if this reply author is Super Admin
-  const isReplyAuthorSuperAdmin = reply.user?.email === MAIN_ADMIN_EMAIL;
+    // Check if reply author is Super Admin
+    const isReplyAuthorSuperAdmin = reply.user?.email === MAIN_ADMIN_EMAIL;
 
-  const handleReplySubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      await axios.post(`/notes/${noteId}/reviews`, {
-        comment: replyComment,
-        parentReviewId: reply._id,
-      }, config);
+    const handleReplySubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        try {
+            const config = { headers: { Authorization: `Bearer ${token}` } };
+            // Ensure this endpoint matches your backend route for notes reviews
+            await axios.post(`/notes/${noteId}/reviews`, {
+                comment: replyComment,
+                parentReviewId: reply._id,
+            }, config);
 
-      setReplyComment('');
-      setIsReplying(false);
-      onReviewAdded();
-    } catch (error) {
-      alert(error.response?.data?.message || 'Failed to submit reply.');
-    } finally {
-      setLoading(false);
-    }
-  };
+            setReplyComment('');
+            setIsReplying(false);
+            onReviewAdded();
+        } catch (error) {
+            alert(error.response?.data?.message || 'Failed to submit reply.');
+        } finally {
+            setLoading(false);
+        }
+    };
 
-  return (
-    <div style={{...styles.reviewCard, ...styles.replyCard}}>
-      <div style={styles.authorHeader}>
-        {/* CONDITIONAL LINK: Avatar */}
-        {isReplyAuthorSuperAdmin ? (
-             <img
-                src={optimizeCloudinaryUrl(reply.user?.avatar || 'https://via.placeholder.com/40', { width: 80, height: 80, isProfile: true })}
-                alt={reply.user?.name || 'Deleted User'}
-                loading="lazy"
-                style={{...styles.avatar, width: '35px', height: '35px', cursor: 'default', border: '2px solid #FFD700'}}
-            />
-        ) : (
-            <Link to={`/profile/${reply.user?._id}`}>
-                <img
-                src={optimizeCloudinaryUrl(reply.user?.avatar || 'https://via.placeholder.com/40', { width: 80, height: 80, isProfile: true })}
-                alt={reply.user?.name || 'Deleted User'}
-                loading="lazy"
-                style={{...styles.avatar, width: '35px', height: '35px'}}
-                />
-            </Link>
-        )}
+    // Avatar Logic
+    const avatarUrl = optimizeCloudinaryUrl(reply.user?.avatar || 'https://via.placeholder.com/40', { width: 80, height: 80, isProfile: true });
+    const avatarStyle = { ...styles.avatar, width: '35px', height: '35px', border: isReplyAuthorSuperAdmin ? '2px solid #FFD700' : '2px solid rgba(0, 212, 255, 0.5)' };
 
-        <div style={styles.authorInfo}>
-          <div style={styles.authorName}>
-            {/* CONDITIONAL LINK: Name */}
-            {isReplyAuthorSuperAdmin ? (
-                <span style={styles.staticName}>
-                    {reply.user?.name || 'Deleted User'}
-                </span>
-            ) : (
-                <Link to={`/profile/${reply.user?._id}`} style={styles.authorName}>
-                    {reply.user?.name || 'Deleted User'}
-                </Link>
-            )}
-            
-            {/* BADGE */}
-            <RoleBadge user={reply.user} />
+    return (
+        <div style={{...styles.reviewCard, ...styles.replyCard}}>
+            <div style={styles.authorHeader}>
+                {/* Avatar */}
+                {isReplyAuthorSuperAdmin ? (
+                     <img src={avatarUrl} alt="Admin" style={{...avatarStyle, cursor: 'default'}} loading="lazy" />
+                ) : (
+                    <Link to={`/profile/${reply.user?._id}`}>
+                        <img src={avatarUrl} alt={reply.user?.name} style={avatarStyle} loading="lazy" />
+                    </Link>
+                )}
 
-            {reply.parentUser?.name && (
-              <span style={styles.replyingTo}> @{reply.parentUser.name}</span>
-            )}
-          </div>
-          <span style={styles.date}>{formatDate(reply.createdAt)}</span>
+                <div style={styles.authorInfo}>
+                    {/* Name & Badge */}
+                    {isReplyAuthorSuperAdmin ? (
+                        <div style={styles.authorNameStatic}>
+                            {reply.user?.name || 'Deleted User'}
+                            <RoleBadge user={reply.user} />
+                            {reply.parentUser?.name && <span style={styles.replyingTo}>@{reply.parentUser.name}</span>}
+                        </div>
+                    ) : (
+                        <div style={{display: 'flex', alignItems: 'center'}}>
+                            <Link to={`/profile/${reply.user?._id}`} style={styles.authorNameLink}>
+                                {reply.user?.name || 'Deleted User'}
+                            </Link>
+                            <span style={{marginLeft: '8px'}}><RoleBadge user={reply.user} /></span>
+                            {reply.parentUser?.name && <span style={styles.replyingTo}>@{reply.parentUser.name}</span>}
+                        </div>
+                    )}
+                    <span style={styles.date}>{formatDate(reply.createdAt)}</span>
+                </div>
+            </div>
+
+            <div style={styles.content}>
+                <p style={{margin: 0}}>{reply.comment}</p>
+
+                {user && (
+                    <>
+                        <button 
+                            style={styles.replyBtn} 
+                            onClick={() => setIsReplying(prev => !prev)}
+                            onMouseEnter={(e) => e.currentTarget.style.color = '#ff00cc'}
+                            onMouseLeave={(e) => e.currentTarget.style.color = '#00d4ff'}
+                        >
+                            <FaReply /> {isReplying ? 'Cancel' : 'Reply'}
+                        </button>
+
+                        {isReplying && (
+                            <form onSubmit={handleReplySubmit} style={styles.replyForm}>
+                                <textarea
+                                    rows="2"
+                                    value={replyComment}
+                                    onChange={(e) => setReplyComment(e.target.value)}
+                                    placeholder={`Replying to ${reply.user?.name || 'this comment'}...`}
+                                    required
+                                    style={styles.textArea}
+                                />
+                                <button type="submit" disabled={loading} style={styles.submitBtn}>
+                                    {loading ? 'Sending...' : 'Post Reply'}
+                                </button>
+                            </form>
+                        )}
+                    </>
+                )}
+            </div>
         </div>
-      </div>
-
-      <div style={styles.content}>
-        <p style={{margin: 0}}>{reply.comment}</p>
-
-        {user && (
-          <>
-            <button 
-                style={styles.replyBtn} 
-                onClick={() => setIsReplying(prev => !prev)}
-                onMouseEnter={(e) => e.currentTarget.style.color = '#ff00cc'}
-                onMouseLeave={(e) => e.currentTarget.style.color = '#00d4ff'}
-                aria-label={`Reply to ${reply.user?.name || 'comment'}`}
-            >
-              <FaReply /> {isReplying ? 'Cancel' : 'Reply'}
-            </button>
-
-            {isReplying && (
-              <form onSubmit={handleReplySubmit} style={styles.replyForm}>
-                <textarea
-                  rows="2"
-                  value={replyComment}
-                  onChange={(e) => setReplyComment(e.target.value)}
-                  placeholder={`Replying to ${reply.user?.name || 'this comment'}...`}
-                  required
-                  style={styles.textArea}
-                />
-                <button type="submit" disabled={loading} style={styles.submitBtn}>
-                  {loading ? 'Sending...' : 'Post Reply'}
-                </button>
-              </form>
-            )}
-          </>
-        )}
-      </div>
-    </div>
-  );
+    );
 };
-
 
 // --- CommentThread Component ---
 const CommentThread = ({ comment, noteId, onReviewAdded, user, token }) => {
@@ -277,18 +269,17 @@ const CommentThread = ({ comment, noteId, onReviewAdded, user, token }) => {
     const handleReplySubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-
         try {
             const config = { headers: { Authorization: `Bearer ${token}` } };
-            await axios.post(`/notes/${noteId}/reviews`, { 
-                comment: replyComment, 
+            // Ensure this endpoint matches your backend route for notes reviews
+            await axios.post(`/notes/${noteId}/reviews`, {
+                comment: replyComment,
                 parentReviewId: comment._id,
             }, config);
-            
+
             setReplyComment('');
             setIsReplying(false);
             onReviewAdded();
-
         } catch (error) {
             alert(error.response?.data?.message || 'Failed to submit reply.');
         } finally {
@@ -296,7 +287,6 @@ const CommentThread = ({ comment, noteId, onReviewAdded, user, token }) => {
         }
     };
 
-    // Extract all replies
     const flattenReplies = (replyList) => {
         let allReplies = [];
         if (!replyList) return allReplies;
@@ -306,62 +296,53 @@ const CommentThread = ({ comment, noteId, onReviewAdded, user, token }) => {
         }
         return allReplies;
     };
-    
+
     const allFlatReplies = flattenReplies(comment.replies);
+
+    // Avatar Logic
+    const avatarUrl = optimizeCloudinaryUrl(comment.user?.avatar || 'https://via.placeholder.com/45', { width: 90, height: 90, isProfile: true });
+    const avatarStyle = { ...styles.avatar, border: isCommentAuthorSuperAdmin ? '2px solid #FFD700' : '2px solid rgba(0, 212, 255, 0.5)' };
 
     return (
         <div>
             <div style={styles.reviewCard}>
                 <div style={styles.authorHeader}>
-                    {/* CONDITIONAL LINK: Avatar */}
+                    {/* Avatar */}
                     {isCommentAuthorSuperAdmin ? (
-                        <img 
-                            src={optimizeCloudinaryUrl(comment.user?.avatar || 'https://via.placeholder.com/45/CCCCCC/FFFFFF?text=P', { width: 90, height: 90, isProfile: true })} 
-                            alt={comment.user?.name || 'Deleted User'} 
-                            loading="lazy"
-                            style={{...styles.avatar, cursor: 'default', border: '2px solid #FFD700'}} 
-                        />
+                         <img src={avatarUrl} alt="Admin" style={{...avatarStyle, cursor: 'default'}} loading="lazy" />
                     ) : (
                         <Link to={`/profile/${comment.user?._id}`}>
-                            <img 
-                                src={optimizeCloudinaryUrl(comment.user?.avatar || 'https://via.placeholder.com/45/CCCCCC/FFFFFF?text=P', { width: 90, height: 90, isProfile: true })} 
-                                alt={comment.user?.name || 'Deleted User'} 
-                                loading="lazy"
-                                style={styles.avatar} 
-                            />
+                            <img src={avatarUrl} alt={comment.user?.name} style={avatarStyle} loading="lazy" />
                         </Link>
                     )}
 
                     <div style={styles.authorInfo}>
-                        {/* CONDITIONAL LINK: Name */}
+                        {/* Name */}
                         {isCommentAuthorSuperAdmin ? (
-                            <div style={styles.authorName}>
-                                <strong style={styles.staticName}>{comment.user?.name || 'Deleted User'}</strong>
-                                {/* BADGE */}
+                            <div style={styles.authorNameStatic}>
+                                {comment.user?.name || 'Deleted User'}
                                 <RoleBadge user={comment.user} />
                             </div>
                         ) : (
-                            <div style={styles.authorName}>
-                                <Link to={`/profile/${comment.user?._id}`} style={styles.authorName}>
-                                    <strong style={{color: '#fff'}}>{comment.user?.name || 'Deleted User'}</strong>
+                            <div style={{display: 'flex', alignItems: 'center'}}>
+                                <Link to={`/profile/${comment.user?._id}`} style={styles.authorNameLink}>
+                                    {comment.user?.name || 'Deleted User'}
                                 </Link>
-                                {/* BADGE */}
-                                <RoleBadge user={comment.user} />
+                                <span style={{marginLeft: '8px'}}><RoleBadge user={comment.user} /></span>
                             </div>
                         )}
-                        
                         <span style={styles.date}>{formatDate(comment.createdAt)}</span>
                     </div>
                 </div>
-                
+
                 <div style={styles.content}>
                     {!comment.parentReviewId && comment.rating > 0 && (
                         <div style={{marginBottom: '0.5rem'}}>
-                             <StarRating rating={comment.rating} readOnly={true} />
+                            <StarRating rating={comment.rating} readOnly />
                         </div>
-                    )} 
+                    )}
                     <p style={{margin: 0}}>{comment.comment}</p>
-                    
+
                     {user && (
                         <>
                             <button 
@@ -369,7 +350,6 @@ const CommentThread = ({ comment, noteId, onReviewAdded, user, token }) => {
                                 onClick={() => setIsReplying(prev => !prev)}
                                 onMouseEnter={(e) => e.currentTarget.style.color = '#ff00cc'}
                                 onMouseLeave={(e) => e.currentTarget.style.color = '#00d4ff'}
-                                aria-label={`Reply to ${comment.user?.name || 'review'}`}
                             >
                                 <FaReply /> {isReplying ? 'Cancel' : 'Reply'}
                             </button>
@@ -380,19 +360,13 @@ const CommentThread = ({ comment, noteId, onReviewAdded, user, token }) => {
                                         rows="2"
                                         value={replyComment}
                                         onChange={(e) => setReplyComment(e.target.value)}
-                                        placeholder="Type your reply to this comment..."
+                                        placeholder="Type your reply..."
                                         required
                                         style={styles.textArea}
                                     />
-                                    <div style={{display: 'flex', justifyContent: 'flex-end'}}>
-                                        <button 
-                                            type="submit" 
-                                            disabled={loading || !replyComment.trim()} 
-                                            style={styles.submitBtn} 
-                                        >
-                                            {loading ? 'Sending...' : 'Post Reply'}
-                                        </button>
-                                    </div>
+                                    <button type="submit" disabled={loading} style={styles.submitBtn}>
+                                        {loading ? 'Sending...' : 'Post Reply'}
+                                    </button>
                                 </form>
                             )}
                         </>
@@ -414,13 +388,15 @@ const CommentThread = ({ comment, noteId, onReviewAdded, user, token }) => {
     );
 };
 
+// --- Main Reviews Component ---
 const Reviews = ({ noteId, reviews, onReviewAdded }) => {
     const [rating, setRating] = useState(0);
     const [comment, setComment] = useState('');
     const [loading, setLoading] = useState(false);
     const { user, token } = useAuth();
-    
+
     const buildCommentThreads = useCallback((flatReviews) => {
+        if (!flatReviews) return [];
         const map = {};
         const rootComments = [];
 
@@ -450,12 +426,17 @@ const Reviews = ({ noteId, reviews, onReviewAdded }) => {
             }
         });
         
+        // Sort: Newest first
         rootComments.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         return rootComments;
     }, []);
 
     const commentThreads = buildCommentThreads(reviews);
-    const alreadyReviewedTopLevel = reviews.some(r => r.user?._id === user?._id && !r.parentReviewId);
+    
+    // Check if user already posted a top-level review (no parentReviewId)
+    const alreadyReviewedTopLevel = reviews 
+        ? reviews.some(r => r.user?._id === user?._id && !r.parentReviewId)
+        : false;
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -468,6 +449,7 @@ const Reviews = ({ noteId, reviews, onReviewAdded }) => {
 
         try {
             const config = { headers: { Authorization: `Bearer ${token}` } };
+            // Ensure this matches your backend route
             await axios.post(`/notes/${noteId}/reviews`, { rating, comment }, config);
             
             onReviewAdded();
@@ -483,7 +465,7 @@ const Reviews = ({ noteId, reviews, onReviewAdded }) => {
 
     return (
         <div>
-            <h2 style={styles.sectionTitle}>Ratings & Reviews ({reviews.length})</h2>
+            <h2 style={styles.sectionTitle}>Ratings & Reviews ({reviews ? reviews.length : 0})</h2>
             
             <div>
                 {commentThreads.length === 0 && <p style={{color: 'rgba(255,255,255,0.6)'}}>No reviews yet. Be the first!</p>}
@@ -493,8 +475,8 @@ const Reviews = ({ noteId, reviews, onReviewAdded }) => {
                         comment={thread} 
                         noteId={noteId} 
                         onReviewAdded={onReviewAdded} 
-                        user={user}
-                        token={token}
+                        user={user} 
+                        token={token} 
                     />
                 ))}
             </div>
@@ -535,7 +517,7 @@ const Reviews = ({ noteId, reviews, onReviewAdded }) => {
 
             {!user && (
                  <div style={{...styles.mainForm, textAlign: 'center'}}>
-                    <p>
+                    <p style={{color: 'rgba(255,255,255,0.8)'}}>
                         Please <Link to="/login" style={{ color: '#00d4ff', fontWeight: 'bold' }}>log in</Link> to submit a review or comment.
                     </p>
                 </div>
