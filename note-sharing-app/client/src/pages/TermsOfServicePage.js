@@ -108,8 +108,8 @@ const TermsOfServicePage = () => {
     };
 
     return (
-        <div style={styles.wrapper}>
-            <Helmet>
+        <div className='wrapper' style={styles.wrapper}>
+         <Helmet>
                 <title>Terms of Service | PeerNotez</title>
                 <meta name="description" content="The official Terms of Service and User Agreement for PeerNotez." />
                 <link rel="canonical" href="https://peernotez.netlify.app/terms" />
@@ -126,7 +126,7 @@ const TermsOfServicePage = () => {
             </header>
 
             {/* Section 1: Acceptance */}
-            <section style={styles.sectionCard}>
+            <section className='section-card' style={styles.sectionCard}>
                 <h2 style={styles.sectionHeading}><FaGavel style={{color: '#00ffaa'}} /> 1. Acceptance of Terms</h2>
                 <div style={styles.paragraph}>
                     <p>
@@ -136,7 +136,7 @@ const TermsOfServicePage = () => {
             </section>
             
             {/* Section 2: User Content */}
-            <section style={styles.sectionCard}>
+            <section className='section-card' style={styles.sectionCard}>
                 <h2 style={styles.sectionHeading}><FaShieldAlt style={{color: '#ff00cc'}} /> 2. User-Generated Content & Copyright</h2>
                 
                 <p style={styles.paragraph}>
@@ -171,7 +171,7 @@ const TermsOfServicePage = () => {
             </section>
 
             {/* Section 3: Termination */}
-            <section style={styles.sectionCard}>
+            <section className='section-card' style={styles.sectionCard}>
                 <h2 style={styles.sectionHeading}><FaBan style={{color: '#ffdd00'}} /> 3. Termination and Governing Law</h2>
                 
                 <h3 style={styles.subHeading}>Termination</h3>
@@ -184,6 +184,16 @@ const TermsOfServicePage = () => {
                     These Terms shall be governed and construed in accordance with the laws of <span style={styles.highlight}>India</span>, without regard to its conflict of law provisions.
                 </p>
             </section>
+            <style>{`
+                @media (max-width: 600px) {
+                   .wrapper{
+                   padding:1rem 0.1rem !important;
+                   }
+                   .section-card{
+                   padding: 1rem !important;
+                   }
+                }
+            `}</style>
         </div>
     );
 };
