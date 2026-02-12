@@ -2,16 +2,23 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
-import { FaPaperPlane, FaArrowLeft, FaCircle, FaSpinner, FaTrash } from 'react-icons/fa'; 
-import { ref, push, set, update, onValue, off, serverTimestamp, runTransaction, remove } from 'firebase/database';
+import { FaPaperPlane, FaArrowLeft, FaCircle, FaSpinner, FaTrash, FaBan } from 'react-icons/fa'; 
+
+// Firebase Database hooks
+import { ref, push, set, update, onValue, off, serverTimestamp, runTransaction } from 'firebase/database';
+
+// ✅ FIXED: Removed 'onAuthStateChanged' as it's handled in AuthContext now
+import { getAuth } from 'firebase/auth';
+
 import { db } from '../services/firebase'; 
 import useAuth from '../hooks/useAuth';
 import { optimizeCloudinaryUrl } from '../utils/cloudinaryHelper';
-import RoleBadge from '../components/common/RoleBadge'; // Import Badge
+import RoleBadge from '../components/common/RoleBadge';
 
 const ChatPage = () => {
     const { userId: partnerId } = useParams();
-    const { user: currentUser } = useAuth();
+    // Destructure firebaseLoading from useAuth
+    const { user: currentUser, firebaseLoading } = useAuth(); 
     const navigate = useNavigate();
     const listRef = useRef(null);
 
@@ -25,11 +32,17 @@ const ChatPage = () => {
     const [newMessage, setNewMessage] = useState('');
     const [loading, setLoading] = useState(true);
     const [hoveredMessage, setHoveredMessage] = useState(null);
+    const [hiddenTimestamp, setHiddenTimestamp] = useState(0);
 
     // 1. Generate Chat ID
     const chatId = currentUser && partnerId ? [currentUser._id, partnerId].sort().join("_") : null;
 
-    // 2. Fetch Partner
+    // --- Safety Check: Ensure Firebase Auth is ready ---
+    const auth = getAuth();
+    // We check if the user is authenticated and the AuthContext has finished the firebase handshake
+    const isFirebaseReady = auth.currentUser && !firebaseLoading;
+
+    // 2. Fetch Partner Profile
     useEffect(() => {
         const fetchPartner = async () => {
             try {
@@ -43,101 +56,172 @@ const ChatPage = () => {
         if (partnerId) fetchPartner();
     }, [partnerId, navigate]);
 
-    // 3. Reset Unread
+    // 3. Reset Unread Count & Get "Hidden" Timestamp
     useEffect(() => {
-        if (!currentUser || !partnerId) return;
+        if (!isFirebaseReady || !currentUser || !partnerId) return;
+        
         const myInboxRef = ref(db, `user_chats/${currentUser._id}/${partnerId}`);
-        update(myInboxRef, { unreadCount: 0 });
-    }, [currentUser, partnerId]);
+        const listener = onValue(myInboxRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                setHiddenTimestamp(data.hiddenBefore || 0);
+                if (data.unreadCount > 0) {
+                    update(myInboxRef, { unreadCount: 0 }).catch(console.error);
+                }
+            }
+        });
+
+        return () => off(myInboxRef, 'value', listener);
+    }, [currentUser, partnerId, isFirebaseReady]);
 
     // 4. Firebase Listeners (Messages & Status)
     useEffect(() => {
-        if (!chatId || !partnerId) return;
+        if (!isFirebaseReady || !chatId) return;
+
         setLoading(true);
         const messagesRef = ref(db, `chats/${chatId}/messages`);
+        
         const messagesListener = onValue(messagesRef, (snapshot) => {
             const data = snapshot.val();
             if (data) {
-                const loadedMessages = Object.entries(data).map(([key, val]) => ({ id: key, ...val })).sort((a, b) => a.createdAt - b.createdAt);
+                const loadedMessages = Object.entries(data)
+                    .map(([key, val]) => ({ id: key, ...val }))
+                    .filter(msg => msg.createdAt > hiddenTimestamp)
+                    .sort((a, b) => a.createdAt - b.createdAt);
                 setMessages(loadedMessages);
-            } else setMessages([]);
+            } else {
+                setMessages([]);
+            }
             setLoading(false);
         });
+
         const statusRef = ref(db, `status/${partnerId}`);
         const statusListener = onValue(statusRef, (snapshot) => {
             const data = snapshot.val();
             if (data) setPartnerStatus(data);
             else setPartnerStatus({ state: 'offline', last_changed: Date.now() });
         });
-        return () => { off(messagesRef, 'value', messagesListener); off(statusRef, 'value', statusListener); };
-    }, [chatId, partnerId]);
+
+        return () => { 
+            off(messagesRef, 'value', messagesListener); 
+            off(statusRef, 'value', statusListener); 
+        };
+    }, [chatId, partnerId, hiddenTimestamp, isFirebaseReady]);
 
     // 5. Scroll Logic
     useEffect(() => {
-        if (loading) return;
-        if (listRef.current) listRef.current.scrollTop = listRef.current.scrollHeight;
+        if (!loading && listRef.current) {
+            listRef.current.scrollTop = listRef.current.scrollHeight;
+        }
     }, [messages, loading]);
 
-    // 6. Last Seen Helper
+    // 6. Exact Last Seen Helper
     const getLastSeenText = () => {
         if (!partnerStatus) return 'Offline';
         if (partnerStatus.state === 'online') return 'Online';
-        const diff = Date.now() - partnerStatus.last_changed;
-        const minutes = Math.floor(diff / 60000);
-        const hours = Math.floor(diff / 3600000);
-        const days = Math.floor(diff / 86400000);
-        if (minutes < 1) return 'Last seen just now';
-        if (minutes < 60) return `Last seen ${minutes}m ago`;
-        if (hours < 24) return `Last seen ${hours}h ago`;
-        return `Last seen ${days}d ago`;
+
+        const date = new Date(partnerStatus.last_changed);
+        
+        const timeFormatter = new Intl.DateTimeFormat('en-IN', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true,
+        });
+
+        const dateFormatter = new Intl.DateTimeFormat('en-IN', {
+            day: 'numeric',
+            month: 'short',
+        });
+
+        return `Last seen at ${timeFormatter.format(date)}, ${dateFormatter.format(date)}`;
     };
 
     // 7. Send Message
     const handleSendMessage = async (e) => {
         e.preventDefault();
-        if (!newMessage.trim() || !chatId) return;
+        if (!newMessage.trim() || !chatId || !isFirebaseReady) return;
+
         const messageContent = newMessage;
         setNewMessage(''); 
+        
         try {
             const timestamp = serverTimestamp();
             const messagesRef = ref(db, `chats/${chatId}/messages`);
-            await push(messagesRef, { text: messageContent, senderId: currentUser._id, createdAt: timestamp });
+            
+            await push(messagesRef, { 
+                text: messageContent, 
+                senderId: currentUser._id, 
+                createdAt: timestamp,
+                isDeleted: false 
+            });
+
             const myInboxRef = ref(db, `user_chats/${currentUser._id}/${partnerId}`);
-            await set(myInboxRef, { partnerId: partnerId, lastMessage: messageContent, timestamp: timestamp, unreadCount: 0 });
+            await set(myInboxRef, { 
+                partnerId: partnerId, 
+                lastMessage: messageContent, 
+                timestamp: timestamp, 
+                unreadCount: 0,
+                hiddenBefore: hiddenTimestamp 
+            });
+
             const partnerInboxRef = ref(db, `user_chats/${partnerId}/${currentUser._id}`);
             await runTransaction(partnerInboxRef, (currentData) => {
-                if (currentData) return { ...currentData, lastMessage: messageContent, timestamp: timestamp, unreadCount: (currentData.unreadCount || 0) + 1 };
-                else return { partnerId: currentUser._id, lastMessage: messageContent, timestamp: timestamp, unreadCount: 1 };
+                if (currentData) {
+                    return { ...currentData, lastMessage: messageContent, timestamp: timestamp, unreadCount: (currentData.unreadCount || 0) + 1 };
+                } else {
+                    return { partnerId: currentUser._id, lastMessage: messageContent, timestamp: timestamp, unreadCount: 1 };
+                }
             });
-        } catch (error) { console.error("Failed to send", error); setNewMessage(messageContent); }
-    };
-
-    // 8. Delete Message
-    const handleDeleteMessage = async (msgId) => {
-        if (window.confirm("Unsend this message?")) {
-            try { await remove(ref(db, `chats/${chatId}/messages/${msgId}`)); } 
-            catch (error) { console.error("Failed to delete message", error); }
+        } catch (error) { 
+            console.error("Failed to send", error); 
+            setNewMessage(messageContent); 
         }
     };
 
-    // 9. Delete Chat
+    // 8. Delete Message (Soft Delete)
+    const handleDeleteMessage = async (msgId) => {
+        if (window.confirm("Delete this message for everyone?")) {
+            try { 
+                const msgRef = ref(db, `chats/${chatId}/messages/${msgId}`);
+                await update(msgRef, {
+                    text: "🚫 This message was deleted",
+                    isDeleted: true
+                });
+            } catch (error) { console.error(error); }
+        }
+    };
+
+    // 9. Delete Chat (Clear History)
     const handleDeleteChat = async () => {
-        if (window.confirm("Delete this conversation?")) {
-            try { await remove(ref(db, `user_chats/${currentUser._id}/${partnerId}`)); navigate('/chat'); } 
-            catch (error) { console.error("Failed to delete chat", error); }
+        if (window.confirm("Clear chat history? This will hide current messages for you.")) {
+            try { 
+                const myChatRef = ref(db, `user_chats/${currentUser._id}/${partnerId}`);
+                await update(myChatRef, {
+                    hiddenBefore: serverTimestamp(),
+                    lastMessage: "",
+                    unreadCount: 0
+                });
+                navigate('/chat'); 
+            } catch (error) { console.error(error); }
         }
     };
 
     const handleBack = () => navigate('/chat');
-
-    // --- CHECK IF PARTNER IS SUPER ADMIN ---
     const isPartnerSuperAdmin = partner?.email === MAIN_ADMIN_EMAIL;
+
+    // --- RENDER LOADING ---
+    if (!isFirebaseReady || !currentUser) {
+        return (
+            <div style={{ height: '80vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.6)' }}>
+                <FaSpinner className="fa-spin" size={40} color="#00d4ff" style={{ marginBottom: '1rem' }} />
+                <p>Establishing Secure Connection...</p>
+            </div>
+        );
+    }
 
     const styles = {
         wrapper: { maxWidth: '900px', margin: '0 auto', height: '85vh', display: 'flex', flexDirection: 'column' },
-        container: { flex: 1, display: 'flex', flexDirection: 'column', background: 'rgba(255, 255, 255, 0.03)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 25px 50px rgba(0,0,0,0.2)', position: 'relative',
-            marginBottom:'2rem'
-         },
+        container: { flex: 1, display: 'flex', flexDirection: 'column', background: 'rgba(255, 255, 255, 0.03)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 25px 50px rgba(0,0,0,0.2)', position: 'relative', marginBottom:'2rem' },
         header: { padding: '1rem 1.5rem', borderBottom: '1px solid rgba(255, 255, 255, 0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255, 255, 255, 0.02)' },
         headerLeft: { display: 'flex', alignItems: 'center', gap: '1rem' },
         backBtn: { background: 'none', border: 'none', color: '#fff', fontSize: '1.2rem', cursor: 'pointer', padding: '5px', display: 'flex', alignItems: 'center' },
@@ -152,6 +236,7 @@ const ChatPage = () => {
         bubble: { maxWidth: '70%', padding: '12px 18px', borderRadius: '18px', fontSize: '0.95rem', lineHeight: '1.5', position: 'relative', wordWrap: 'break-word' },
         sent: { background: 'linear-gradient(135deg, #00d4ff 0%, #333399 100%)', color: '#fff', borderBottomRightRadius: '4px' },
         received: { background: 'rgba(255, 255, 255, 0.1)', color: '#fff', borderBottomLeftRadius: '4px' },
+        deletedMsg: { background: 'rgba(255, 255, 255, 0.05)', color: 'rgba(255,255,255,0.5)', fontStyle: 'italic', border: '1px solid rgba(255,255,255,0.1)' },
         msgDeleteBtn: { background: 'none', border: 'none', color: 'rgba(255, 255, 255, 0.4)', cursor: 'pointer', fontSize: '0.9rem', padding: '5px', opacity: 0, transition: 'opacity 0.2s' },
         statusIndicator: { fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '500', marginTop: '2px' }
     };
@@ -171,7 +256,6 @@ const ChatPage = () => {
                         
                         {partner ? (
                             <>
-                                {/* Avatar (Unclickable if Super Admin) */}
                                 {isPartnerSuperAdmin ? (
                                     <img src={optimizeCloudinaryUrl(partner.avatar, {width: 45, height: 45, isProfile: true})} alt={partner.name} style={{...styles.avatar, cursor: 'default'}} />
                                 ) : (
@@ -181,16 +265,8 @@ const ChatPage = () => {
                                 )}
 
                                 <div>
-                                    {/* Name & Badge */}
                                     <div style={styles.nameContainer}>
-                                        {isPartnerSuperAdmin ? (
-                                            <h3 style={{margin:0, fontSize:'1.1rem', color: '#fff', cursor: 'default'}}>{partner.name}</h3>
-                                        ) : (
-                                            <Link to={`/profile/${partner._id}`} style={{textDecoration: 'none'}}>
-                                                <h3 style={{margin:0, fontSize:'1.1rem', color: '#fff'}}>{partner.name}</h3>
-                                            </Link>
-                                        )}
-                                        {/* --- ADDED BADGE HERE --- */}
+                                        <h3 style={{margin:0, fontSize:'1.1rem', color: '#fff'}}>{partner.name}</h3>
                                         <RoleBadge user={partner} />
                                     </div>
 
@@ -205,8 +281,8 @@ const ChatPage = () => {
                         )}
                     </div>
 
-                    <button onClick={handleDeleteChat} style={styles.deleteChatBtn} title="Delete Chat">
-                        <FaTrash /> <span style={{display: window.innerWidth <= 600 ? 'none' : 'inline'}}>Delete</span>
+                    <button onClick={handleDeleteChat} style={styles.deleteChatBtn} title="Clear History">
+                        <FaTrash /> <span style={{display: window.innerWidth <= 600 ? 'none' : 'inline'}}>Clear Chat</span>
                     </button>
                 </div>
 
@@ -220,12 +296,18 @@ const ChatPage = () => {
                         messages.map((msg) => {
                             const isMine = msg.senderId === currentUser._id;
                             const isHovered = hoveredMessage === msg.id;
+                            
+                            let bubbleStyle = isMine ? styles.sent : styles.received;
+                            if (msg.isDeleted) bubbleStyle = { ...bubbleStyle, ...styles.deletedMsg };
+
                             return (
                                 <div key={msg.id} style={{...styles.messageRow, flexDirection: isMine ? 'row-reverse' : 'row'}} onMouseEnter={() => setHoveredMessage(msg.id)} onMouseLeave={() => setHoveredMessage(null)}>
-                                    <div style={{...styles.bubble, ...(isMine ? styles.sent : styles.received)}}>
+                                    <div style={{...styles.bubble, ...bubbleStyle}}>
+                                        {msg.isDeleted && <FaBan style={{marginRight: '6px', fontSize: '0.8em'}} />}
                                         {msg.text}
                                     </div>
-                                    {isMine && (
+                                    
+                                    {isMine && !msg.isDeleted && (
                                         <button onClick={() => handleDeleteMessage(msg.id)} style={{...styles.msgDeleteBtn, opacity: isHovered ? 1 : 0}} title="Unsend">
                                             <FaTrash />
                                         </button>
