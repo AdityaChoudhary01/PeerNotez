@@ -4,8 +4,10 @@ import { useSearchParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import { FaSearch, FaRegFolderOpen, FaUserAstronaut, FaBookOpen, FaFeatherAlt } from 'react-icons/fa';
 import NoteCard from '../components/notes/NoteCard';
-import BlogCard from '../components/blog/BlogCard'; // IMPORTED: Your BlogCard component
+import BlogCard from '../components/blog/BlogCard'; 
 import Pagination from '../components/common/Pagination';
+// IMPORTED: Missing Cloudinary Helper
+import { optimizeCloudinaryUrl } from '../utils/cloudinaryHelper';
 
 const SearchPage = () => {
     const [notes, setNotes] = useState([]);
@@ -91,7 +93,7 @@ const SearchPage = () => {
         },
         grid: {
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', // Slightly wider for BlogCards
+            gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', 
             gap: '2rem',
             maxWidth: '1400px',
             margin: '0 auto'
@@ -146,7 +148,7 @@ const SearchPage = () => {
 
     return (
         <div style={styles.wrapper}>
-            <Helmet>
+             <Helmet>
                 <title>{query ? `Search: ${query}` : 'Universal Search'} | PeerNotez</title>
                 <meta name="description" content={`Search results for ${query || 'notes, authors, and blogs'} on PeerNotez.`} />
                 <link rel="canonical" href="https://peernotez.netlify.app/search" />
@@ -186,9 +188,21 @@ const SearchPage = () => {
                                         }}
                                     >
                                         <img 
-                                            src={user.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${user.name}`} 
+                                            /* OPTIMIZATION:
+                                               1. Added Cloudinary Optimization { width: 30, height: 30 }
+                                               2. Added explicit width/height
+                                               3. Added lazy loading & async decoding
+                                            */
+                                            src={user.avatar 
+                                                ? optimizeCloudinaryUrl(user.avatar, { width: 30, height: 30 }) 
+                                                : `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name)}`
+                                            }
                                             alt={user.name} 
-                                            style={{width: '30px', height: '30px', borderRadius: '50%'}} 
+                                            width="30"
+                                            height="30"
+                                            loading="lazy"
+                                            decoding="async"
+                                            style={{width: '30px', height: '30px', borderRadius: '50%', objectFit: 'cover'}} 
                                         />
                                         <span>{user.name}</span>
                                     </Link>
