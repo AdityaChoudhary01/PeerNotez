@@ -263,11 +263,16 @@ const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () 
             <div style={styles.imageContainer}>
                 {!imageLoaded && <div style={styles.skeleton} />}
                 <img
+                    /* FIX APPLIED: Passed width as an object: { width: 500 }
+                       Added lazy loading and async decoding
+                    */
                     src={blog.coverImage 
-                        ? optimizeCloudinaryUrl(blog.coverImage, 600) 
-                        : `https://ui-avatars.com/api/?name=${encodeURIComponent(blog.title)}&size=600&background=1e293b&color=fff`
+                        ? optimizeCloudinaryUrl(blog.coverImage, { width: 500 }) 
+                        : `https://ui-avatars.com/api/?name=${encodeURIComponent(blog.title)}&size=500&background=1e293b&color=fff`
                     }
                     alt={blog.title}
+                    loading="lazy"
+                    decoding="async"
                     style={{
                         ...styles.image,
                         ...(isHovered ? styles.imageHover : {})
@@ -323,11 +328,15 @@ const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () 
                 {blog.author ? (
                     <AuthorWrapper {...authorWrapperProps}>
                         <img
+                            /* FIX APPLIED: Passed width as an object: { width: 80 }
+                            */
                             src={blog.author.profilePicture || blog.author.avatar
-                                ? optimizeCloudinaryUrl(blog.author.profilePicture || blog.author.avatar, 80)
+                                ? optimizeCloudinaryUrl(blog.author.profilePicture || blog.author.avatar, { width: 80 })
                                 : `https://ui-avatars.com/api/?name=${encodeURIComponent(blog.author.name)}&size=80`
                             }
                             alt={blog.author.name}
+                            loading="lazy"
+                            decoding="async"
                             style={styles.authorImage}
                         />
                         <div style={styles.authorInfo}>
