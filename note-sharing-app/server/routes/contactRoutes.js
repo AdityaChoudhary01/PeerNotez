@@ -1,75 +1,126 @@
 const express = require('express');
 const router = express.Router();
-
-// The Brevo SDK is now published under @getbrevo/brevo
-// However, the original package name 'sib-api-v3-sdk' still works and is used here for consistency.
 const SibApiV3Sdk = require('sib-api-v3-sdk'); 
 
-// --- Brevo API Configuration (using direct API key) ---
-// NOTE: We assume process.env.BREVO_API_KEY is set in the environment.
-
+// --- Brevo API Configuration ---
 const defaultClient = SibApiV3Sdk.ApiClient.instance;
-// Configure API key authorization: 'api-key' is the authentication scheme name
-defaultClient.authentications['api-key'].apiKey = process.env.BREVO_API_KEY;
+const apiKey = defaultClient.authentications['api-key'];
+apiKey.apiKey = process.env.BREVO_API_KEY;
 
 const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
 
-// --- API Route for Contact Form ---
+// --- API Route handles both Contact Form & Newsletter ---
 router.post('/', async (req, res) => {
     const { name, email, message } = req.body;
 
-    if (!name || !email || !message) {
-        return res.status(400).json({ success: false, error: 'All fields are required.' });
+    // Validation
+    if (!email || !message) {
+        return res.status(400).json({ success: false, error: 'Email and message are required.' });
     }
+
+    const isNewsletter = name === "Newsletter Subscriber";
+    const primaryColor = isNewsletter ? '#00f2fe' : '#ff0080'; // Neon Blue vs Neon Pink
+    const accentColor = isNewsletter ? '#b388ff' : '#4facfe'; 
     
-    // Set Email Parameters for Brevo API
+    // Simple, clear subjects
+    const uniqueId = Date.now().toString().slice(-4);
+    const subject = isNewsletter 
+        ? `🚀 New Subscriber: ${email}` 
+        : `📩 New Message from ${name} [ID-${uniqueId}]`;
+
     const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail(); 
 
-    // 1. SENDER: Must be a verified sender in your Brevo account.
-    // Recommended to use BREVO_VERIFIED_SENDER_EMAIL for clarity.
+    // 1. SENDER
     sendSmtpEmail.sender = {
-        // Use a verified email as the address
         email: process.env.BREVO_VERIFIED_SENDER_EMAIL, 
-        // Use the user's name in the 'from' name for better context
-        name: `${name} (via Contact Form)`, 
+        name: "PeerNotez System"
     };
     
-    // 2. TO: Your receiving address (the email you want the contact message to go to).
+    // 2. TO: Your address
     sendSmtpEmail.to = [{ email: process.env.EMAIL_RECEIVER_ADDRESS }];
     
-    // 3. REPLY-TO: The user's email, so you can reply directly from your inbox.
+    // 3. REPLY-TO
     sendSmtpEmail.replyTo = { email: email, name: name };
     
-    sendSmtpEmail.subject = `New PeerNotez Contact Message from ${name}`;
+    sendSmtpEmail.subject = subject;
     
-    // 4. HTML Content
+    // 4. CLEAN MODERN HTML TEMPLATE
     sendSmtpEmail.htmlContent = `
+        <!DOCTYPE html>
         <html>
-            <body style="font-family: Arial, sans-serif; line-height: 1.6;">
-                <h3 style="color: #333;">You've received a new message from ${name}:</h3>
-                <p><strong>Name:</strong> ${name}</p>
-                <p><strong>Email:</strong> <a href="mailto:${email}">${email}</a></p>
-                <p><strong>Message:</strong></p>
-                <div style="border-left: 3px solid #007bff; padding-left: 15px; margin: 15px 0; background-color: #f8f9fa;">
-                    <p>${message.replace(/\n/g, '<br>')}</p>
-                </div>
-            </body>
+        <head>
+            <style>
+                @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+            </style>
+        </head>
+        <body style="margin: 0; padding: 0; background-color: #0a0118; font-family: 'Inter', Arial, sans-serif; color: #ffffff;">
+            <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #0a0118; padding: 40px 10px;">
+                <tr>
+                    <td align="center">
+                        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; background-color: #120828; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px; overflow: hidden; box-shadow: 0 30px 60px rgba(0,0,0,0.6);">
+                            
+                            <tr>
+                                <td height="4" style="background: linear-gradient(90deg, ${primaryColor}, ${accentColor});"></td>
+                            </tr>
+
+                            <tr>
+                                <td style="padding: 40px;">
+                                    <div style="font-size: 20px; font-weight: 800; color: ${primaryColor}; margin-bottom: 30px; letter-spacing: -0.5px;">
+                                        PeerNotez <span style="font-size: 11px; font-weight: 400; color: rgba(255,255,255,0.4); margin-left: 10px; border-left: 1px solid rgba(255,255,255,0.2); padding-left: 10px;">Notification</span>
+                                    </div>
+
+                                    <h1 style="font-size: 24px; font-weight: 700; color: #ffffff; margin: 0 0 15px 0;">
+                                        ${isNewsletter ? 'New Newsletter Sign-up' : 'New Contact Request'}
+                                    </h1>
+                                    <p style="font-size: 15px; color: rgba(255,255,255,0.5); margin: 0 0 30px 0; line-height: 1.6;">
+                                        You have received a new update from the PeerNotez platform. Details are listed below:
+                                    </p>
+
+                                    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: rgba(255, 255, 255, 0.03); border-radius: 16px; margin-bottom: 30px;">
+                                        <tr>
+                                            <td style="padding: 20px;">
+                                                <div style="font-size: 11px; color: ${primaryColor}; font-weight: 700; text-transform: uppercase; margin-bottom: 5px;">Name</div>
+                                                <div style="font-size: 17px; color: #ffffff; font-weight: 600;">${name}</div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 0 20px 20px 20px;">
+                                                <div style="font-size: 11px; color: ${primaryColor}; font-weight: 700; text-transform: uppercase; margin-bottom: 5px;">Email</div>
+                                                <div style="font-size: 16px; color: #ffffff;">
+                                                    <a href="mailto:${email}" style="color: #ffffff; text-decoration: none; border-bottom: 1px solid ${primaryColor};">${email}</a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </table>
+
+                                    <div style="font-size: 11px; color: ${primaryColor}; font-weight: 700; text-transform: uppercase; margin-bottom: 10px;">Message Content</div>
+                                    <div style="background-color: rgba(0,0,0,0.2); padding: 25px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); color: rgba(255,255,255,0.85); line-height: 1.8; font-size: 15px;">
+                                        ${message.replace(/\n/g, '<br>')}
+                                    </div>
+
+                                    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-top: 40px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
+                                        <tr>
+                                            <td style="font-size: 11px; color: rgba(255,255,255,0.3); text-align: center; letter-spacing: 0.5px;">
+                                                Sent on ${new Date().toLocaleString()} | ID: ${uniqueId}
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </body>
         </html>
     `;
 
-    // Send the Email via API Call (HTTPS/Port 443)
     try {
-        const response = await apiInstance.sendTransacEmail(sendSmtpEmail);
-        // The response contains the messageId from Brevo
-        res.status(200).json({ success: true, message: 'Message sent successfully!', messageId: response.messageId });
+        await apiInstance.sendTransacEmail(sendSmtpEmail);
+        res.status(200).json({ success: true, message: 'Sent successfully!' });
     } catch (error) {
-        console.error('Brevo API Error:', error.response ? error.response.text : error.message);
-        
-        // Return a generic 500 error to the client for security
-        res.status(500).json({ 
-            success: false, 
-            error: `Failed to send message. Please check server logs.` 
-        });
+        console.error('Brevo SDK Error:', error.response ? error.response.body : error.message);
+        res.status(500).json({ success: false, error: 'Email service error.' });
     }
 });
 
