@@ -109,11 +109,11 @@ const PrivacyPolicyPage = () => {
     };
 
     return (
-        <div style={styles.wrapper}>
+        <div className='wrapper' style={styles.wrapper}>
             <Helmet>
                 <title>Privacy Policy | PeerNotez</title>
-                <meta name="robots" content="noindex, follow" />
                 <meta name="description" content="PeerNotez's official privacy policy, detailing how we collect, use, and protect your personal data." />
+                <link rel="canonical" href="https://peernotez.netlify.app/privacy" />
             </Helmet>
             
             {/* Header */}
@@ -127,7 +127,7 @@ const PrivacyPolicyPage = () => {
             </header>
 
             {/* Section 1: Data Collection */}
-            <section style={styles.sectionCard}>
+            <section className='section-card' style={styles.sectionCard}>
                 <h2 style={styles.sectionHeading}><FaUserShield style={{color: '#00ffaa'}} /> 1. Data Collection and Purpose</h2>
                 
                 <p style={styles.paragraph}>
@@ -154,7 +154,7 @@ const PrivacyPolicyPage = () => {
             </section>
             
             {/* Section 2: Security */}
-            <section style={styles.sectionCard}>
+            <section className='section-card' style={styles.sectionCard}>
                 <h2 style={styles.sectionHeading}><FaShieldAlt style={{color: '#ff00cc'}} /> 2. Data Storage & Security</h2>
                 
                 <p style={styles.paragraph}>
@@ -182,7 +182,7 @@ const PrivacyPolicyPage = () => {
             </section>
 
             {/* Section 3: Rights */}
-            <section style={styles.sectionCard}>
+            <section className='section-card' style={styles.sectionCard}>
                 <h2 style={styles.sectionHeading}><FaUserCheck style={{color: '#00d4ff'}} /> 3. Your Rights as a Data Principal</h2>
                 
                 <p style={styles.paragraph}>
@@ -218,6 +218,16 @@ const PrivacyPolicyPage = () => {
                     </a>
                 </div>
             </section>
+            <style>{`
+                @media (max-width: 600px) {
+                   .wrapper{
+                   padding:1rem 0.1rem !important;
+                   }
+                   .section-card{
+                   padding: 1rem !important;
+                   }
+                }
+            `}</style>
         </div>
     );
 };
