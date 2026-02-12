@@ -1,5 +1,8 @@
+// src/hooks/usePresence.js
 import { useEffect } from 'react';
 import { ref, onValue, onDisconnect, set, serverTimestamp } from 'firebase/database';
+// 1. Import getAuth to check login status
+import { getAuth, onAuthStateChanged } from 'firebase/auth'; 
 import { db } from '../services/firebase';
 import useAuth from './useAuth';
 
@@ -9,32 +12,63 @@ const usePresence = () => {
     useEffect(() => {
         if (!user?._id) return;
 
-        // References in Firebase Realtime DB
+        const auth = getAuth();
         const connectedRef = ref(db, '.info/connected');
         const userStatusRef = ref(db, `/status/${user._id}`);
 
-        const unsubscribe = onValue(connectedRef, (snapshot) => {
-            if (snapshot.val() === true) {
-                // We're connected (or reconnected)!
-                
-                // 1. Establish "On Disconnect" hook FIRST
-                // If the internet cuts out, Firebase server will run this automatically
-                onDisconnect(userStatusRef).set({
-                    state: 'offline',
-                    last_changed: serverTimestamp(),
-                });
+        // We need two things to be true:
+        // A. We are connected to the internet (.info/connected)
+        // B. We are logged into Firebase (auth.currentUser)
 
-                // 2. Set status to Online
+        let isConnected = false;
+
+        // 1. Listen for Connection Status
+        const unsubscribeConnection = onValue(connectedRef, (snapshot) => {
+            isConnected = snapshot.val() === true;
+            if (isConnected && auth.currentUser) {
+                setOnlineStatus();
+            }
+        });
+
+        // 2. Listen for Auth Status (Fixes the race condition)
+        const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
+            if (firebaseUser && isConnected) {
+                setOnlineStatus();
+            }
+        });
+
+        // Helper function to write to DB
+        const setOnlineStatus = () => {
+            // Safety check: Ensure we don't write if logged out
+            if (!auth.currentUser) return;
+
+            console.log("✅ Setting Presence: Online");
+
+            // A. Set "Offline" on disconnect (server-side trigger)
+            onDisconnect(userStatusRef).set({
+                state: 'offline',
+                last_changed: serverTimestamp(),
+            }).then(() => {
+                // B. Set "Online" now
                 set(userStatusRef, {
                     state: 'online',
                     last_changed: serverTimestamp(),
                 });
-            }
-        });
+            }).catch((err) => {
+                console.error("Presence Error:", err);
+            });
+        };
 
         return () => {
-            // Clean up listener when component unmounts (e.g., logout)
-            unsubscribe();
+            unsubscribeConnection();
+            unsubscribeAuth();
+            // Optional: Set offline when component unmounts (e.g. logout)
+            if (auth.currentUser) {
+                 set(userStatusRef, {
+                    state: 'offline',
+                    last_changed: serverTimestamp(),
+                }).catch(() => {}); // Ignore errors on unmount
+            }
         };
     }, [user]);
 };
