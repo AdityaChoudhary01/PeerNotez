@@ -263,11 +263,13 @@ const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () 
             <div style={styles.imageContainer}>
                 {!imageLoaded && <div style={styles.skeleton} />}
                 <img
-                    /* FIX APPLIED: Passed width as an object: { width: 500 }
-                       Added lazy loading and async decoding
+                    /* OPTIMIZATION: 
+                       1. Reduced width request to 500px (plenty for card).
+                       2. Added loading="lazy" for off-screen images.
+                       3. Added decoding="async" to prevent UI freeze.
                     */
                     src={blog.coverImage 
-                        ? optimizeCloudinaryUrl(blog.coverImage, { width: 500 }) 
+                        ? optimizeCloudinaryUrl(blog.coverImage, 500) 
                         : `https://ui-avatars.com/api/?name=${encodeURIComponent(blog.title)}&size=500&background=1e293b&color=fff`
                     }
                     alt={blog.title}
@@ -328,10 +330,12 @@ const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () 
                 {blog.author ? (
                     <AuthorWrapper {...authorWrapperProps}>
                         <img
-                            /* FIX APPLIED: Passed width as an object: { width: 80 }
+                            /* OPTIMIZATION: 
+                               1. Request 80px (for 2x pixel density on 40px circle).
+                               2. Lazy load and async decode.
                             */
                             src={blog.author.profilePicture || blog.author.avatar
-                                ? optimizeCloudinaryUrl(blog.author.profilePicture || blog.author.avatar, { width: 80 })
+                                ? optimizeCloudinaryUrl(blog.author.profilePicture || blog.author.avatar, 80)
                                 : `https://ui-avatars.com/api/?name=${encodeURIComponent(blog.author.name)}&size=80`
                             }
                             alt={blog.author.name}
