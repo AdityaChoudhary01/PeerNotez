@@ -4,7 +4,8 @@ import useAuth from '../../hooks/useAuth';
 import logo from '../../assets/peernotez-logo.png';
 import { FaBars, FaTimes, FaSearch, FaSignOutAlt, FaPaperPlane } from 'react-icons/fa';
 import { optimizeCloudinaryUrl } from '../../utils/cloudinaryHelper';
-import { ref, onValue } from 'firebase/database';
+// ✅ IMPORT goOnline to ensure connection stays active for notifications
+import { ref, onValue, goOnline } from 'firebase/database';
 import { db } from '../../services/firebase';
 
 const Navbar = () => {
@@ -34,14 +35,25 @@ const Navbar = () => {
     };
   }, []);
 
-  // --- Firebase Logic ---
+  // --- Firebase Logic (REAL-TIME NOTIFICATIONS) ---
   useEffect(() => {
     if (!user?._id) return;
+
+    // ✅ FIX: Force Firebase Online
+    // Even if ChatLayout turned it offline, we wake it up here so notifications works.
+    try {
+        goOnline(db);
+    } catch (e) {
+        console.error("Firebase Connection Error:", e);
+    }
+
     const inboxRef = ref(db, `user_chats/${user._id}`);
+    
     const unsubscribe = onValue(inboxRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
         let totalUnread = 0;
+        // Sum up unread counts from all conversations
         Object.values(data).forEach((chat) => {
           totalUnread += chat.unreadCount || 0;
         });
@@ -50,8 +62,12 @@ const Navbar = () => {
         setUnreadCount(0);
       }
     });
+
     return () => unsubscribe();
-  }, [user]);
+    // ✅ FIX: Add location.pathname to dependencies. 
+    // This ensures if you leave the Chat Page (which might disconnect Firebase),
+    // Navbar immediately reconnects it on the new page.
+  }, [user?._id, location.pathname]); 
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -91,7 +107,7 @@ const Navbar = () => {
       borderRadius: '50px',
       maxWidth: '1400px',
       margin: '0 auto',
-      padding: '0.4rem 1.5rem', // Reduced padding for tighter fit
+      padding: '0.4rem 1.5rem', 
       boxShadow: scrolled 
         ? '0 20px 60px rgba(0, 0, 0, 0.5), 0 0 20px rgba(102, 126, 234, 0.1)' 
         : '0 10px 30px rgba(0, 0, 0, 0.2)',
@@ -101,7 +117,7 @@ const Navbar = () => {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
-      gap: '0.5rem', // Reduced gap significantly
+      gap: '0.5rem', 
       height: '46px'
     },
     logoSection: {
@@ -119,12 +135,12 @@ const Navbar = () => {
     navLinks: {
       display: isMobile ? 'none' : 'flex',
       alignItems: 'center',
-      gap: '0.2rem', // Tighter link spacing
+      gap: '0.2rem', 
       flex: 1,
       justifyContent: 'center'
     },
     navLink: {
-      padding: '0.5rem 1rem', // Reduced padding
+      padding: '0.5rem 1rem', 
       color: '#e0e0e0',
       textDecoration: 'none',
       borderRadius: '20px',
@@ -156,7 +172,7 @@ const Navbar = () => {
       borderRadius: '50px',
       border: '1px solid rgba(255, 255, 255, 0.15)',
       transition: 'all 0.3s ease',
-      minWidth: '220px', // Slightly smaller width
+      minWidth: '220px', 
       boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.2)'
     },
     searchInput: {
@@ -186,14 +202,14 @@ const Navbar = () => {
     rightSection: {
       display: 'flex',
       alignItems: 'center',
-      gap: '0.5rem', // Tighter gap for buttons
+      gap: '0.5rem', 
       flexShrink: 0
     },
     iconButton: {
       background: 'rgba(255, 255, 255, 0.05)',
       border: '1px solid rgba(255, 255, 255, 0.1)',
       borderRadius: '50%',
-      width: '38px', // Slightly smaller
+      width: '38px', 
       height: '38px',
       display: 'flex',
       alignItems: 'center',
@@ -399,11 +415,6 @@ const Navbar = () => {
                       
                       <Link to="/profile" title="View Profile">
                         <img
-                          /* OPTIMIZED: 
-                             1. Passed dimensions as Object {width: 80, height: 80}.
-                             2. Added decoding="async" for smoother UI.
-                             3. Added explicit width/height for layout stability.
-                          */
                           src={user.profilePicture || user.avatar 
                             ? optimizeCloudinaryUrl(user.profilePicture || user.avatar, { width: 80, height: 80 }) 
                             : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&size=80`
@@ -528,10 +539,6 @@ const Navbar = () => {
 
                 <Link to="/profile" onClick={() => setMenuOpen(false)} style={styles.mobileLink}>
                   <img 
-                    /* OPTIMIZED: 
-                       1. Passed dimensions as Object {width: 40, height: 40}.
-                       2. Added decoding="async".
-                    */
                     src={user.profilePicture || user.avatar 
                         ? optimizeCloudinaryUrl(user.profilePicture || user.avatar, { width: 40, height: 40 }) 
                         : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}`
