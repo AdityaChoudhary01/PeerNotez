@@ -56,22 +56,43 @@ const ChatPage = () => {
         if (partnerId) fetchPartner();
     }, [partnerId, navigate]);
 
-    // 3. Reset Unread Count & Get "Hidden" Timestamp
+    // 3. Reset Unread Count & Get "Hidden" Timestamp (SMART VISIBILITY LOGIC)
     useEffect(() => {
         if (!isFirebaseReady || !currentUser || !partnerId) return;
         
         const myInboxRef = ref(db, `user_chats/${currentUser._id}/${partnerId}`);
+        
+        // Helper to safely mark as read only if the page is visible
+        const markAsRead = (currentUnread) => {
+            // Only update if currently unread AND the page is actually visible to the user
+            if (currentUnread > 0 && document.visibilityState === 'visible') {
+                update(myInboxRef, { unreadCount: 0 }).catch(console.error);
+            }
+        };
+
         const listener = onValue(myInboxRef, (snapshot) => {
             const data = snapshot.val();
             if (data) {
                 setHiddenTimestamp(data.hiddenBefore || 0);
-                if (data.unreadCount > 0) {
-                    update(myInboxRef, { unreadCount: 0 }).catch(console.error);
-                }
+                // Attempt to mark as read immediately upon data change, BUT only if visible
+                markAsRead(data.unreadCount);
             }
         });
 
-        return () => off(myInboxRef, 'value', listener);
+        // Also listen for visibility changes (e.g., user switches back to this tab)
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                // User just came back to the tab -> Clear unread count immediately
+                update(myInboxRef, { unreadCount: 0 }).catch(console.error);
+            }
+        };
+
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+
+        return () => {
+            off(myInboxRef, 'value', listener);
+            document.removeEventListener("visibilitychange", handleVisibilityChange);
+        };
     }, [currentUser, partnerId, isFirebaseReady]);
 
     // 4. Firebase Listeners (Messages & Status)
@@ -230,8 +251,35 @@ const ChatPage = () => {
         nameContainer: { display: 'flex', alignItems: 'center', gap: '8px' },
         msgList: { flex: 1, padding: '1.5rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem' },
         inputArea: { padding: '1.5rem', background: 'rgba(0, 0, 0, 0.2)', borderTop: '1px solid rgba(255, 255, 255, 0.05)', display: 'flex', gap: '1rem' },
-        input: { flex: 1, padding: '12px 20px', borderRadius: '50px', border: '1px solid rgba(255, 255, 255, 0.1)', background: 'rgba(255, 255, 255, 0.05)', color: '#fff', outline: 'none', fontSize: '1rem', fontFamily: 'inherit' },
-        sendBtn: { width: '50px', height: '50px', borderRadius: '50%', border: 'none', background: 'linear-gradient(135deg, #00d4ff 0%, #333399 100%)', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem' },
+        input: { 
+            flex: 1, 
+            padding: '12px 20px', 
+            borderRadius: '50px', 
+            border: '1px solid rgba(255, 255, 255, 0.1)', 
+            background: 'rgba(255, 255, 255, 0.05)', 
+            color: '#fff', 
+            outline: 'none', 
+            fontSize: '1rem', 
+            fontFamily: 'inherit',
+            minWidth: 0 // ✅ FIX: Prevents input from forcing button out of view
+        },
+        sendBtn: { 
+            width: '50px', 
+            height: '50px', 
+            borderRadius: '50%', 
+            border: 'none', 
+            background: 'linear-gradient(135deg, #00d4ff 0%, #333399 100%)', 
+            color: '#fff', 
+            cursor: 'pointer', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            fontSize: '1.2rem',
+            // ✅ FIX: Prevents button squashing on mobile
+            minWidth: '50px',
+            minHeight: '50px',
+            flexShrink: 0 
+        },
         messageRow: { display: 'flex', alignItems: 'center', gap: '10px', width: '100%' },
         bubble: { maxWidth: '70%', padding: '12px 18px', borderRadius: '18px', fontSize: '0.95rem', lineHeight: '1.5', position: 'relative', wordWrap: 'break-word' },
         sent: { background: 'linear-gradient(135deg, #00d4ff 0%, #333399 100%)', color: '#fff', borderBottomRightRadius: '4px' },
