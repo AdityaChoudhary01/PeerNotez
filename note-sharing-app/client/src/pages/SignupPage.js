@@ -1,3 +1,5 @@
+/* src/pages/SignupPage.js */
+
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
@@ -13,189 +15,6 @@ const SignupPage = () => {
     const [isSignedUp, setIsSignedUp] = useState(false);
     const { signup } = useAuth();
     const navigate = useNavigate();
-
-    // --- INTERNAL CSS: HOLOGRAPHIC SIGNUP PAGE ---
-    const styles = {
-        container: {
-            minHeight: '100vh',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '1rem',
-            position: 'relative',
-            overflow: 'hidden'
-        },
-        splitLayout: {
-            display: 'flex',
-            width: '100%',
-            maxWidth: '1100px',
-            background: 'rgba(255, 255, 255, 0.03)',
-            backdropFilter: 'blur(20px)',
-            borderRadius: '24px',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            boxShadow: '0 25px 50px rgba(0,0,0,0.4)',
-            overflow: 'hidden',
-            minHeight: '650px', 
-            flexDirection: 'row'
-        },
-        imageSection: {
-            flex: 1.2,
-            background: 'linear-gradient(135deg, rgba(255, 0, 204, 0.15), rgba(0, 212, 255, 0.15))',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            padding: '3rem',
-            position: 'relative',
-            color: '#fff',
-            textAlign: 'left'
-        },
-        promoTitle: {
-            fontSize: '2.5rem',
-            fontWeight: '800',
-            marginBottom: '1rem',
-            background: 'linear-gradient(to right, #ff00cc, #00d4ff)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-        },
-        promoText: {
-            fontSize: '1.1rem',
-            lineHeight: 1.6,
-            color: 'rgba(255,255,255,0.9)',
-            marginBottom: '2rem'
-        },
-        featureList: {
-            listStyle: 'none',
-            padding: 0,
-            margin: 0
-        },
-        featureItem: {
-            display: 'flex',
-            alignItems: 'center',
-            gap: '15px',
-            marginBottom: '1.2rem',
-            fontSize: '1.05rem',
-            color: 'rgba(255,255,255,0.85)'
-        },
-        featureIcon: {
-            color: '#ff00cc',
-            fontSize: '1.2rem',
-            background: 'rgba(255, 0, 204, 0.1)',
-            padding: '8px',
-            borderRadius: '50%',
-            width: '36px',
-            height: '36px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-        },
-        formSection: {
-            flex: 1,
-            padding: '3rem 2.5rem',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            background: 'rgba(0, 0, 0, 0.25)'
-        },
-        formTitle: {
-            fontSize: '2rem',
-            fontWeight: '700',
-            color: '#fff',
-            marginBottom: '0.5rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px'
-        },
-        formSubtitle: {
-            color: 'rgba(255, 255, 255, 0.6)',
-            marginBottom: '2rem',
-            fontSize: '0.9rem'
-        },
-        inputGroup: {
-            position: 'relative',
-            marginBottom: '1.2rem'
-        },
-        inputIcon: {
-            position: 'absolute',
-            left: '20px', 
-            top: '50%',
-            transform: 'translateY(-50%)',
-            color: '#ff00cc',
-            fontSize: '1.2rem', 
-            pointerEvents: 'none',
-            zIndex: 10
-        },
-        input: {
-            width: '100%',
-            padding: '14px 14px 14px 50px', 
-            background: 'rgba(255, 255, 255, 0.05)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            borderRadius: '12px',
-            color: '#fff',
-            fontSize: '1rem',
-            outline: 'none',
-            textIndent: '0', 
-            transition: 'border-color 0.3s, box-shadow 0.3s'
-        },
-        checkboxGroup: {
-            display: 'flex',
-            alignItems: 'flex-start',
-            gap: '12px',
-            marginTop: '0.5rem',
-            marginBottom: '1.5rem',
-            fontSize: '0.9rem',
-            color: 'rgba(255,255,255,0.7)'
-        },
-        checkbox: {
-            marginTop: '4px',
-            cursor: 'pointer',
-            accentColor: '#ff00cc',
-            width: '18px',
-            height: '18px'
-        },
-        submitBtn: {
-            width: '100%',
-            padding: '14px',
-            borderRadius: '50px',
-            background: 'linear-gradient(135deg, #ff00cc 0%, #333399 100%)',
-            color: '#fff',
-            border: 'none',
-            fontSize: '1.1rem',
-            fontWeight: '700',
-            cursor: 'pointer',
-            boxShadow: '0 4px 15px rgba(255, 0, 204, 0.3)',
-            transition: 'transform 0.2s, opacity 0.2s'
-        },
-        errorMsg: {
-            color: '#ff0055',
-            background: 'rgba(255, 0, 85, 0.1)',
-            padding: '10px',
-            borderRadius: '8px',
-            marginBottom: '1rem',
-            textAlign: 'center',
-            fontSize: '0.85rem',
-            border: '1px solid rgba(255, 0, 85, 0.2)'
-        },
-        hint: {
-            textAlign: 'center',
-            marginTop: '1.5rem',
-            color: 'rgba(255, 255, 255, 0.6)',
-            fontSize: '0.9rem'
-        },
-        link: {
-            color: '#00d4ff', 
-            textDecoration: 'none',
-            fontWeight: '600',
-            marginLeft: '5px'
-        },
-        successBox: {
-            textAlign: 'center',
-            padding: '3rem',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '1.5rem'
-        }
-    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -216,34 +35,186 @@ const SignupPage = () => {
         }
     };
 
-    const handleFocus = (e) => {
-        e.target.style.borderColor = '#ff00cc';
-        e.target.style.boxShadow = '0 0 10px rgba(255, 0, 204, 0.2)';
-    };
-    const handleBlur = (e) => {
-        e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-        e.target.style.boxShadow = 'none';
+    const styles = {
+        container: {
+            minHeight: '100vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '2rem',
+            position: 'relative',
+            overflow: 'hidden'
+        },
+        splitLayout: {
+            display: 'flex',
+            width: '100%',
+            maxWidth: '1100px',
+            background: 'var(--glass-bg)',
+            backdropFilter: 'blur(30px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(30px) saturate(180%)',
+            borderRadius: 'var(--radius-xl)',
+            border: '1px solid var(--glass-border)',
+            boxShadow: 'var(--glass-shadow)',
+            overflow: 'hidden',
+            minHeight: '650px',
+            position: 'relative',
+            zIndex: 1
+        },
+        imageSection: {
+            flex: 1.2,
+            background: 'linear-gradient(135deg, rgba(255, 0, 128, 0.1) 0%, rgba(102, 126, 234, 0.1) 100%)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            padding: '4rem 3rem',
+            position: 'relative',
+            color: '#fff'
+        },
+        promoTitle: {
+            fontSize: 'clamp(2rem, 5vw, 3rem)',
+            fontWeight: '900',
+            fontFamily: 'var(--font-display)',
+            marginBottom: '1rem',
+            background: 'linear-gradient(135deg, var(--neon-pink), var(--neon-blue))',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            filter: 'drop-shadow(0 0 20px rgba(255, 0, 128, 0.3))'
+        },
+        promoText: {
+            fontSize: '1.1rem',
+            lineHeight: 1.6,
+            color: 'rgba(255,255,255,0.8)',
+            marginBottom: '2.5rem'
+        },
+        featureList: {
+            listStyle: 'none',
+            padding: 0,
+            margin: 0
+        },
+        featureItem: {
+            display: 'flex',
+            alignItems: 'center',
+            gap: '15px',
+            marginBottom: '1.2rem',
+            fontSize: '1.05rem',
+            color: 'rgba(255,255,255,0.9)'
+        },
+        featureIcon: {
+            color: 'var(--neon-pink)',
+            fontSize: '1.2rem',
+            background: 'rgba(255, 0, 128, 0.1)',
+            padding: '10px',
+            borderRadius: '12px',
+            width: '42px',
+            height: '42px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            border: '1px solid rgba(255, 0, 128, 0.2)'
+        },
+        formSection: {
+            flex: 1,
+            padding: '4rem 3rem',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            background: 'rgba(10, 1, 24, 0.4)'
+        },
+        formTitle: {
+            fontSize: '2.2rem',
+            fontWeight: '800',
+            fontFamily: 'var(--font-display)',
+            color: '#fff',
+            marginBottom: '0.5rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '15px'
+        },
+        formSubtitle: {
+            color: 'rgba(255, 255, 255, 0.5)',
+            marginBottom: '2.5rem',
+            fontSize: '1rem'
+        },
+        inputGroup: {
+            position: 'relative',
+            marginBottom: '1.2rem'
+        },
+        inputIcon: {
+            position: 'absolute',
+            left: '18px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            color: 'var(--neon-pink)',
+            fontSize: '1.1rem',
+            zIndex: 10
+        },
+        input: {
+            width: '100%',
+            padding: '16px 16px 16px 52px',
+            background: 'rgba(255, 255, 255, 0.03)',
+            border: '1px solid var(--glass-border)',
+            borderRadius: '16px',
+            color: '#fff',
+            fontSize: '1rem',
+            outline: 'none',
+            transition: 'all 0.3s ease',
+            fontFamily: 'var(--font-primary)'
+        },
+        checkboxGroup: {
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: '12px',
+            margin: '1rem 0 1.5rem',
+            fontSize: '0.9rem',
+            color: 'rgba(255,255,255,0.6)'
+        },
+        submitBtn: {
+            width: '100%',
+            padding: '16px',
+            borderRadius: '50px',
+            background: 'var(--gradient-primary)',
+            color: '#fff',
+            border: 'none',
+            fontSize: '1.1rem',
+            fontWeight: '700',
+            fontFamily: 'var(--font-display)',
+            cursor: 'pointer',
+            boxShadow: '0 10px 30px rgba(102, 126, 234, 0.4)',
+            transition: 'all 0.3s var(--transition-elastic)',
+            textTransform: 'uppercase',
+            letterSpacing: '1px'
+        },
+        errorMsg: {
+            color: 'var(--neon-pink)',
+            background: 'rgba(255, 0, 128, 0.1)',
+            padding: '12px',
+            borderRadius: '12px',
+            marginBottom: '1rem',
+            textAlign: 'center',
+            fontSize: '0.85rem',
+            border: '1px solid rgba(255, 0, 128, 0.2)'
+        },
+        successBox: {
+            textAlign: 'center',
+            padding: '4rem 3rem',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '2rem'
+        }
     };
 
-    // Success View
     if (isSignedUp) {
         return (
             <main style={styles.container}>
-                <Helmet>
-                    <title>Registration Successful | PeerNotez</title>
-                    <link rel="canonical" href="https://peernotez.netlify.app/signup" />
-                </Helmet>
+                <Helmet><title>Welcome to PeerNotez!</title></Helmet>
                 <div style={{...styles.splitLayout, maxWidth: '600px', minHeight: 'auto'}}>
-                    <article style={styles.successBox}>
-                        <FaCheckCircle aria-hidden="true" style={{fontSize: '4rem', color: '#00ffaa', filter: 'drop-shadow(0 0 15px rgba(0, 255, 170, 0.4))'}} />
-                        <h1 style={{fontSize: '2rem', fontWeight: '800', color: '#fff'}}>Welcome, {name}! 🎉</h1>
-                        <p style={{color: 'rgba(255,255,255,0.8)', fontSize: '1.1rem'}}>
-                            Your account has been created successfully. Redirecting to login...
-                        </p>
-                        <Link aria-label="Go to login page" to="/login" style={{...styles.submitBtn, textAlign: 'center', textDecoration: 'none', background: 'linear-gradient(135deg, #00d4ff 0%, #333399 100%)', boxShadow: '0 4px 15px rgba(0, 212, 255, 0.3)'}}>
-                            Go to Login Now
-                        </Link>
-                    </article>
+                    <div style={styles.successBox}>
+                        <FaCheckCircle style={{fontSize: '5rem', color: 'var(--neon-green)', filter: 'drop-shadow(0 0 20px rgba(0, 255, 159, 0.4))'}} />
+                        <h1 style={{fontSize: '2.5rem', fontWeight: '900', fontFamily: 'var(--font-display)'}}>Welcome, {name}! 🎉</h1>
+                        <p style={{color: 'rgba(255,255,255,0.8)', fontSize: '1.1rem'}}>Your account is ready. Launching your learning journey...</p>
+                        <Link to="/login" style={{...styles.submitBtn, textDecoration: 'none', textAlign: 'center'}}>Continue to Login</Link>
+                    </div>
                 </div>
             </main>
         );
@@ -262,136 +233,130 @@ const SignupPage = () => {
                 <meta property="og:type" content="website" />
             </Helmet>
 
-            <article style={styles.splitLayout} className="signup-split-layout">
-                {/* Left Side - Promo Content */}
-                <section style={styles.imageSection} className="signup-image-section">
-                    <h1 style={styles.promoTitle}>Join the Community</h1>
+            <div style={styles.splitLayout} className="signup-split-layout">
+                {/* Promo Side */}
+                <div style={styles.imageSection} className="signup-image-section">
+                    <h1 style={styles.promoTitle}>Start Learning</h1>
                     <p style={styles.promoText}>
-                        Unlock a world of academic knowledge. Share study notes, find course guides, and learn together on the world's most innovative student platform.
+                        Join thousands of students sharing knowledge and building the future of peer-to-peer education.
                     </p>
                     
-                    <ul style={styles.featureList} aria-label="PeerNotez Key Features">
+                    <ul style={styles.featureList}>
                         <li style={styles.featureItem}>
-                            <div style={styles.featureIcon} aria-hidden="true"><FaUserPlus /></div>
-                            <span>Create a personalized student profile</span>
+                            <div style={styles.featureIcon}><FaUserPlus /></div>
+                            <span>Personalized Student Dashboard</span>
                         </li>
                         <li style={styles.featureItem}>
-                            <div style={styles.featureIcon} aria-hidden="true"><FaLock /></div>
-                            <span>Secure & private data protection</span>
+                            <div style={styles.featureIcon}><FaLock /></div>
+                            <span>Secure Content Encryption</span>
                         </li>
                         <li style={styles.featureItem}>
-                            <div style={styles.featureIcon} aria-hidden="true"><FaCheckCircle /></div>
-                            <span>Totally free educational resources</span>
+                            <div style={styles.featureIcon}><FaCheckCircle /></div>
+                            <span>Verified Study Resources</span>
                         </li>
                     </ul>
 
-                    {/* Abstract Blob Decoration */}
-                    <div role="presentation" style={{
+                    <div style={{
                         position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-                        width: '300px', height: '300px', background: 'radial-gradient(circle, #00d4ff 0%, transparent 60%)',
-                        filter: 'blur(60px)', opacity: 0.15, zIndex: 0
+                        width: '300px', height: '300px', background: 'radial-gradient(circle, var(--neon-blue) 0%, transparent 70%)',
+                        filter: 'blur(80px)', opacity: 0.15, zIndex: 0
                     }}></div>
-                </section>
+                </div>
 
-                {/* Right Side - Signup Form */}
-                <section style={styles.formSection}>
-                    <header>
-                        <h2 style={styles.formTitle}>
-                            <FaUserPlus aria-hidden="true" style={{color: '#ff00cc'}} /> Create Account
-                        </h2>
-                        <p style={styles.formSubtitle}>Start your learning journey today.</p>
-                    </header>
+                {/* Form Side */}
+                <div className='form-section' style={styles.formSection}>
+                    <h2 style={styles.formTitle}>
+                        <FaUserPlus style={{color: 'var(--neon-pink)'}} /> Sign Up
+                    </h2>
+                    <p style={styles.formSubtitle}>Create your free account</p>
 
-                    <form onSubmit={handleSubmit} aria-label="Signup registration form">
+                    <form onSubmit={handleSubmit}>
+                        {error && <div style={styles.errorMsg}>{error}</div>}
+
                         <div style={styles.inputGroup}>
-                            <FaUser style={styles.inputIcon} aria-hidden="true" />
+                            <FaUser style={styles.inputIcon} />
                             <input
                                 type="text"
                                 value={name}
                                 onChange={e => setName(e.target.value)}
-                                onFocus={handleFocus}
-                                onBlur={handleBlur}
                                 placeholder="Full Name"
-                                aria-label="Enter your full name"
                                 required
                                 style={styles.input}
+                                onFocus={(e) => e.target.style.borderColor = 'var(--neon-pink)'}
+                                onBlur={(e) => e.target.style.borderColor = 'var(--glass-border)'}
                             />
                         </div>
+
                         <div style={styles.inputGroup}>
-                            <FaEnvelope style={styles.inputIcon} aria-hidden="true" />
+                            <FaEnvelope style={styles.inputIcon} />
                             <input
                                 type="email"
                                 value={email}
                                 onChange={e => setEmail(e.target.value)}
-                                onFocus={handleFocus}
-                                onBlur={handleBlur}
                                 placeholder="Email Address"
-                                aria-label="Enter your email address"
                                 required
                                 style={styles.input}
+                                onFocus={(e) => e.target.style.borderColor = 'var(--neon-pink)'}
+                                onBlur={(e) => e.target.style.borderColor = 'var(--glass-border)'}
                             />
                         </div>
+
                         <div style={styles.inputGroup}>
-                            <FaLock style={styles.inputIcon} aria-hidden="true" />
+                            <FaLock style={styles.inputIcon} />
                             <input
                                 type="password"
                                 value={password}
                                 onChange={e => setPassword(e.target.value)}
-                                onFocus={handleFocus}
-                                onBlur={handleBlur}
-                                placeholder="Create Password"
-                                aria-label="Create a secure password"
+                                placeholder="Password"
                                 required
                                 style={styles.input}
+                                onFocus={(e) => e.target.style.borderColor = 'var(--neon-pink)'}
+                                onBlur={(e) => e.target.style.borderColor = 'var(--glass-border)'}
                             />
                         </div>
 
-                        {/* Consent Checkbox */}
                         <div style={styles.checkboxGroup}>
                             <input 
                                 type="checkbox" 
-                                id="terms-consent" 
+                                id="terms" 
                                 checked={agreedToTerms}
                                 onChange={(e) => setAgreedToTerms(e.target.checked)}
-                                style={styles.checkbox}
+                                style={{ accentColor: 'var(--neon-pink)', width: '18px', height: '18px' }}
                                 required
                             />
-                            <label htmlFor="terms-consent">
-                                I agree to the <Link to="/terms" target="_blank" style={styles.link}>Terms</Link>, <Link to="/privacy" target="_blank" style={styles.link}>Privacy</Link> & <Link to="/dmca" target="_blank" style={styles.link}>DMCA Policy</Link>.
+                            <label htmlFor="terms">
+                                I agree to the <Link to="/terms" style={{color: 'var(--neon-blue)', textDecoration: 'none'}}>Terms</Link> & <Link to="/privacy" style={{color: 'var(--neon-blue)', textDecoration: 'none'}}>Privacy Policy</Link>.
                             </label>
                         </div>
-
-                        {error && <div role="alert" style={styles.errorMsg}>{error}</div>}
 
                         <button 
                             type="submit" 
                             disabled={!agreedToTerms}
-                            aria-live="polite"
-                            style={{...styles.submitBtn, opacity: agreedToTerms ? 1 : 0.6, cursor: agreedToTerms ? 'pointer' : 'not-allowed'}}
-                            onMouseEnter={(e) => agreedToTerms && (e.target.style.transform = 'translateY(-2px)')}
+                            style={{...styles.submitBtn, opacity: agreedToTerms ? 1 : 0.6}}
+                            onMouseEnter={(e) => agreedToTerms && (e.target.style.transform = 'translateY(-3px)')}
                             onMouseLeave={(e) => agreedToTerms && (e.target.style.transform = 'translateY(0)')}
                         >
-                            Sign Up Now
+                            Create Account
                         </button>
 
-                        <div style={styles.hint}>
-                            Already have an account? 
-                            <Link to="/login" style={styles.link}>Log In</Link>
+                        <div style={{textAlign: 'center', marginTop: '2rem', color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem'}}>
+                            Already a member? <Link to="/login" style={{color: 'var(--neon-blue)', textDecoration: 'none', fontWeight: '600'}}>Log In</Link>
                         </div>
                     </form>
-                </section>
-            </article>
-            
+                </div>
+            </div>
+
             <style>{`
-                @media (max-width: 768px) {
+                @media (max-width: 900px) {
                     .signup-image-section { display: none !important; }
-                    .signup-split-layout { 
-                        flex-direction: column !important; 
-                        min-height: auto !important;
-                    }
+                    .signup-split-layout { min-height: auto !important; }
                     .container {
-                        width: 100% !important;
-                }
+                        width: 100%;
+                        padding: 0.5rem 0rem;
+                    }
+                    .form-section{
+                        padding:4rem 1rem !important;
+                        }
                 }
             `}</style>
         </main>
@@ -399,5 +364,3 @@ const SignupPage = () => {
 };
 
 export default SignupPage;
-
-
