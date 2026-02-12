@@ -1,239 +1,296 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FaEye, FaCalendarAlt, FaEdit, FaTrash, FaArrowRight, FaImage } from 'react-icons/fa';
+import { FaEye, FaCalendarAlt, FaEdit, FaTrash, FaArrowRight, FaClock } from 'react-icons/fa';
 import StarRating from '../common/StarRating';
 import { optimizeCloudinaryUrl } from '../../utils/cloudinaryHelper';
-import RoleBadge from '../common/RoleBadge'; // Import Badge Component
+import RoleBadge from '../common/RoleBadge';
 
 const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () => {} }) => {
-    
-    // --- 1. SUPER ADMIN CHECK ---
+    const [isHovered, setIsHovered] = useState(false);
+    const [imageLoaded, setImageLoaded] = useState(false);
+
     const MAIN_ADMIN_EMAIL = process.env.REACT_APP_MAIN_ADMIN_EMAIL;
-    // Ensure author object exists before checking email
     const isSuperAdmin = blog.author?.email === MAIN_ADMIN_EMAIL;
 
-    // --- 2. SAFE DATA HANDLING ---
-    const dateToFormat = blog.createdAt ? new Date(blog.createdAt) : new Date();
-    const formattedDate = dateToFormat.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-    const views = (blog.views || blog.downloadCount || 0).toLocaleString();
+    // --- LOGIC: ACCURATE READING TIME ---
+    const calculateReadingTime = () => {
+        if (!blog.content) return 1;
+        const cleanText = blog.content.replace(/<[^>]+>/g, '').replace(/[#*`_[\]]/g, '').trim();
+        const wordCount = cleanText.split(/\s+/).length;
+        const wordsPerMinute = 225;
+        return Math.max(1, Math.ceil(wordCount / wordsPerMinute));
+    };
 
-    // Summary Generation Logic
+    const readingTime = calculateReadingTime();
+
     const getSummary = () => {
-        if (blog.summary && blog.summary.trim().length > 0) {
-            return blog.summary.length > 100 ? blog.summary.substring(0, 100) + '...' : blog.summary;
-        }
+        if (blog.summary && blog.summary.trim().length > 0) return blog.summary;
         if (blog.content) {
             const cleanText = blog.content.replace(/<[^>]+>/g, '').replace(/[#*`_[\]]/g, '');
-            return cleanText.substring(0, 100) + '...';
+            return cleanText.substring(0, 120) + '...';
         }
         return 'No summary available.';
     };
 
     const summaryText = getSummary();
+    const formattedDate = blog.createdAt 
+        ? new Date(blog.createdAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' })
+        : 'N/A';
+    
+    const views = (blog.views || blog.downloadCount || 0).toLocaleString();
+    const rating = blog.averageRating || blog.rating || 0;
 
-    // --- 3. HOLOGRAPHIC STYLES ---
+    // --- STYLES (Kept identical to your theme) ---
     const styles = {
         card: {
-            background: 'rgba(255, 255, 255, 0.03)',
-            backdropFilter: 'blur(16px)',
-            WebkitBackdropFilter: 'blur(16px)',
-            border: '1px solid rgba(255, 255, 255, 0.05)',
-            borderRadius: '20px',
-            overflow: 'hidden', 
-            transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+            position: 'relative',
+            background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%)',
+            backdropFilter: 'blur(30px)',
+            WebkitBackdropFilter: 'blur(30px)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: '24px',
+            overflow: 'hidden',
+            transition: 'all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+            cursor: 'default',
+            height: '100%',
             display: 'flex',
             flexDirection: 'column',
-            height: '100%',
-            position: 'relative',
-            boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)'
+            boxShadow: '0 10px 30px rgba(0,0,0,0.1)'
         },
         cardHover: {
-            transform: 'translateY(-5px)',
-            borderColor: 'rgba(0, 212, 255, 0.3)',
-            boxShadow: '0 10px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0, 212, 255, 0.1)'
+            transform: 'translateY(-10px) scale(1.01)',
+            boxShadow: '0 30px 80px rgba(102, 126, 234, 0.2)',
+            borderColor: 'rgba(240, 147, 251, 0.3)'
         },
-        bannerContainer: {
-            width: '100%',
-            height: '180px',
+        imageContainer: {
             position: 'relative',
+            width: '100%',
+            height: '220px',
             overflow: 'hidden',
-            background: '#1e293b' 
+            background: 'linear-gradient(135deg, #1e293b, #0f172a)'
         },
-        bannerImage: {
+        image: {
             width: '100%',
             height: '100%',
             objectFit: 'cover',
-            transition: 'transform 0.5s ease'
+            transition: 'transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+            opacity: imageLoaded ? 1 : 0
         },
-        bannerPlaceholder: {
+        imageHover: {
+            transform: 'scale(1.1) rotate(-1deg)'
+        },
+        skeleton: {
+            position: 'absolute',
+            top: 0,
+            left: 0,
             width: '100%',
             height: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)',
-            color: 'rgba(255,255,255,0.2)'
+            background: 'linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%)',
+            backgroundSize: '200% 100%',
+            animation: 'skeletonLoading 1.5s ease-in-out infinite'
         },
-        contentBody: {
-            padding: '1.5rem',
+        overlay: {
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            background: 'linear-gradient(180deg, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.6) 100%)',
+            opacity: isHovered ? 1 : 0,
+            transition: 'opacity 0.3s ease',
             display: 'flex',
             flexDirection: 'column',
-            flex: 1
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: '1rem',
+            zIndex: 10
         },
-        title: {
-            fontSize: '1.3rem',
-            fontWeight: '700',
-            margin: '0 0 0.5rem 0',
-            lineHeight: 1.3,
-            color: '#fff',
-            textDecoration: 'none',
-            display: 'block',
-            transition: 'color 0.3s'
-        },
-        summary: {
-            color: 'rgba(255, 255, 255, 0.7)',
-            fontSize: '0.9rem',
-            lineHeight: 1.6,
-            marginBottom: '1.5rem',
-            flex: 1, 
-            fontFamily: "'Spline Sans', sans-serif"
-        },
-        metaList: {
+        badgesContainer: {
+            position: 'absolute',
+            top: '1rem',
+            left: '1rem',
+            right: '1rem',
             display: 'flex',
             justifyContent: 'space-between',
-            alignItems: 'flex-end',
-            borderTop: '1px solid rgba(255, 255, 255, 0.1)',
-            paddingTop: '1rem',
-            marginTop: 'auto'
+            zIndex: 11
         },
-        authorDetails: {
+        badge: {
+            padding: '0.4rem 0.8rem',
+            background: 'rgba(15, 23, 42, 0.6)',
+            backdropFilter: 'blur(8px)',
+            borderRadius: '50px',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            color: '#fff',
+            fontSize: '0.75rem',
+            fontWeight: '600',
             display: 'flex',
             alignItems: 'center',
-            gap: '10px'
+            gap: '0.4rem'
         },
-        authorAvatar: {
-            width: '36px',
-            height: '36px',
+        content: {
+            padding: '1.5rem',
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.8rem'
+        },
+        titleLink: {
+            textDecoration: 'none'
+        },
+        title: {
+            fontSize: '1.25rem',
+            fontWeight: '800',
+            color: '#fff',
+            margin: 0,
+            lineHeight: 1.4,
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+            fontFamily: "'Space Grotesk', sans-serif",
+            transition: 'color 0.2s',
+            cursor: 'pointer'
+        },
+        summary: {
+            fontSize: '0.9rem',
+            color: 'rgba(255, 255, 255, 0.7)',
+            lineHeight: 1.6,
+            display: '-webkit-box',
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+            fontFamily: "'Spline Sans', sans-serif'"
+        },
+        metaInfo: {
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            fontSize: '0.8rem',
+            color: 'rgba(255, 255, 255, 0.5)',
+            marginTop: 'auto',
+            paddingTop: '1rem',
+            borderTop: '1px solid rgba(255, 255, 255, 0.05)'
+        },
+        ratingRow: {
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+        },
+        footer: {
+            padding: '1rem 1.5rem',
+            borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            background: 'rgba(0,0,0,0.1)'
+        },
+        authorLink: {
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.75rem',
+            textDecoration: 'none',
+            flex: 1,
+            cursor: isSuperAdmin ? 'default' : 'pointer'
+        },
+        authorImage: {
+            width: '38px',
+            height: '38px',
             borderRadius: '50%',
-            objectFit: 'cover',
-            // Gold border for Super Admin
-            border: isSuperAdmin ? '2px solid #FFD700' : '2px solid rgba(0, 212, 255, 0.5)'
+            border: isSuperAdmin ? '2px solid #ffd700' : '2px solid rgba(255,255,255,0.2)',
+            objectFit: 'cover'
+        },
+        authorInfo: {
+            display: 'flex',
+            flexDirection: 'column'
         },
         authorName: {
             fontSize: '0.85rem',
-            color: '#fff',
             fontWeight: '600',
-            display: 'flex',
-            alignItems: 'center'
-        },
-        // Static style for Super Admin (non-link)
-        staticContainer: {
+            color: '#fff',
             display: 'flex',
             alignItems: 'center',
-            gap: '10px',
-            cursor: 'default'
+            gap: '0.5rem'
         },
-        // Link style for normal users
-        linkContainer: {
+        actions: {
             display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            textDecoration: 'none',
-            cursor: 'pointer'
+            gap: '0.5rem'
         },
-        statsColumn: {
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'flex-end',
-            gap: '4px',
-            fontSize: '0.75rem',
-            color: 'rgba(255, 255, 255, 0.6)'
-        },
-        statRow: {
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px'
-        },
-        actionContainer: {
-            display: 'flex',
-            gap: '10px',
-            marginTop: '1.5rem'
-        },
-        btn: {
-            padding: '8px 16px',
+        actionButton: {
+            width: '32px',
+            height: '32px',
             borderRadius: '8px',
             border: 'none',
-            cursor: 'pointer',
-            fontSize: '0.9rem',
-            fontWeight: '600',
             display: 'flex',
             alignItems: 'center',
-            gap: '6px',
-            transition: 'all 0.3s'
+            justifyContent: 'center',
+            cursor: 'pointer',
+            transition: 'all 0.2s',
+            fontSize: '0.85rem'
         },
-        editBtn: {
-            background: 'rgba(0, 212, 255, 0.1)',
-            color: '#00d4ff',
-            border: '1px solid rgba(0, 212, 255, 0.3)'
-        },
-        deleteBtn: {
-            background: 'rgba(255, 0, 85, 0.1)',
-            color: '#ff0055',
-            border: '1px solid rgba(255, 0, 85, 0.3)'
-        },
-        readMoreBtn: {
-            marginTop: '1rem',
-            display: 'inline-flex',
+        readButton: {
+            display: 'flex',
             alignItems: 'center',
-            gap: '8px',
-            color: '#00d4ff',
+            gap: '0.5rem',
+            padding: '0.8rem 1.8rem',
+            background: 'linear-gradient(135deg, #00d4ff, #ff00cc)',
+            border: 'none',
+            borderRadius: '50px',
+            color: '#fff',
+            fontSize: '0.95rem',
+            fontWeight: '700',
+            cursor: 'pointer',
             textDecoration: 'none',
-            fontWeight: '600',
-            fontSize: '0.9rem',
-            transition: 'gap 0.3s'
+            boxShadow: '0 4px 15px rgba(0, 212, 255, 0.4)',
+            transform: isHovered ? 'scale(1.05)' : 'scale(1)',
+            transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
         }
     };
 
-    // --- CONDITIONAL RENDERING FOR AUTHOR LINK ---
     const AuthorWrapper = isSuperAdmin ? 'div' : Link;
     const authorWrapperProps = isSuperAdmin 
-        ? { style: styles.staticContainer }
-        : { to: `/profile/${blog.author?._id}`, style: styles.linkContainer };
+        ? { style: styles.authorLink }
+        : { to: `/profile/${blog.author?._id}`, style: styles.authorLink };
 
     return (
         <div 
-            style={styles.card}
-            onMouseEnter={(e) => {
-                Object.assign(e.currentTarget.style, styles.cardHover);
-                const img = e.currentTarget.querySelector('img.banner-img');
-                if(img) img.style.transform = 'scale(1.05)';
+            style={{
+                ...styles.card,
+                ...(isHovered ? styles.cardHover : {})
             }}
-            onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'none';
-                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.05)';
-                e.currentTarget.style.boxShadow = '0 4px 30px rgba(0, 0, 0, 0.1)';
-                const img = e.currentTarget.querySelector('img.banner-img');
-                if(img) img.style.transform = 'scale(1)';
-            }}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
         >
-            <Link to={`/blogs/${blog.slug}`} style={styles.bannerContainer}>
-                {blog.coverImage ? (
-                    <img 
-                        src={optimizeCloudinaryUrl(blog.coverImage, { width: 600, height: 338 })} 
-                        alt={blog.title} 
-                        loading="lazy"
-                        style={styles.bannerImage} 
-                        className="banner-img"
-                    />
-                ) : (
-                    <div style={styles.bannerPlaceholder}>
-                        <FaImage size={40} />
+            <div style={styles.imageContainer}>
+                {!imageLoaded && <div style={styles.skeleton} />}
+                <img
+                    src={blog.coverImage 
+                        ? optimizeCloudinaryUrl(blog.coverImage, 600) 
+                        : `https://ui-avatars.com/api/?name=${encodeURIComponent(blog.title)}&size=600&background=1e293b&color=fff`
+                    }
+                    alt={blog.title}
+                    style={{
+                        ...styles.image,
+                        ...(isHovered ? styles.imageHover : {})
+                    }}
+                    onLoad={() => setImageLoaded(true)}
+                />
+                
+                <div style={styles.badgesContainer}>
+                    <div style={styles.badge}>
+                        <FaClock style={{color: '#00d4ff'}} size={10} />
+                        <span>{readingTime} min read</span>
                     </div>
-                )}
-            </Link>
+                </div>
 
-            <div style={styles.contentBody}>
-                <Link to={`/blogs/${blog.slug}`} style={{textDecoration: 'none'}}>
+                <div style={styles.overlay}>
+                    <Link to={`/blogs/${blog.slug || blog._id}`} style={styles.readButton}>
+                        Read Article <FaArrowRight size={12} />
+                    </Link>
+                </div>
+            </div>
+
+            <div style={styles.content}>
+                <Link to={`/blogs/${blog.slug || blog._id}`} style={styles.titleLink}>
                     <h3 
                         style={styles.title}
                         onMouseEnter={(e) => e.target.style.color = '#00d4ff'}
@@ -243,75 +300,88 @@ const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () 
                     </h3>
                 </Link>
                 
-                <p style={styles.summary}>
-                    {summaryText}
-                </p>
+                <p style={styles.summary}>{summaryText}</p>
                 
-                <div style={styles.metaList}>
-                    {/* AUTHOR BLOCK */}
-                    <AuthorWrapper {...authorWrapperProps}>
-                        <img 
-                            src={optimizeCloudinaryUrl(blog.author?.avatar || 'https://via.placeholder.com/40', { width: 80, height: 80, crop: 'thumb', isProfile: true })} 
-                            alt={`Avatar of ${blog.author?.name}`} 
-                            loading="lazy"
-                            style={styles.authorAvatar}
-                        />
-                        <div>
-                            <div style={styles.authorName}>
-                                {blog.author?.name || 'Deleted User'}
-                                {/* DISPLAY BADGE */}
-                                <RoleBadge user={blog.author} />
-                            </div>
-                            <div style={{fontSize: '0.75rem', color: 'rgba(255,255,255,0.5)', marginTop: '2px'}}>
-                                <FaCalendarAlt style={{fontSize: '0.7rem', marginRight: '4px'}} /> 
-                                {formattedDate}
-                            </div>
+                <div style={styles.metaInfo}>
+                    <div style={styles.ratingRow}>
+                        <StarRating rating={rating} readOnly={true} size={14} />
+                        <span style={{fontSize: '0.75rem', opacity: 0.8}}>({blog.numReviews || 0})</span>
+                    </div>
+                    
+                    <div style={{display: 'flex', gap: '15px'}}>
+                        <div style={{display: 'flex', alignItems: 'center', gap: '5px'}}>
+                            <FaCalendarAlt /> {formattedDate}
                         </div>
-                    </AuthorWrapper>
-
-                    <div style={styles.statsColumn}>
-                        <div style={styles.statRow}>
-                            <StarRating rating={blog.rating || 0} readOnly={true} size={12} />
-                            <span>({blog.numReviews || 0})</span>
-                        </div>
-                        <div style={styles.statRow}>
-                            <FaEye /> {views} views
+                        <div style={{display: 'flex', alignItems: 'center', gap: '5px'}}>
+                            <FaEye /> {views}
                         </div>
                     </div>
                 </div>
+            </div>
 
-                {showActions ? (
-                    <div style={styles.actionContainer}>
-                        <button 
-                            style={{...styles.btn, ...styles.editBtn}} 
-                            onClick={() => onEdit(blog)}
-                            aria-label="Edit blog"
-                            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(0, 212, 255, 0.2)'}
-                            onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(0, 212, 255, 0.1)'}
+            <div style={styles.footer}>
+                {blog.author ? (
+                    <AuthorWrapper {...authorWrapperProps}>
+                        <img
+                            src={blog.author.profilePicture || blog.author.avatar
+                                ? optimizeCloudinaryUrl(blog.author.profilePicture || blog.author.avatar, 80)
+                                : `https://ui-avatars.com/api/?name=${encodeURIComponent(blog.author.name)}&size=80`
+                            }
+                            alt={blog.author.name}
+                            style={styles.authorImage}
+                        />
+                        <div style={styles.authorInfo}>
+                            <div style={styles.authorName}>
+                                {blog.author.name}
+                                <RoleBadge user={blog.author} />
+                            </div>
+                        </div>
+                    </AuthorWrapper>
+                ) : (
+                    <div style={styles.authorLink}>
+                        <div style={{...styles.authorImage, background: '#333'}} />
+                        <span style={{color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem'}}>Unknown User</span>
+                    </div>
+                )}
+
+                {showActions && (
+                    <div style={styles.actions}>
+                        <button
+                            onClick={(e) => { e.preventDefault(); onEdit(blog); }}
+                            style={{
+                                ...styles.actionButton,
+                                background: 'rgba(0, 212, 255, 0.1)',
+                                color: '#00d4ff',
+                                border: '1px solid rgba(0, 212, 255, 0.3)'
+                            }}
+                            title="Edit"
                         >
-                            <FaEdit /> Edit
+                            <FaEdit />
                         </button>
-                        <button 
-                            style={{...styles.btn, ...styles.deleteBtn}} 
-                            onClick={() => onDelete(blog._id)}
-                            aria-label="Delete blog"
-                            onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 0, 85, 0.2)'}
-                            onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255, 0, 85, 0.1)'}
+                        <button
+                            onClick={(e) => { e.preventDefault(); onDelete(blog._id); }}
+                            style={{
+                                ...styles.actionButton,
+                                background: 'rgba(255, 0, 85, 0.1)',
+                                color: '#ff0055',
+                                border: '1px solid rgba(255, 0, 85, 0.3)'
+                            }}
+                            title="Delete"
                         >
-                            <FaTrash /> Delete
+                            <FaTrash />
                         </button>
                     </div>
-                ) : (
-                    <Link 
-                        to={`/blogs/${blog.slug}`} 
-                        style={styles.readMoreBtn}
-                        onMouseEnter={(e) => e.currentTarget.style.gap = '12px'}
-                        onMouseLeave={(e) => e.currentTarget.style.gap = '8px'}
-                    >
-                        Read Full Article <FaArrowRight />
-                    </Link>
                 )}
             </div>
+
+            <style>
+                {`
+                    @keyframes skeletonLoading {
+                        0% { background-position: 200% 0; }
+                        100% { background-position: -200% 0; }
+                    }
+                `}
+            </style>
         </div>
     );
 };
