@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import { FaSearch, FaRegComments, FaSpinner, FaTrash } from 'react-icons/fa';
-import { ref, onValue, off, update, serverTimestamp, remove, goOnline } from 'firebase/database'; // Added goOnline
+import { ref, onValue, off, update, serverTimestamp, remove, goOnline } from 'firebase/database';
 import { db } from '../services/firebase';
 import useAuth from '../hooks/useAuth';
 import { optimizeCloudinaryUrl } from '../utils/cloudinaryHelper';
@@ -16,9 +16,10 @@ const InboxItem = ({ chat, currentUserId, onDelete }) => {
     const [isHovered, setIsHovered] = useState(false);
     const longPressTimer = useRef(null);
 
-    // Logic: Unread if count > 0 AND the last message wasn't sent by me
-    // (Though usually your own backend logic handles the count, this is a safe check)
-    const isUnread = chat.unreadCount > 0;
+    // ✅ FIX: Robust Unread Logic
+    // Ensures we handle string '1', number 1, or undefined correctly
+    const unreadNum = Number(chat.unreadCount);
+    const isUnread = !isNaN(unreadNum) && unreadNum > 0;
 
     useEffect(() => {
         const statusRef = ref(db, `status/${chat.partnerId}`);
@@ -45,6 +46,7 @@ const InboxItem = ({ chat, currentUserId, onDelete }) => {
 
     const isOnline = status?.state === 'online';
 
+    // Interaction Handlers (Touch/Click)
     const handleTouchStart = () => {
         longPressTimer.current = setTimeout(() => {
             if (window.confirm(`Delete conversation with ${chat.partnerName}?`)) {
@@ -75,7 +77,7 @@ const InboxItem = ({ chat, currentUserId, onDelete }) => {
             style={{
                 display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem',
                 borderRadius: '16px', 
-                // Unread Background Highlight
+                // Highlight background if unread
                 background: isUnread ? 'rgba(0, 212, 255, 0.08)' : 'rgba(255, 255, 255, 0.02)',
                 border: isUnread ? '1px solid rgba(0, 212, 255, 0.2)' : '1px solid transparent', 
                 cursor: 'pointer', transition: 'all 0.2s ease',
@@ -110,16 +112,19 @@ const InboxItem = ({ chat, currentUserId, onDelete }) => {
                         <RoleBadge user={chat.partnerDetails} />
                     </span>
                     
-                    {/* Time or Unread Dot */}
-                    <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-end'}}>
-                         {/* ✅ RESTORED: Blue Dot for Unread Messages */}
+                    {/* Status / Time Column */}
+                    <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px'}}>
+                        
+                        {/* ✅ FIX: Explicit Blue Dot Rendering */}
                         {isUnread && (
                             <div style={{
                                 width: '10px', height: '10px', borderRadius: '50%',
-                                background: '#00d4ff', marginBottom: '4px',
-                                boxShadow: '0 0 8px rgba(0, 212, 255, 0.6)'
+                                background: '#00d4ff', 
+                                boxShadow: '0 0 8px rgba(0, 212, 255, 0.8)',
+                                animation: 'pulse 2s infinite'
                             }} />
                         )}
+
                         <span style={{ 
                             fontSize: '0.75rem', 
                             color: isOnline ? '#00ffaa' : 'rgba(255,255,255,0.4)',
@@ -137,6 +142,7 @@ const InboxItem = ({ chat, currentUserId, onDelete }) => {
                         overflow: 'hidden', textOverflow: 'ellipsis',
                         fontWeight: isUnread ? '700' : '400', flex: 1
                     }}>
+                        {/* Show "Sent a message" if user sent it, but we rely on just text here for simplicity */}
                         {chat.lastMessage || "Start a conversation"}
                     </div>
 
@@ -156,6 +162,13 @@ const InboxItem = ({ chat, currentUserId, onDelete }) => {
                     )}
                 </div>
             </div>
+            <style>{`
+                @keyframes pulse {
+                    0% { transform: scale(1); opacity: 1; }
+                    50% { transform: scale(1.2); opacity: 0.8; }
+                    100% { transform: scale(1); opacity: 1; }
+                }
+            `}</style>
         </div>
     );
 };
@@ -170,11 +183,14 @@ const ChatListPage = () => {
     const [loading, setLoading] = useState(true);
     const [isSearching, setIsSearching] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    
+    // ✅ FIX: Cache for User Profiles to prevent flickering/re-fetching
+    const userCache = useRef({}); 
 
     useEffect(() => {
         if (!currentUser?._id) return;
 
-        // ✅ FORCE ONLINE: Ensure we receive updates even if previously offline
+        // Force connection logic
         try { goOnline(db); } catch (e) { console.error(e); }
 
         const inboxRef = ref(db, `user_chats/${currentUser._id}`);
@@ -183,26 +199,37 @@ const ChatListPage = () => {
             const data = snapshot.val();
             
             if (data) {
+                // Sort by newest first
                 const rawChats = Object.values(data).sort((a, b) => b.timestamp - a.timestamp);
 
                 const enrichedChats = await Promise.all(rawChats.map(async (chat) => {
-                    // Skip cleared chats
-                    if (!chat.lastMessage || chat.lastMessage === "") {
-                         return null;
-                    }
+                    if (!chat.lastMessage || chat.lastMessage === "") return null;
 
-                    try {
-                        // Optimistically check cache or fetch fresh
-                        const { data: userProfile } = await axios.get(`/users/${chat.partnerId}/profile`);
+                    // 1. Check Cache First
+                    if (userCache.current[chat.partnerId]) {
                         return {
                             ...chat,
+                            ...userCache.current[chat.partnerId]
+                        };
+                    }
+
+                    // 2. Fetch if not in Cache
+                    try {
+                        const { data: userProfile } = await axios.get(`/users/${chat.partnerId}/profile`);
+                        
+                        // Save to cache
+                        userCache.current[chat.partnerId] = {
                             partnerName: userProfile.name,
                             partnerAvatar: userProfile.avatar,
                             partnerDetails: userProfile
                         };
+
+                        return {
+                            ...chat,
+                            ...userCache.current[chat.partnerId]
+                        };
                     } catch (err) {
                         if (err.response && err.response.status === 404) {
-                            // Cleanup orphaned chat
                             const orphanRef = ref(db, `user_chats/${currentUser._id}/${chat.partnerId}`);
                             remove(orphanRef);
                         }
@@ -243,16 +270,13 @@ const ChatListPage = () => {
     const handleDeleteChat = async (partnerId) => {
         try {
             const chatRef = ref(db, `user_chats/${currentUser._id}/${partnerId}`);
-            
             await update(chatRef, {
                 lastMessage: "",       
                 unreadCount: 0,        
                 hiddenBefore: serverTimestamp() 
             });
-            
         } catch (error) {
             console.error("Failed to delete chat", error);
-            alert("Failed to delete chat. Please try again.");
         }
     };
 
@@ -274,13 +298,8 @@ const ChatListPage = () => {
 
     return (
         <div style={styles.page}>
-            <Helmet>
-                <title>Chats | PeerNotez</title>
-            </Helmet>
-
-            <div style={styles.header}>
-                <h1 style={styles.title}>Chats</h1>
-            </div>
+            <Helmet><title>Chats | PeerNotez</title></Helmet>
+            <div style={styles.header}><h1 style={styles.title}>Chats</h1></div>
 
             <div style={styles.searchBox}>
                 <FaSearch style={{ color: 'rgba(255, 255, 255, 0.5)' }} />
@@ -300,43 +319,23 @@ const ChatListPage = () => {
                         <div style={styles.sectionTitle}>Global Search Results</div>
                         {searchResults.length > 0 ? (
                             searchResults.map(user => (
-                                <div 
-                                    key={user._id} 
-                                    style={styles.searchItem}
-                                    className="list-item-hover"
-                                    onClick={() => navigate(`/chat/${user._id}`)}
-                                >
-                                    <img 
-                                        src={optimizeCloudinaryUrl(user.avatar, { width: 60, height: 60, isProfile: true }) || `https://api.dicebear.com/7.x/initials/svg?seed=${user.name}`} 
-                                        alt={user.name} 
-                                        style={styles.avatar}
-                                    />
+                                <div key={user._id} style={styles.searchItem} className="list-item-hover" onClick={() => navigate(`/chat/${user._id}`)}>
+                                    <img src={optimizeCloudinaryUrl(user.avatar, { width: 60, height: 60, isProfile: true }) || `https://api.dicebear.com/7.x/initials/svg?seed=${user.name}`} alt={user.name} style={styles.avatar}/>
                                     <div style={styles.info}>
                                         <span style={styles.name}>{user.name}</span>
-                                        <div style={styles.preview}>
-                                            {user.university || 'Student'} • Tap to chat
-                                        </div>
+                                        <div style={styles.preview}>{user.university || 'Student'} • Tap to chat</div>
                                     </div>
                                 </div>
                             ))
-                        ) : (
-                            !isSearching && <div style={styles.emptyState}>No users found.</div>
-                        )}
+                        ) : (!isSearching && <div style={styles.emptyState}>No users found.</div>)}
                     </>
                 ) : (
                     <>
                         {loading ? (
-                            <div style={{ textAlign: 'center', padding: '2rem', color: 'rgba(255,255,255,0.5)' }}>
-                                <FaSpinner className="fa-spin" /> Loading conversations...
-                            </div>
+                            <div style={{ textAlign: 'center', padding: '2rem', color: 'rgba(255,255,255,0.5)' }}><FaSpinner className="fa-spin" /> Loading conversations...</div>
                         ) : inbox.length > 0 ? (
                             inbox.map(chat => (
-                                <InboxItem 
-                                    key={chat.partnerId} 
-                                    chat={chat} 
-                                    currentUserId={currentUser._id}
-                                    onDelete={handleDeleteChat}
-                                />
+                                <InboxItem key={chat.partnerId} chat={chat} currentUserId={currentUser._id} onDelete={handleDeleteChat} />
                             ))
                         ) : (
                             <div style={styles.emptyState}>
@@ -348,16 +347,7 @@ const ChatListPage = () => {
                     </>
                 )}
             </div>
-
-            <style>{`
-                .list-item-hover:hover {
-                    background: rgba(255, 255, 255, 0.08) !important;
-                    transform: translateX(5px);
-                }
-                .delete-chat-btn:hover {
-                    transform: scale(1.1);
-                }
-            `}</style>
+            <style>{`.list-item-hover:hover { background: rgba(255, 255, 255, 0.08) !important; transform: translateX(5px); } .delete-chat-btn:hover { transform: scale(1.1); }`}</style>
         </div>
     );
 };
