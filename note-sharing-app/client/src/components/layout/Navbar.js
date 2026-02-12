@@ -18,227 +18,26 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // --- INTERNAL CSS ---
-  const styles = {
-    navWrapper: {
-      position: 'fixed',
-      top: '20px',
-      left: '0',
-      right: '0',
-      zIndex: 1000,
-      display: 'flex',
-      justifyContent: 'center',
-      padding: '0 20px',
-      pointerEvents: 'none',
-    },
-    glassBar: {
-      pointerEvents: 'auto',
-      width: '100%',
-      maxWidth: '1200px',
-      background: scrolled || menuOpen ? 'rgba(15, 12, 41, 0.85)' : 'rgba(255, 255, 255, 0.05)',
-      backdropFilter: 'blur(20px)',
-      WebkitBackdropFilter: 'blur(20px)',
-      borderRadius: '24px',
-      border: '1px solid rgba(255, 255, 255, 0.1)',
-      boxShadow: scrolled ? '0 10px 30px rgba(0,0,0,0.3)' : '0 4px 6px rgba(0,0,0,0.05)',
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      padding: '10px 30px',
-      height: '70px',
-      transition: 'all 0.4s ease',
-      position: 'relative',
-    },
-    logo: {
-      height: '40px',
-      filter: 'brightness(1.2) drop-shadow(0 0 8px rgba(255,255,255,0.3))',
-      transition: 'transform 0.3s ease',
-    },
-    desktopMenu: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: '25px',
-    },
-    link: {
-      color: '#fff',
-      textDecoration: 'none',
-      fontWeight: '600',
-      fontSize: '0.95rem',
-      position: 'relative',
-      padding: '5px 0',
-      opacity: 0.8,
-      transition: 'all 0.2s',
-      fontFamily: "'Spline Sans', sans-serif",
-    },
-    activeLink: {
-      opacity: 1,
-      color: '#00d4ff',
-      textShadow: '0 0 10px rgba(0, 212, 255, 0.4)',
-    },
-    activeIndicator: {
-      position: 'absolute',
-      bottom: '-2px',
-      left: 0,
-      width: '100%',
-      height: '2px',
-      background: 'linear-gradient(90deg, #00d4ff, #ff00cc)',
-      borderRadius: '2px',
-    },
-    searchContainer: {
-      background: 'rgba(255,255,255,0.1)',
-      borderRadius: '50px',
-      padding: '5px 15px',
-      display: 'flex',
-      alignItems: 'center',
-      border: '1px solid rgba(255,255,255,0.05)',
-      transition: 'all 0.3s ease',
-    },
-    searchInput: {
-      background: 'transparent',
-      border: 'none',
-      color: '#fff',
-      padding: '5px',
-      outline: 'none',
-      fontSize: '0.9rem',
-      width: '150px',
-      fontFamily: "'Spline Sans', sans-serif",
-    },
-    authContainer: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: '15px',
-    },
-    mobileToggle: {
-      background: 'none',
-      border: 'none',
-      color: 'white',
-      fontSize: '1.5rem',
-      cursor: 'pointer',
-      zIndex: 1002,
-    },
-
-    // ✅ FIXED: make mobile menu scrollable and capped to viewport
-    mobileMenu: {
-      position: 'absolute',
-      top: '80px',
-      left: '0',
-      right: '0',
-      background: 'rgba(15, 12, 41, 0.95)',
-      backdropFilter: 'blur(20px)',
-      borderRadius: '20px',
-      padding: '2rem',
-      paddingBottom: '2.5rem', // extra space so logout isn't stuck at the edge
-      border: '1px solid rgba(255,255,255,0.1)',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '1.5rem',
-      alignItems: 'center',
-      opacity: menuOpen ? 1 : 0,
-      transform: menuOpen ? 'translateY(0)' : 'translateY(-20px)',
-      pointerEvents: menuOpen ? 'all' : 'none',
-      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-      boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
-
-      maxHeight: 'calc(100vh - 120px)', // ✅ keeps it inside screen
-      overflowY: 'auto', // ✅ allows scrolling
-      WebkitOverflowScrolling: 'touch', // ✅ smooth iOS scrolling
-    },
-
-    avatar: {
-      width: '40px',
-      height: '40px',
-      borderRadius: '50%',
-      border: '2px solid rgba(255,255,255,0.8)',
-      objectFit: 'cover',
-      boxShadow: '0 0 10px rgba(0, 212, 255, 0.3)',
-      cursor: 'pointer',
-    },
-    logoutBtnDesktop: {
-      background: 'rgba(255, 0, 85, 0.1)',
-      border: '1px solid rgba(255, 0, 85, 0.3)',
-      color: '#ff0055',
-      borderRadius: '50%',
-      width: '38px',
-      height: '38px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      cursor: 'pointer',
-      transition: 'all 0.3s ease',
-    },
-    iconLink: {
-      color: 'rgba(255, 255, 255, 0.8)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '8px',
-      borderRadius: '50%',
-      transition: '0.3s',
-      fontSize: '1.1rem',
-      textDecoration: 'none',
-      background: 'rgba(255, 255, 255, 0.05)',
-      border: '1px solid rgba(255, 255, 255, 0.1)',
-      position: 'relative',
-    },
-    badge: {
-      position: 'absolute',
-      top: '-15px',
-      right: '-15px',
-      background: '#ff0055',
-      color: 'white',
-      borderRadius: '50%',
-      padding: '2px 6px',
-      fontSize: '0.7rem',
-      fontWeight: 'bold',
-      minWidth: '18px',
-      textAlign: 'center',
-      border: '2px solid #0f0c29',
-      boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
-    },
-
-    mobileProfileLink: {
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: '10px',
-      textDecoration: 'none',
-      padding: '14px 14px',
-      borderRadius: '16px',
-      width: '100%',
-      background: 'rgba(255,255,255,0.04)',
-      border: '1px solid rgba(255,255,255,0.08)',
-      transition: '0.2s',
-      textAlign: 'center',
-    },
-    mobileProfileName: {
-      color: 'white',
-      fontWeight: '700',
-      opacity: 0.95,
-      textAlign: 'center',
-    },
-  };
-
+  // --- Event Listeners ---
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 30);
-    window.addEventListener('scroll', onScroll);
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-
-  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 50);
     const handleResize = () => {
-      const mobileView = window.innerWidth <= 768;
-      setIsMobile(mobileView);
-      if (!mobileView) setMenuOpen(false);
+      setIsMobile(window.innerWidth <= 768);
+      if (window.innerWidth > 768) setMenuOpen(false);
     };
+
+    window.addEventListener('scroll', handleScroll);
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
+  // --- Firebase Logic ---
   useEffect(() => {
     if (!user?._id) return;
     const inboxRef = ref(db, `user_chats/${user._id}`);
-
     const unsubscribe = onValue(inboxRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
@@ -251,249 +50,512 @@ const Navbar = () => {
         setUnreadCount(0);
       }
     });
-
     return () => unsubscribe();
   }, [user]);
-
-  const handleLogout = () => {
-    logout();
-    setMenuOpen(false);
-    navigate('/');
-  };
 
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchTerm.trim()) {
-      navigate(`/search?q=${searchTerm}`);
+      navigate(`/search?q=${encodeURIComponent(searchTerm.trim())}`);
       setSearchTerm('');
       setMenuOpen(false);
     }
   };
 
-  const optimizedAvatar = user
-    ? optimizeCloudinaryUrl(user.avatar, { width: 80, height: 80, isProfile: true })
-    : null;
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+    setMenuOpen(false);
+  };
+
+  const isActive = (path) => location.pathname === path;
+
+  // --- Updated Styles ---
+  const styles = {
+    navWrapper: {
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      zIndex: 1000,
+      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      padding: scrolled ? '0.5rem 0' : '0.8rem 0'
+    },
+    navContainer: {
+      background: scrolled 
+        ? 'rgba(10, 1, 24, 0.90)' 
+        : 'rgba(10, 1, 24, 0.6)',
+      backdropFilter: 'blur(20px) saturate(180%)',
+      WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+      border: '1px solid rgba(255, 255, 255, 0.08)',
+      borderRadius: '50px',
+      maxWidth: '1400px',
+      margin: '0 auto',
+      padding: '0.4rem 1.5rem', // Reduced padding for tighter fit
+      boxShadow: scrolled 
+        ? '0 20px 60px rgba(0, 0, 0, 0.5), 0 0 20px rgba(102, 126, 234, 0.1)' 
+        : '0 10px 30px rgba(0, 0, 0, 0.2)',
+      transition: 'all 0.3s ease'
+    },
+    navContent: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: '0.5rem', // Reduced gap significantly
+      height: '46px'
+    },
+    logoSection: {
+      display: 'flex',
+      alignItems: 'center',
+      textDecoration: 'none',
+      flexShrink: 0
+    },
+    logo: {
+      width: scrolled ? '100px' : '110px',
+      height: scrolled ? '38px' : '44px',
+      transition: 'all 0.3s ease',
+      filter: 'drop-shadow(0 0 15px rgba(102, 126, 234, 0.6))'
+    },
+    navLinks: {
+      display: isMobile ? 'none' : 'flex',
+      alignItems: 'center',
+      gap: '0.2rem', // Tighter link spacing
+      flex: 1,
+      justifyContent: 'center'
+    },
+    navLink: {
+      padding: '0.5rem 1rem', // Reduced padding
+      color: '#e0e0e0',
+      textDecoration: 'none',
+      borderRadius: '20px',
+      fontWeight: '500',
+      fontSize: '0.9rem',
+      transition: 'all 0.3s ease',
+      fontFamily: "'Inter', sans-serif",
+      position: 'relative',
+      whiteSpace: 'nowrap'
+    },
+    navLinkActive: {
+      background: 'rgba(255, 255, 255, 0.1)',
+      color: '#fff',
+      fontWeight: '600',
+      boxShadow: '0 0 15px rgba(255, 255, 255, 0.05)'
+    },
+    adminLink: {
+      background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
+      color: '#1a1a1a',
+      fontWeight: '700',
+      boxShadow: '0 0 15px rgba(255, 215, 0, 0.3)',
+      border: '1px solid rgba(255, 215, 0, 0.5)'
+    },
+    searchForm: {
+      display: isMobile ? 'none' : 'flex',
+      alignItems: 'center',
+      background: 'rgba(0, 0, 0, 0.2)',
+      padding: '3px',
+      borderRadius: '50px',
+      border: '1px solid rgba(255, 255, 255, 0.15)',
+      transition: 'all 0.3s ease',
+      minWidth: '220px', // Slightly smaller width
+      boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.2)'
+    },
+    searchInput: {
+      background: 'transparent',
+      border: 'none',
+      color: '#fff',
+      outline: 'none',
+      flex: 1,
+      fontSize: '0.85rem',
+      padding: '0 10px',
+      fontFamily: "'Inter', sans-serif"
+    },
+    searchButton: {
+      background: 'linear-gradient(135deg, #667eea, #764ba2)',
+      border: 'none',
+      borderRadius: '50%',
+      width: '30px',
+      height: '30px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      cursor: 'pointer',
+      transition: 'all 0.2s ease',
+      color: '#fff',
+      boxShadow: '0 2px 10px rgba(102, 126, 234, 0.4)'
+    },
+    rightSection: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '0.5rem', // Tighter gap for buttons
+      flexShrink: 0
+    },
+    iconButton: {
+      background: 'rgba(255, 255, 255, 0.05)',
+      border: '1px solid rgba(255, 255, 255, 0.1)',
+      borderRadius: '50%',
+      width: '38px', // Slightly smaller
+      height: '38px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      cursor: 'pointer',
+      transition: 'all 0.3s ease',
+      color: '#fff',
+      position: 'relative',
+      textDecoration: 'none'
+    },
+    logoutButton: {
+      background: 'rgba(255, 59, 48, 0.1)',
+      border: '1px solid rgba(255, 59, 48, 0.3)',
+      color: '#ff3b30',
+      borderRadius: '50%',
+      width: '38px',
+      height: '38px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      cursor: 'pointer',
+      transition: 'all 0.3s ease'
+    },
+    badge: {
+      position: 'absolute',
+      top: '-2px',
+      right: '-2px',
+      background: '#ff3b30',
+      color: '#fff',
+      borderRadius: '50%',
+      width: '16px',
+      height: '16px',
+      fontSize: '0.6rem',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontWeight: 'bold',
+      border: '2px solid #0a0118'
+    },
+    userAvatar: {
+      width: '38px',
+      height: '38px',
+      borderRadius: '50%',
+      border: '2px solid rgba(102, 126, 234, 0.5)',
+      cursor: 'pointer',
+      transition: 'all 0.3s ease',
+      objectFit: 'cover',
+      boxShadow: '0 0 15px rgba(102, 126, 234, 0.2)'
+    },
+    mobileMenuButton: {
+      display: isMobile ? 'flex' : 'none',
+      background: 'transparent',
+      border: 'none',
+      color: '#fff',
+      fontSize: '1.5rem',
+      cursor: 'pointer',
+      padding: '0'
+    },
+    mobileMenu: {
+      position: 'fixed',
+      top: 0,
+      right: 0,
+      width: '100%',
+      maxWidth: '320px',
+      height: '100vh',
+      background: 'rgba(12, 12, 16, 0.95)',
+      backdropFilter: 'blur(40px)',
+      padding: '2rem',
+      transform: menuOpen ? 'translateX(0)' : 'translateX(100%)',
+      transition: 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+      zIndex: 1001,
+      boxShadow: '-10px 0 50px rgba(0, 0, 0, 0.7)',
+      overflowY: 'auto',
+      display: 'flex',
+      flexDirection: 'column'
+    },
+    mobileMenuBackdrop: {
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: 'rgba(0, 0, 0, 0.6)',
+      backdropFilter: 'blur(4px)',
+      opacity: menuOpen ? 1 : 0,
+      pointerEvents: menuOpen ? 'auto' : 'none',
+      transition: 'opacity 0.3s ease',
+      zIndex: 1000
+    },
+    mobileLink: {
+        padding: '1rem',
+        color: '#fff',
+        textDecoration: 'none',
+        borderRadius: '16px',
+        fontSize: '1.1rem',
+        fontWeight: '500',
+        transition: 'all 0.2s',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '1rem',
+        border: '1px solid transparent',
+        marginBottom: '0.5rem'
+    }
+  };
+
+  const navLinks = [
+    { path: '/', label: 'Home' },
+    { path: '/about', label: 'About' },
+    { path: '/blogs', label: 'Blogs' },
+    { path: '/contact', label: 'Contact' },
+    { path: '/donate', label: 'Donate' },
+    { path: '/upload', label: 'Upload', authRequired: true },
+    { path: '/admin', label: 'Admin', adminOnly: true }
+  ];
 
   return (
-    <div style={styles.navWrapper}>
-      <nav style={styles.glassBar}>
-        {/* LOGO */}
-        <Link to="/" onClick={() => setMenuOpen(false)} aria-label="PeerNotez Home">
-          <img src={logo} alt="PeerNotez Logo" style={styles.logo} />
-        </Link>
+    <>
+      <div style={styles.navWrapper}>
+        <div style={{...styles.navContainer, margin: isMobile ? '0 1rem' : '0 auto'}}>
+          <div style={styles.navContent}>
+            {/* Logo */}
+            <Link to="/" style={styles.logoSection} onClick={() => setMenuOpen(false)}>
+              <img src={logo} alt="PeerNotez" style={styles.logo} />
+            </Link>
 
-        {/* DESKTOP LINKS */}
-        {!isMobile && (
-          <div style={styles.desktopMenu}>
-            {['Home', 'About', 'Blogs', 'Contact', 'Donate'].map((item) => {
-              const path = item === 'Home' ? '/' : `/${item.toLowerCase()}`;
-              const isActive = location.pathname === path;
-              return (
-                <Link
-                  key={item}
-                  to={path}
-                  style={{ ...styles.link, ...(isActive ? styles.activeLink : {}) }}
+            {/* Desktop Navigation */}
+            <div style={styles.navLinks}>
+              {navLinks.map(link => {
+                if (link.authRequired && !user) return null;
+                if (link.adminOnly && user?.role !== 'admin') return null;
+
+                let linkStyle = {
+                    ...styles.navLink,
+                    ...(isActive(link.path) ? styles.navLinkActive : {})
+                };
+                if (link.adminOnly) {
+                    linkStyle = { ...linkStyle, ...styles.adminLink };
+                }
+
+                return (
+                  <Link
+                    key={link.path}
+                    to={link.path}
+                    style={linkStyle}
+                    onMouseEnter={(e) => {
+                      if (!link.adminOnly && !isActive(link.path)) {
+                        e.target.style.background = 'rgba(255, 255, 255, 0.08)';
+                      }
+                      if (link.adminOnly) {
+                          e.target.style.transform = 'translateY(-2px) scale(1.05)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!link.adminOnly && !isActive(link.path)) {
+                        e.target.style.background = 'transparent';
+                      }
+                      if (link.adminOnly) {
+                        e.target.style.transform = 'translateY(0) scale(1)';
+                      }
+                    }}
+                  >
+                    {link.label}
+                  </Link>
+                );
+              })}
+            </div>
+
+            {/* Desktop Search */}
+            {!isMobile && (
+              <form onSubmit={handleSearch} style={styles.searchForm}>
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  style={styles.searchInput}
+                />
+                <button 
+                  type="submit" 
+                  style={styles.searchButton}
+                  onMouseEnter={(e) => e.target.style.transform = 'scale(1.1)'}
+                  onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
                 >
-                  {item}
-                  {isActive && <span style={styles.activeIndicator} />}
-                </Link>
-              );
-            })}
-            {user && user.role === 'admin' && (
-              <Link to="/admin" style={{ ...styles.link, color: '#ffcc00' }}>
-                Admin
-              </Link>
+                  <FaSearch size={14} />
+                </button>
+              </form>
             )}
-          </div>
-        )}
 
-        {/* AUTH & ACTIONS */}
-        <div style={styles.authContainer}>
-          {!isMobile && (
-            <form onSubmit={handleSearch} style={styles.searchContainer}>
-              <FaSearch color="rgba(255,255,255,0.5)" size={12} aria-hidden="true" />
+            {/* Right Section */}
+            <div style={styles.rightSection}>
+              {/* Only show Desktop Icons if NOT mobile */}
+              {!isMobile && (
+                  user ? (
+                    <>
+                      <Link to="/chat" style={styles.iconButton} title="Messages">
+                        <FaPaperPlane size={14} />
+                        {unreadCount > 0 && (
+                          <span style={styles.badge}>
+                            {unreadCount > 9 ? '9+' : unreadCount}
+                          </span>
+                        )}
+                      </Link>
+                      
+                      <Link to="/profile" title="View Profile">
+                        <img
+                          src={user.profilePicture || user.avatar ? optimizeCloudinaryUrl(user.profilePicture || user.avatar, 80) : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&size=80`}
+                          alt={user.name}
+                          style={styles.userAvatar}
+                        />
+                      </Link>
+
+                      <div 
+                        onClick={handleLogout} 
+                        style={styles.logoutButton}
+                        title="Logout"
+                        onMouseEnter={(e) => e.target.style.background = 'rgba(255, 59, 48, 0.2)'}
+                        onMouseLeave={(e) => e.target.style.background = 'rgba(255, 59, 48, 0.1)'}
+                      >
+                        <FaSignOutAlt size={14} />
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <Link to="/login" style={styles.navLink}>Login</Link>
+                      <Link 
+                        to="/signup" 
+                        style={{
+                          ...styles.navLink,
+                          background: 'linear-gradient(135deg, #667eea, #764ba2)',
+                          boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
+                          color: 'white'
+                        }}
+                      >
+                        Sign Up
+                      </Link>
+                    </>
+                  )
+              )}
+
+              {/* Mobile Menu Toggle - Always visible on mobile */}
+              {isMobile && (
+                <button style={styles.mobileMenuButton} onClick={() => setMenuOpen(!menuOpen)}>
+                  {menuOpen ? <FaTimes /> : <FaBars />}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Menu Backdrop */}
+      {isMobile && (
+        <div 
+          style={styles.mobileMenuBackdrop} 
+          onClick={() => setMenuOpen(false)}
+        />
+      )}
+
+      {/* Mobile Menu */}
+      {isMobile && (
+        <div style={styles.mobileMenu}>
+           {/* Mobile Header */}
+           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+              <span style={{ color: 'white', fontWeight: 'bold', fontSize: '1.2rem' }}>Menu</span>
+              <div onClick={() => setMenuOpen(false)} style={{ color: 'rgba(255,255,255,0.6)', cursor: 'pointer' }}>
+                  <FaTimes size={24} />
+              </div>
+           </div>
+
+          {/* Mobile Search */}
+          <div style={{marginBottom: '2rem'}}>
+            <form onSubmit={handleSearch} style={{...styles.searchForm, display: 'flex', width: '100%', padding: '8px', background: 'rgba(255,255,255,0.05)'}}>
               <input
                 type="text"
                 placeholder="Search..."
-                aria-label="Search academic notes"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 style={styles.searchInput}
               />
+              <button type="submit" style={styles.searchButton}>
+                <FaSearch size={14} />
+              </button>
             </form>
-          )}
+          </div>
 
-          {!isMobile &&
-            (user ? (
+          <div style={{display: 'flex', flexDirection: 'column', gap: '0.2rem'}}>
+            {navLinks.map(link => {
+              if (link.authRequired && !user) return null;
+              if (link.adminOnly && user?.role !== 'admin') return null;
+
+              return (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  onClick={() => setMenuOpen(false)}
+                  style={{
+                    ...styles.mobileLink,
+                    background: isActive(link.path) ? 'rgba(102, 126, 234, 0.15)' : 'transparent',
+                    border: isActive(link.path) ? '1px solid rgba(102, 126, 234, 0.3)' : '1px solid transparent',
+                    color: link.adminOnly ? '#FFD700' : '#fff'
+                  }}
+                >
+                   {link.label}
+                </Link>
+              );
+            })}
+
+            {user ? (
               <>
-                <Link to="/upload" className="liquid-btn" style={{ padding: '8px 20px', fontSize: '0.9rem' }}>
-                  + New
-                </Link>
-
-                {/* MESSAGE ICON - DESKTOP */}
-                <Link to="/chat" className="nav-icon-link" style={styles.iconLink} title="Messages">
-                  <div style={{ position: 'relative', display: 'flex' }}>
-                    <FaPaperPlane />
+                <div style={{height: '1px', background: 'rgba(255, 255, 255, 0.1)', margin: '1.5rem 0'}} />
+                
+                <Link to="/chat" onClick={() => setMenuOpen(false)} style={styles.mobileLink}>
+                    <FaPaperPlane color="#667eea"/> 
+                    <span>Messages</span>
                     {unreadCount > 0 && (
-                      <span style={styles.badge}>{unreadCount > 9 ? '9+' : unreadCount}</span>
+                        <span style={{background: '#ff3b30', color: 'white', fontSize: '0.8rem', padding: '2px 8px', borderRadius: '12px', marginLeft: 'auto'}}>
+                            {unreadCount}
+                        </span>
                     )}
-                  </div>
                 </Link>
 
-                <Link to="/profile" title="My Profile">
-                  <img src={optimizedAvatar} alt="My Avatar" loading="lazy" style={styles.avatar} />
+                <Link to="/profile" onClick={() => setMenuOpen(false)} style={styles.mobileLink}>
+                  <img 
+                    src={user.profilePicture || user.avatar ? optimizeCloudinaryUrl(user.profilePicture || user.avatar, 40) : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}`}
+                    style={{width: '24px', height: '24px', borderRadius: '50%'}}
+                    alt="profile"
+                  />
+                  Profile
                 </Link>
-
-                <button onClick={handleLogout} style={styles.logoutBtnDesktop} title="Logout">
-                  <FaSignOutAlt />
-                </button>
+                
+                <div 
+                    onClick={handleLogout} 
+                    style={{...styles.mobileLink, color: '#ff3b30', marginTop: '1rem', background: 'rgba(255, 59, 48, 0.05)', cursor: 'pointer', justifyContent: 'center'}}
+                >
+                  <FaSignOutAlt /> Logout
+                </div>
               </>
             ) : (
               <>
-                <Link to="/login" style={{ ...styles.link, marginRight: '10px' }}>
+                <div style={{height: '1px', background: 'rgba(255, 255, 255, 0.1)', margin: '1.5rem 0'}} />
+                <Link to="/login" onClick={() => setMenuOpen(false)} style={{...styles.mobileLink, justifyContent: 'center'}}>
                   Login
                 </Link>
-                <Link to="/signup" className="liquid-btn" style={{ padding: '8px 24px', fontSize: '0.9rem' }}>
-                  Join
+                <Link 
+                    to="/signup" 
+                    onClick={() => setMenuOpen(false)} 
+                    style={{
+                        ...styles.mobileLink, 
+                        background: 'linear-gradient(135deg, #667eea, #764ba2)', 
+                        justifyContent: 'center',
+                        marginTop: '0.5rem',
+                        boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)'
+                    }}
+                >
+                  Sign Up
                 </Link>
               </>
-            ))}
-
-          {/* MOBILE TOGGLE */}
-          {isMobile && (
-            <button
-              style={styles.mobileToggle}
-              onClick={() => setMenuOpen(!menuOpen)}
-              aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-              aria-expanded={menuOpen}
-            >
-              {menuOpen ? <FaTimes /> : <FaBars />}
-            </button>
-          )}
+            )}
+          </div>
         </div>
-
-        {/* MOBILE DROPDOWN MENU */}
-        <div style={styles.mobileMenu}>
-          <form
-            onSubmit={handleSearch}
-            style={{ ...styles.searchContainer, width: '100%', justifyContent: 'center' }}
-          >
-            <FaSearch color="rgba(255,255,255,0.5)" size={14} aria-hidden="true" />
-            <input
-              type="text"
-              placeholder="Search notes..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={{ ...styles.searchInput, width: '80%' }}
-            />
-          </form>
-
-          {['Home', 'About', 'Blogs', 'Contact', 'Donate'].map((item) => (
-            <Link
-              key={item}
-              to={item === 'Home' ? '/' : `/${item.toLowerCase()}`}
-              onClick={() => setMenuOpen(false)}
-              style={{ ...styles.link, fontSize: '1.2rem' }}
-            >
-              {item}
-            </Link>
-          ))}
-
-          <div
-            style={{
-              width: '100%',
-              height: '1px',
-              background: 'rgba(255,255,255,0.1)',
-              margin: '10px 0',
-            }}
-          />
-
-          {user ? (
-            <>
-              <Link
-                to="/profile"
-                onClick={() => setMenuOpen(false)}
-                style={styles.mobileProfileLink}
-                aria-label="Go to profile"
-              >
-                <img src={optimizedAvatar} alt="Profile" loading="lazy" style={styles.avatar} />
-                <span style={styles.mobileProfileName}>{user.name}</span>
-              </Link>
-
-              <Link
-                to="/chat"
-                onClick={() => setMenuOpen(false)}
-                style={{ ...styles.link, display: 'flex', alignItems: 'center', gap: '8px' }}
-              >
-                <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <FaPaperPlane />
-                  Messages
-                  {unreadCount > 0 && (
-                    <span
-                      style={{
-                        background: '#ff0055',
-                        color: '#fff',
-                        fontSize: '0.7rem',
-                        padding: '2px 6px',
-                        borderRadius: '10px',
-                        fontWeight: 'bold',
-                      }}
-                    >
-                      {unreadCount}
-                    </span>
-                  )}
-                </div>
-              </Link>
-
-              <Link
-                to="/upload"
-                onClick={() => setMenuOpen(false)}
-                className="liquid-btn"
-                style={{ width: '100%', textAlign: 'center' }}
-              >
-                Upload Note
-              </Link>
-
-              <button
-                onClick={handleLogout}
-                style={{
-                  ...styles.link,
-                  background: 'none',
-                  border: 'none',
-                  color: '#ff0055',
-                  cursor: 'pointer',
-                  fontSize: '1.1rem',
-                }}
-              >
-                Logout
-              </button>
-            </>
-          ) : (
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '15px',
-                width: '100%',
-                alignItems: 'center',
-              }}
-            >
-              <Link to="/login" onClick={() => setMenuOpen(false)} style={{ ...styles.link, fontSize: '1.1rem' }}>
-                Login
-              </Link>
-              <Link
-                to="/signup"
-                onClick={() => setMenuOpen(false)}
-                className="liquid-btn"
-                style={{ width: '100%', textAlign: 'center' }}
-              >
-                Sign Up
-              </Link>
-            </div>
-          )}
-        </div>
-      </nav>
-    </div>
+      )}
+    </>
   );
 };
 
