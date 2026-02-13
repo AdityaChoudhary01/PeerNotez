@@ -13,7 +13,7 @@ import {
   FaFireAlt, FaRegClock, FaRegLightbulb
 } from 'react-icons/fa';
 
-const DOWNLOAD_LINK = 'https://github.com/AdityaChoudhary01/PeerNotez/releases/download/v1.0.3/PeerNotez.apk';
+const DOWNLOAD_LINK = 'https://github.com/AdityaChoudhary01/public-peernotez/releases/download/v1.0.3/PeerNotez.apk';
 
 const HomePage = () => {
   // --- State ---
