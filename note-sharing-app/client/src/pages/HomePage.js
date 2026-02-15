@@ -357,11 +357,11 @@ const HomePage = () => {
         <title>PeerNotez | Discover & Share Student Handwritten Notes Online</title>
         <meta
           name="description"
-          content="PeerNotez is a collaborative platform for students to share and discover handwritten notes, study materials, and academic insights. Boost your exam preparation today!"
+          content="PeerNotez: The student platform for sharing handwritten notes and academic insights. Ace your exams now!"
         />
         <meta
           name="keywords"
-          content="PeerNotez, handwritten notes, student notes, engineering notes, study materials, Aditya Choudhary, college notes app"
+          content="PeerNotez, peernotes, peer notez, notez, notes, handwritten notes, student notes, engineering notes, study materials, Aditya Choudhary, college notes app"
         />
         <link rel="canonical" href="https://peernotez.netlify.app/" />
 
@@ -613,9 +613,9 @@ const HomePage = () => {
           </div>
 
           <h1 style={styles.heroTitle}>
-            Master Your <br />
-            <span>Coursework.</span>
-          </h1>
+  Master Your <br />
+  <span>Coursework</span> with PeerNotez Notes.
+</h1>
 
           <p style={styles.heroSubtitle}>
             Join the fastest-growing community of students sharing handwritten notes, project insights, and exam strategies.
