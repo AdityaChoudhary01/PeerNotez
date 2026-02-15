@@ -274,6 +274,7 @@ const HomePage = () => {
   };
 
   // --- API Calls ---
+  // 1. Fetching Library Notes (Filtered)
   useEffect(() => {
     const controller = new AbortController();
 
@@ -294,33 +295,56 @@ const HomePage = () => {
       }
     };
 
-    fetchNotes();
+    // If filters are active, fetch normally.
+    // If it is the initial load (no filters), try to use preloaded data first.
+    const hasFilters = Object.keys(filters).length > 0 || page > 1 || sortBy !== 'uploadDate';
+    
+    if (!hasFilters && window.preloadData?.recentNotes) {
+        // Use preloaded "Recent Notes" for the default library view
+        window.preloadData.recentNotes.then(data => {
+            setNotes(data.notes || []);
+            setPage(data.page || 1);
+            setTotalPages(data.totalPages || 0);
+            setLoading(false);
+        }).catch(err => {
+            console.error("Preload error:", err);
+            fetchNotes(); // Fallback
+        });
+    } else {
+        fetchNotes();
+    }
+
     return () => controller.abort();
   }, [filters, sortBy, page]);
 
+  // 2. Fetching Static Homepage Data (Featured, Stats, Contributors)
   useEffect(() => {
     const controller = new AbortController();
 
     const fetchData = async () => {
       try {
-        const [notesRes, blogsRes, statsRes, contribRes] = await Promise.all([
-          axios.get('/notes', { params: { isFeatured: true, limit: 3 }, signal: controller.signal }),
-          axios.get('/blogs', { params: { isFeatured: true, limit: 3 }, signal: controller.signal }),
-          axios.get('/notes/stats', { signal: controller.signal }),
-          axios.get('/users/top-contributors', { signal: controller.signal })
+        // --- PRELOAD STRATEGY: Use data fetched in index.html if available ---
+        const notesPromise = window.preloadData?.featuredNotes || axios.get('/notes', { params: { isFeatured: true, limit: 3 }, signal: controller.signal }).then(res => res.data);
+        const blogsPromise = window.preloadData?.featuredBlogs || axios.get('/blogs', { params: { isFeatured: true, limit: 3 }, signal: controller.signal }).then(res => res.data);
+        const statsPromise = window.preloadData?.stats || axios.get('/notes/stats', { signal: controller.signal }).then(res => res.data);
+        const contribPromise = window.preloadData?.topContributors || axios.get('/users/top-contributors', { signal: controller.signal }).then(res => res.data);
+
+        const [notesData, blogsData, statsData, contribData] = await Promise.all([
+            notesPromise, blogsPromise, statsPromise, contribPromise
         ]);
 
-        setFeaturedNotes(notesRes.data?.notes || []);
+        setFeaturedNotes(notesData?.notes || notesData || []);
         setLoadingFeatured(false);
 
-        setFeaturedBlogs(blogsRes.data?.blogs || []);
+        setFeaturedBlogs(blogsData?.blogs || blogsData || []);
         setLoadingFeaturedBlogs(false);
 
-        setStats(statsRes.data || { totalNotes: 0, totalUsers: 0, downloadsThisMonth: 0 });
+        setStats(statsData || { totalNotes: 0, totalUsers: 0, downloadsThisMonth: 0 });
         setLoadingStats(false);
 
-        setTopContributors(contribRes.data?.users || []);
+        setTopContributors(contribData?.users || contribData || []);
         setLoadingContributors(false);
+
       } catch (err) {
         if (err?.name !== 'CanceledError' && err?.code !== 'ERR_CANCELED') {
           console.error(err);
