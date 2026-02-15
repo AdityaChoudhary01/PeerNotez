@@ -1,23 +1,23 @@
-import { defineConfig, splitVendorChunkPlugin } from 'vite';
+import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig({
-  plugins: [react(), splitVendorChunkPlugin()],
+  plugins: [react()],
   server: {
     port: 3000,
     open: true,
   },
   build: {
     outDir: 'dist',
-    // 1. Force aggressive minification to reduce bundle size
+    // Force aggressive minification to reduce bundle size
     minify: 'terser', 
     terserOptions: {
       compress: {
-        drop_console: true, // Removes all console.logs from production build
+        drop_console: true, // Removes console.logs from production
         drop_debugger: true,
       },
     },
-    // 2. Manual Chunks: Splits the massive index.js into smaller, parallel-loadable files
+    // Manual Chunks: Splits the massive index.js into smaller, parallel-loadable files
     rollupOptions: {
       output: {
         manualChunks: {
