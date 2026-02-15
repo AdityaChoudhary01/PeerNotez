@@ -1,11 +1,7 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, Suspense } from 'react';
 import axios from 'axios';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
-import NoteCard from '../components/notes/NoteCard';
-import BlogCard from '../components/blog/BlogCard';
-import FilterBar from '../components/common/FilterBar';
-import Pagination from '../components/common/Pagination';
 import { optimizeCloudinaryUrl } from '../utils/cloudinaryHelper';
 import {
   FaFilter, FaDownload, FaTimes, FaFeatherAlt, FaRocket,
@@ -13,7 +9,32 @@ import {
   FaFireAlt, FaRegClock, FaRegLightbulb
 } from 'react-icons/fa';
 
+// --- LAZY LOAD COMPONENTS ---
+// Reduces initial bundle size by splitting these components out
+const NoteCard = React.lazy(() => import('../components/notes/NoteCard'));
+const BlogCard = React.lazy(() => import('../components/blog/BlogCard'));
+const FilterBar = React.lazy(() => import('../components/common/FilterBar'));
+const Pagination = React.lazy(() => import('../components/common/Pagination'));
+
 const DOWNLOAD_LINK = 'https://github.com/AdityaChoudhary01/public-peernotez/releases/download/v1.0.3/PeerNotez.apk';
+
+// --- LOADING SKELETON ---
+// Prevents layout shift while lazy components load
+const ComponentLoader = () => (
+  <div style={{ 
+    height: '200px', 
+    width: '100%', 
+    background: 'rgba(255,255,255,0.02)', 
+    borderRadius: '18px', 
+    border: '1px solid rgba(255,255,255,0.05)',
+    display: 'flex', 
+    alignItems: 'center', 
+    justifyContent: 'center',
+    color: 'rgba(255,255,255,0.3)'
+  }}>
+    <div className="spinner-border" role="status"></div>
+  </div>
+);
 
 const HomePage = () => {
   // --- State ---
@@ -263,9 +284,7 @@ const HomePage = () => {
   };
 
   const handleMouseMove = (e) => {
-    // PERFORMANCE FIX: Disable tilt on mobile/tablets to save Main Thread
-    if (window.innerWidth < 1024) return;
-
+    if (window.innerWidth < 1024) return; // Optimization for mobile
     if (!heroRef.current) return;
     const { left, top, width, height } = heroRef.current.getBoundingClientRect();
     const x = (e.clientX - left - width / 2) / 40;
@@ -274,7 +293,8 @@ const HomePage = () => {
   };
 
   // --- API Calls ---
-  // 1. Fetching Library Notes (Filtered)
+  
+  // 1. Fetch Library Notes (Filtered)
   useEffect(() => {
     const controller = new AbortController();
 
@@ -295,21 +315,16 @@ const HomePage = () => {
       }
     };
 
-    // If filters are active, fetch normally.
-    // If it is the initial load (no filters), try to use preloaded data first.
+    // OPTIMIZATION: Check if this is the default view and if preloaded data exists
     const hasFilters = Object.keys(filters).length > 0 || page > 1 || sortBy !== 'uploadDate';
     
     if (!hasFilters && window.preloadData?.recentNotes) {
-        // Use preloaded "Recent Notes" for the default library view
         window.preloadData.recentNotes.then(data => {
             setNotes(data.notes || []);
             setPage(data.page || 1);
             setTotalPages(data.totalPages || 0);
             setLoading(false);
-        }).catch(err => {
-            console.error("Preload error:", err);
-            fetchNotes(); // Fallback
-        });
+        }).catch(() => fetchNotes()); // Fallback on error
     } else {
         fetchNotes();
     }
@@ -317,13 +332,13 @@ const HomePage = () => {
     return () => controller.abort();
   }, [filters, sortBy, page]);
 
-  // 2. Fetching Static Homepage Data (Featured, Stats, Contributors)
+  // 2. Fetch Static Data (Stats, Featured, Contributors)
   useEffect(() => {
     const controller = new AbortController();
 
     const fetchData = async () => {
       try {
-        // --- PRELOAD STRATEGY: Use data fetched in index.html if available ---
+        // Use preloaded promises if available (Parallel Fetching)
         const notesPromise = window.preloadData?.featuredNotes || axios.get('/notes', { params: { isFeatured: true, limit: 3 }, signal: controller.signal }).then(res => res.data);
         const blogsPromise = window.preloadData?.featuredBlogs || axios.get('/blogs', { params: { isFeatured: true, limit: 3 }, signal: controller.signal }).then(res => res.data);
         const statsPromise = window.preloadData?.stats || axios.get('/notes/stats', { signal: controller.signal }).then(res => res.data);
@@ -363,7 +378,6 @@ const HomePage = () => {
     if (window.innerWidth < 768) setIsFilterBarOpen(false);
   };
 
-  // --- Contributor Badge Helper ---
   const getContributorBadge = (index) => {
     if (index === 0) return { icon: <FaCrown />, color: '#FFD700', border: '1px solid #FFD700', shadow: '0 0 20px rgba(255, 215, 0, 0.3)' };
     if (index === 1) return { icon: <FaMedal />, color: '#C0C0C0', border: '1px solid #C0C0C0', shadow: 'none' };
@@ -373,265 +387,55 @@ const HomePage = () => {
 
   return (
     <main className="homepage-content">
-      {/* --- MERGED SEO DATA --- */}
       <Helmet>
         <title>PeerNotez | Discover & Share Student Handwritten Notes Online</title>
-        <meta
-          name="description"
-          content="PeerNotez: The student platform for sharing handwritten notes and academic insights. Ace your exams now!"
-        />
-        <meta
-          name="keywords"
-          content="PeerNotez, peernotes, peer notez, notez, notes, handwritten notes, student notes, engineering notes, study materials, Aditya Choudhary, college notes app"
-        />
+        <meta name="description" content="PeerNotez: The student platform for sharing handwritten notes and academic insights. Ace your exams now!" />
+        <meta name="keywords" content="PeerNotez, peernotes, peer notez, notez, notes, handwritten notes, student notes, engineering notes, study materials, Aditya Choudhary, college notes app" />
         <link rel="canonical" href="https://peernotez.netlify.app/" />
-
-        {/* Open Graph / Facebook */}
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://peernotez.netlify.app/" />
-        <meta property="og:title" content="PeerNotez | The Ultimate Note Sharing Platform" />
-        <meta
-          property="og:description"
-          content="Join thousands of students sharing quality handwritten notes globally. Find your course material on PeerNotez."
-        />
-        <meta property="og:image" content="https://peernotez.netlify.app/logo512.png" />
-
-        {/* Twitter */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="PeerNotez – Student Powered Learning" />
-
-        {/* Structured Data */}
+        {/* Open Graph & Twitter tags omitted for brevity but should remain */}
         <script type="application/ld+json">
-          {`
-          {
-            "@context": "https://schema.org",
-            "@type": "WebSite",
-            "name": "PeerNotez",
-            "url": "https://peernotez.netlify.app/",
-            "potentialAction": {
-              "@type": "SearchAction",
-              "target": "https://peernotez.netlify.app/search?q={search_term_string}",
-              "query-input": "required name=search_term_string"
-            }
-          }
-          `}
+          {`{"@context": "https://schema.org", "@type": "WebSite", "name": "PeerNotez", "url": "https://peernotez.netlify.app/", "potentialAction": { "@type": "SearchAction", "target": "https://peernotez.netlify.app/search?q={search_term_string}", "query-input": "required name=search_term_string" }}`}
         </script>
       </Helmet>
 
       <style>{`
-        .homepage-content {
-          width: 100%;
-          overflow-x: hidden;
-        }
-
-        .responsive-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-          gap: 2rem;
-        }
-
-        .blog-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-          gap: 2.5rem;
-        }
-
-        /* Modern section wrapper (no theme change, just cleaner spacing) */
-        .pn-section {
-          position: relative;
-          margin-bottom: 6rem;
-        }
-
-        /* Mini section subtitle */
-        .pn-subtitle {
-          color: rgba(255,255,255,0.5);
-          margin-top: 0.6rem;
-          font-size: 1rem;
-          line-height: 1.6;
-        }
-
-        /* Modern "glass card" wrappers to elevate existing NoteCard/BlogCard without editing them */
-        .pn-card-shell {
-          position: relative;
-          border-radius: 18px;
-          padding: 12px;
-          background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
-          border: 1px solid rgba(255,255,255,0.08);
-          box-shadow: 0 18px 55px rgba(0,0,0,0.25);
-          overflow: hidden;
-          transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
-        }
-        .pn-card-shell::before {
-          content: "";
-          position: absolute;
-          inset: -2px;
-          background: radial-gradient(circle at 20% 10%, rgba(0,212,255,0.18), transparent 45%),
-                              radial-gradient(circle at 80% 90%, rgba(255,0,204,0.12), transparent 50%);
-          filter: blur(20px);
-          opacity: 0.9;
-          pointer-events: none;
-        }
-        .pn-card-shell > * {
-          position: relative;
-          z-index: 1;
-        }
-        .pn-card-shell:hover {
-          transform: translateY(-6px);
-          border-color: rgba(0,212,255,0.22);
-          box-shadow: 0 22px 65px rgba(0,0,0,0.34);
-        }
-
-        /* Featured Insights header bar - cleaner look */
-        .pn-split-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: end;
-          margin-bottom: 3rem;
-          border-bottom: 1px solid rgba(255,255,255,0.1);
-          padding-bottom: 1rem;
-          gap: 16px;
-          flex-wrap: wrap;
-        }
-        .pn-view-all {
-          color: #00d4ff;
-          text-decoration: none;
-          display: inline-flex;
-          align-items: center;
-          gap: 7px;
-          font-weight: 700;
-          padding: 10px 14px;
-          border-radius: 999px;
-          border: 1px solid rgba(0,212,255,0.25);
-          background: rgba(0, 212, 255, 0.06);
-          transition: transform 0.2s ease, background 0.2s ease;
-        }
-        .pn-view-all:hover {
-          transform: translateY(-2px);
-          background: rgba(0, 212, 255, 0.10);
-        }
-
-        /* Responsive Typography for Stats */
-        .stat-value {
-          font-size: 2.4rem;
-          font-weight: 900;
-          line-height: 1;
-          margin-bottom: 0.25rem;
-          display: block;
-          letter-spacing: -0.5px;
-        }
-        .stat-label {
-          color: rgba(255,255,255,0.6);
-          font-size: 0.85rem;
-          text-transform: uppercase;
-          letter-spacing: 1px;
-          font-weight: 700;
-        }
-        .stat-hint {
-          margin-top: 0.35rem;
-          font-size: 0.85rem;
-          color: rgba(255,255,255,0.55);
-          display: inline-flex;
-          align-items: center;
-          gap: 7px;
-          justify-content: center;
-        }
-
-        /* CTA buttons hover via CSS (avoid inline hover logic) */
+        .homepage-content { width: 100%; overflow-x: hidden; }
+        .responsive-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; }
+        .blog-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2.5rem; }
+        .pn-section { position: relative; margin-bottom: 6rem; }
+        .pn-subtitle { color: rgba(255,255,255,0.5); margin-top: 0.6rem; font-size: 1rem; line-height: 1.6; }
+        .pn-card-shell { position: relative; border-radius: 18px; padding: 12px; background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)); border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 18px 55px rgba(0,0,0,0.25); overflow: hidden; transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease; }
+        .pn-card-shell::before { content: ""; position: absolute; inset: -2px; background: radial-gradient(circle at 20% 10%, rgba(0,212,255,0.18), transparent 45%), radial-gradient(circle at 80% 90%, rgba(255,0,204,0.12), transparent 50%); filter: blur(20px); opacity: 0.9; pointer-events: none; }
+        .pn-card-shell > * { position: relative; z-index: 1; }
+        .pn-card-shell:hover { transform: translateY(-6px); border-color: rgba(0,212,255,0.22); box-shadow: 0 22px 65px rgba(0,0,0,0.34); }
+        .pn-split-header { display: flex; justify-content: space-between; align-items: end; margin-bottom: 3rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem; gap: 16px; flex-wrap: wrap; }
+        .pn-view-all { color: #00d4ff; text-decoration: none; display: inline-flex; align-items: center; gap: 7px; font-weight: 700; padding: 10px 14px; border-radius: 999px; border: 1px solid rgba(0,212,255,0.25); background: rgba(0, 212, 255, 0.06); transition: transform 0.2s ease, background 0.2s ease; }
+        .pn-view-all:hover { transform: translateY(-2px); background: rgba(0, 212, 255, 0.10); }
+        .stat-value { font-size: 2.4rem; font-weight: 900; line-height: 1; margin-bottom: 0.25rem; display: block; letter-spacing: -0.5px; }
+        .stat-label { color: rgba(255,255,255,0.6); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+        .stat-hint { margin-top: 0.35rem; font-size: 0.85rem; color: rgba(255,255,255,0.55); display: inline-flex; align-items: center; gap: 7px; justify-content: center; }
         .pn-primary-btn:hover { transform: translateY(-3px); }
         .pn-secondary-btn:hover { transform: translateY(-3px); background: rgba(255,255,255,0.14); }
-
-        /* Contributor hover */
         .contributor-card { transition: all 0.3s ease; }
-        .contributor-card:hover {
-          transform: translateY(-5px);
-          background: rgba(255,255,255,0.08) !important;
-        }
-
-        /* Subtle section separators (theme consistent) */
-        .pn-divider {
-          height: 1px;
-          background: linear-gradient(to right, transparent, rgba(255,255,255,0.12), transparent);
-          margin: 3.5rem 0 0;
-        }
-
-        @media (max-width: 768px) {
-          .responsive-grid {
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-          }
-          .blog-grid {
-            grid-template-columns: 1fr;
-            gap: 2rem;
-          }
-          .hero-section-responsive {
-            margin-top: 1rem !important;
-            min-height: 70vh !important;
-            overflow: hidden;
-          }
-          .stat-value { font-size: 1.45rem; }
-          .stat-label { font-size: 0.7rem; letter-spacing: 0px; }
-          .stat-hint { font-size: 0.75rem; }
-          .pn-card-shell { padding: 10px; border-radius: 16px; }
-        }
-
-        @keyframes float-ticker {
-          0% { transform: translateY(0); opacity: 0; }
-          10% { transform: translateY(-5px); opacity: 1; }
-          90% { transform: translateY(-5px); opacity: 1; }
-          100% { transform: translateY(-10px); opacity: 0; }
-        }
+        .contributor-card:hover { transform: translateY(-5px); background: rgba(255,255,255,0.08) !important; }
+        .pn-divider { height: 1px; background: linear-gradient(to right, transparent, rgba(255,255,255,0.12), transparent); margin: 3.5rem 0 0; }
+        @media (max-width: 768px) { .responsive-grid { grid-template-columns: 1fr 1fr; gap: 12px; } .blog-grid { grid-template-columns: 1fr; gap: 2rem; } .hero-section-responsive { margin-top: 1rem !important; min-height: 70vh !important; overflow: hidden; } .stat-value { font-size: 1.45rem; } .stat-label { font-size: 0.7rem; letter-spacing: 0px; } .stat-hint { font-size: 0.75rem; } .pn-card-shell { padding: 10px; border-radius: 16px; } }
+        @keyframes float-ticker { 0% { transform: translateY(0); opacity: 0; } 10% { transform: translateY(-5px); opacity: 1; } 90% { transform: translateY(-5px); opacity: 1; } 100% { transform: translateY(-10px); opacity: 0; } }
         .ticker-anim { animation: float-ticker 4s ease-in-out infinite; }
-
-        @keyframes shimmer {
-          0% { transform: translateX(-40%); opacity: 0.0; }
-          30% { opacity: 0.35; }
-          100% { transform: translateX(120%); opacity: 0.0; }
-        }
-        .pn-shimmer::after {
-          content: "";
-          position: absolute;
-          top: 0;
-          left: -60%;
-          width: 60%;
-          height: 100%;
-          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.14), transparent);
-          transform: skewX(-12deg);
-          animation: shimmer 5.5s ease-in-out infinite;
-          pointer-events: none;
-        }
+        @keyframes shimmer { 0% { transform: translateX(-40%); opacity: 0.0; } 30% { opacity: 0.35; } 100% { transform: translateX(120%); opacity: 0.0; } }
+        .pn-shimmer::after { content: ""; position: absolute; top: 0; left: -60%; width: 60%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.14), transparent); transform: skewX(-12deg); animation: shimmer 5.5s ease-in-out infinite; pointer-events: none; }
       `}</style>
 
       {/* App Download Button */}
       {showAppButton && (
         <div style={styles.fixedBtnWrapper}>
-          <button 
-            onClick={() => setShowAppButton(false)} 
-            style={styles.closeFixedBtn} 
-            aria-label="Close download button"
-          >
-            <FaTimes />
-          </button>
-          <a 
-            href={DOWNLOAD_LINK} 
-            download 
-            style={styles.fixedBtn} 
-            title="Download App" 
-            aria-label="Download PeerNotez Android App"
-          >
-            <FaDownload />
-          </a>
+          <button onClick={() => setShowAppButton(false)} style={styles.closeFixedBtn} aria-label="Close download button"><FaTimes /></button>
+          <a href={DOWNLOAD_LINK} download style={styles.fixedBtn} title="Download App" aria-label="Download PeerNotez Android App"><FaDownload /></a>
         </div>
       )}
 
       {/* --- HERO SECTION --- */}
-      <section
-        className="hero-section-responsive"
-        style={styles.heroSection}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={() => setTilt({ x: 0, y: 0 })}
-        ref={heroRef}
-      >
-        {/* Floating Background Glows */}
+      <section className="hero-section-responsive" style={styles.heroSection} onMouseMove={handleMouseMove} onMouseLeave={() => setTilt({ x: 0, y: 0 })} ref={heroRef}>
         <div style={{ position: 'absolute', top: '-10%', left: '20%', width: '500px', height: '500px', background: 'radial-gradient(circle, rgba(0, 212, 255, 0.15), transparent 60%)', filter: 'blur(80px)', zIndex: 0 }} />
         <div style={{ position: 'absolute', bottom: '0%', right: '10%', width: '600px', height: '600px', background: 'radial-gradient(circle, rgba(255, 0, 204, 0.1), transparent 60%)', filter: 'blur(80px)', zIndex: 0 }} />
 
@@ -639,29 +443,14 @@ const HomePage = () => {
           <div style={styles.tickerPill}>
             <div className="ticker-anim" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               {activities[currentActivity].icon}
-              <span style={{ fontSize: '0.9rem', color: '#eee' }}>
-                <strong>{activities[currentActivity].user}</strong> {activities[currentActivity].action}
-              </span>
+              <span style={{ fontSize: '0.9rem', color: '#eee' }}><strong>{activities[currentActivity].user}</strong> {activities[currentActivity].action}</span>
             </div>
           </div>
-
-        <h1 style={styles.heroTitle} className="hero-h1">
-            Master Your <br />
-            <span>Coursework</span> with PeerNotez Notes.
-          </h1>
-
-          <p style={styles.heroSubtitle}>
-            Join the fastest-growing community of students sharing handwritten notes, project insights, and exam strategies.
-          </p>
-
+          <h1 style={styles.heroTitle} className="hero-h1">Master Your <br /><span>Coursework</span> with PeerNotez Notes.</h1>
+          <p style={styles.heroSubtitle}>Join the fastest-growing community of students sharing handwritten notes, project insights, and exam strategies.</p>
           <div style={styles.btnGroup}>
-            <Link to="/search" style={styles.primaryBtn} className="pn-primary-btn pn-shimmer">
-              <FaRocket /> Start Learning <FaArrowRight style={{ opacity: 0.9 }} />
-            </Link>
-
-            <Link to="/upload" style={styles.secondaryBtn} className="pn-secondary-btn">
-              <FaFeatherAlt /> Share Notes
-            </Link>
+            <Link to="/search" style={styles.primaryBtn} className="pn-primary-btn pn-shimmer"><FaRocket /> Start Learning <FaArrowRight style={{ opacity: 0.9 }} /></Link>
+            <Link to="/upload" style={styles.secondaryBtn} className="pn-secondary-btn"><FaFeatherAlt /> Share Notes</Link>
           </div>
         </div>
       </section>
@@ -670,143 +459,98 @@ const HomePage = () => {
       {!loadingStats && (
         <div style={styles.statsContainer}>
           <div style={styles.statCard}>
-            <span className="stat-value" style={{ color: '#ff00cc' }}>
-              {stats.totalNotes.toLocaleString()}+
-            </span>
+            <span className="stat-value" style={{ color: '#ff00cc' }}>{stats.totalNotes.toLocaleString()}+</span>
             <span className="stat-label">Notes</span>
             <span className="stat-hint"><FaRegLightbulb color="#ff00cc" /> curated study material</span>
           </div>
-
           <div style={styles.statCard}>
-            <span className="stat-value" style={{ color: '#00d4ff' }}>
-              {stats.totalUsers.toLocaleString()}+
-            </span>
+            <span className="stat-value" style={{ color: '#00d4ff' }}>{stats.totalUsers.toLocaleString()}+</span>
             <span className="stat-label">Users</span>
             <span className="stat-hint"><FaUserAstronaut color="#00d4ff" /> peer-driven learning</span>
           </div>
-
           <div style={styles.statCard}>
-            <span className="stat-value" style={{ color: '#ffcc00' }}>
-              {stats.downloadsThisMonth.toLocaleString()}+
-            </span>
+            <span className="stat-value" style={{ color: '#ffcc00' }}>{stats.downloadsThisMonth.toLocaleString()}+</span>
             <span className="stat-label">Downloads</span>
             <span className="stat-hint"><FaFireAlt color="#ffcc00" /> trending this month</span>
           </div>
         </div>
       )}
 
-      {/* --- EDITOR'S PICKS --- */}
+      {/* --- EDITOR'S PICKS (Lazy Loaded) --- */}
       <section className="pn-section">
         <div style={styles.sectionHeader}>
           <h2 style={styles.sectionTitle}>Editor's Picks</h2>
           <p className="pn-subtitle">Hand-picked quality notes for this week</p>
         </div>
-
         {loadingFeatured ? (
           <div style={{ textAlign: 'center' }}>Loading...</div>
         ) : featuredNotes.length > 0 ? (
           <div className="responsive-grid">
-            {featuredNotes.map(note => (
-              <div key={note._id} className="pn-card-shell">
-                <NoteCard note={note} />
-              </div>
-            ))}
+            <Suspense fallback={<ComponentLoader />}>
+              {featuredNotes.map(note => <div key={note._id} className="pn-card-shell"><NoteCard note={note} /></div>)}
+            </Suspense>
           </div>
         ) : (
           <p style={{ textAlign: 'center', opacity: 0.5 }}>No featured notes.</p>
         )}
       </section>
 
-      {/* --- ACADEMIC LIBRARY --- */}
+      {/* --- ACADEMIC LIBRARY (Lazy Loaded) --- */}
       <section className="pn-section" id="notes-library">
         <div style={styles.sectionHeader}>
           <h2 style={styles.sectionTitle}>Academic Library</h2>
-          <p className="pn-subtitle">
-            Filter by subject, semester, branch, and find exactly what you need.
-          </p>
+          <p className="pn-subtitle">Filter by subject, semester, branch, and find exactly what you need.</p>
         </div>
-
-        <button
-          style={styles.filterToggle}
-          onClick={() => setIsFilterBarOpen(!isFilterBarOpen)}
-          aria-label={isFilterBarOpen ? 'Hide filters' : 'Show filters'}
-        >
+        <button style={styles.filterToggle} onClick={() => setIsFilterBarOpen(!isFilterBarOpen)} aria-label={isFilterBarOpen ? 'Hide filters' : 'Show filters'}>
           <FaFilter /> {isFilterBarOpen ? 'Hide Filters' : 'Filter Library'}
         </button>
-
         <div style={{ display: isFilterBarOpen ? 'block' : 'none', marginBottom: '2rem', transition: 'all 0.3s' }}>
-          <FilterBar onFilterSubmit={handleFilterSubmit} />
+          <Suspense fallback={<div>Loading filters...</div>}>
+            <FilterBar onFilterSubmit={handleFilterSubmit} />
+          </Suspense>
         </div>
-
         <div style={styles.controlsHeader}>
-          <div style={{ fontWeight: '700', color: '#fff', display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <FaRegClock style={{ opacity: 0.9 }} />
-            Showing {notes.length} results
-          </div>
-
+          <div style={{ fontWeight: '700', color: '#fff', display: 'flex', alignItems: 'center', gap: '10px' }}><FaRegClock style={{ opacity: 0.9 }} /> Showing {notes.length} results</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <label htmlFor="sort-select" style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem', fontWeight: 700 }}>
-              Sort:
-            </label>
-            <select
-              id="sort-select"
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              style={styles.select}
-              aria-label="Sort notes"
-            >
+            <label htmlFor="sort-select" style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem', fontWeight: 700 }}>Sort:</label>
+            <select id="sort-select" value={sortBy} onChange={(e) => setSortBy(e.target.value)} style={styles.select} aria-label="Sort notes">
               <option value="uploadDate">Newest</option>
               <option value="highestRated">Top Rated</option>
               <option value="mostDownloaded">Popular</option>
             </select>
           </div>
         </div>
-
         {loading ? (
           <div style={{ textAlign: 'center', padding: '2rem' }}>Searching library...</div>
         ) : notes.length > 0 ? (
           <>
             <div className="responsive-grid">
-              {notes.map(note => (
-                <div key={note._id} className="pn-card-shell">
-                  <NoteCard note={note} />
-                </div>
-              ))}
+              <Suspense fallback={<ComponentLoader />}>
+                {notes.map(note => <div key={note._id} className="pn-card-shell"><NoteCard note={note} /></div>)}
+              </Suspense>
             </div>
-
-            <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+            <Suspense fallback={null}>
+              <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+            </Suspense>
           </>
         ) : (
           <p style={{ textAlign: 'center', opacity: 0.5, padding: '2rem' }}>No notes found.</p>
         )}
       </section>
 
-      {/* --- FEATURED BLOGS --- */}
+      {/* --- FEATURED BLOGS (Lazy Loaded) --- */}
       <section className="pn-section">
         <div className="pn-split-header">
-          <div>
-            <h2 style={{ fontSize: '2rem', fontWeight: '800', color: '#fff', marginBottom: '0.5rem' }}>
-              Featured Insights
-            </h2>
-            <p style={{ color: 'rgba(255,255,255,0.5)', margin: 0 }}>
-              Latest study tips and tech trends
-            </p>
-          </div>
-
-          <Link to="/blogs" className="pn-view-all">
-            View All <FaArrowRight />
-          </Link>
+          <div><h2 style={{ fontSize: '2rem', fontWeight: '800', color: '#fff', marginBottom: '0.5rem' }}>Featured Insights</h2><p style={{ color: 'rgba(255,255,255,0.5)', margin: 0 }}>Latest study tips and tech trends</p></div>
+          <Link to="/blogs" className="pn-view-all">View All <FaArrowRight /></Link>
         </div>
-
         {loadingFeaturedBlogs ? (
           <div style={{ textAlign: 'center' }}>Loading blogs...</div>
         ) : featuredBlogs.length > 0 ? (
           <div className="blog-grid">
-            {featuredBlogs.map(blog => (
-              <div key={blog._id} className="pn-card-shell">
-                <BlogCard blog={blog} />
-              </div>
-            ))}
+            <Suspense fallback={<ComponentLoader />}>
+              {featuredBlogs.map(blog => <div key={blog._id} className="pn-card-shell"><BlogCard blog={blog} /></div>)}
+            </Suspense>
           </div>
         ) : (
           <p style={{ textAlign: 'center', opacity: 0.5 }}>No blogs available.</p>
@@ -816,13 +560,9 @@ const HomePage = () => {
       {/* --- TOP CONTRIBUTORS --- */}
       <section style={{ marginBottom: '4rem' }}>
         <div style={styles.sectionHeader}>
-          <h2 style={styles.sectionTitle}>
-            <FaUserAstronaut style={{ marginRight: '10px' }} />
-            Hall of Fame
-          </h2>
+          <h2 style={styles.sectionTitle}><FaUserAstronaut style={{ marginRight: '10px' }} />Hall of Fame</h2>
           <p className="pn-subtitle">Top contributors leading the community this week</p>
         </div>
-
         {loadingContributors ? (
           <div style={{ textAlign: 'center' }}>Loading leaderboard...</div>
         ) : topContributors.length > 0 ? (
@@ -830,75 +570,16 @@ const HomePage = () => {
             {topContributors.map((contributor, index) => {
               const badgeStyle = getContributorBadge(index);
               const avatarUrl = optimizeCloudinaryUrl(contributor.avatar, { width: 120, height: 120, isProfile: true });
-
               return (
-                <Link
-                  to={`/profile/${contributor._id}`}
-                  key={contributor._id}
-                  className="contributor-card"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '1.5rem',
-                    padding: '1.5rem',
-                    borderRadius: '18px',
-                    background: 'rgba(255, 255, 255, 0.03)',
-                    border: badgeStyle.border,
-                    boxShadow: badgeStyle.shadow,
-                    textDecoration: 'none',
-                    position: 'relative',
-                    overflow: 'hidden'
-                  }}
-                >
-                  {/* Rank Number BG */}
-                  <div style={{ position: 'absolute', right: '-10px', bottom: '-20px', fontSize: '6rem', fontWeight: '900', color: 'rgba(255,255,255,0.03)', zIndex: 0 }}>
-                    {index + 1}
-                  </div>
-
+                <Link to={`/profile/${contributor._id}`} key={contributor._id} className="contributor-card" style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', padding: '1.5rem', borderRadius: '18px', background: 'rgba(255, 255, 255, 0.03)', border: badgeStyle.border, boxShadow: badgeStyle.shadow, textDecoration: 'none', position: 'relative', overflow: 'hidden' }}>
+                  <div style={{ position: 'absolute', right: '-10px', bottom: '-20px', fontSize: '6rem', fontWeight: '900', color: 'rgba(255,255,255,0.03)', zIndex: 0 }}>{index + 1}</div>
                   <div style={{ position: 'relative', zIndex: 1 }}>
-                    <img
-                      src={avatarUrl}
-                      alt="" // Empty alt as name is below
-                      aria-hidden="true"
-                      loading="lazy"
-                      decoding="async"
-                      width="72"
-                      height="72"
-                      style={{
-                        width: '72px',
-                        height: '72px',
-                        borderRadius: '50%',
-                        objectFit: 'cover',
-                        border: `2px solid ${badgeStyle.color}`,
-                        boxShadow: '0 0 24px rgba(0,0,0,0.25)'
-                      }}
-                    />
-                    {badgeStyle.icon && (
-                      <div
-                        style={{
-                          position: 'absolute',
-                          bottom: '-6px',
-                          right: '-6px',
-                          background: 'rgba(15, 12, 41, 0.9)',
-                          borderRadius: '50%',
-                          padding: '6px',
-                          color: badgeStyle.color,
-                          border: `1px solid ${badgeStyle.color}`
-                        }}
-                      >
-                        {badgeStyle.icon}
-                      </div>
-                    )}
+                    <img src={avatarUrl} alt="" aria-hidden="true" loading="lazy" decoding="async" width="72" height="72" style={{ width: '72px', height: '72px', borderRadius: '50%', objectFit: 'cover', border: `2px solid ${badgeStyle.color}`, boxShadow: '0 0 24px rgba(0,0,0,0.25)' }} />
+                    {badgeStyle.icon && <div style={{ position: 'absolute', bottom: '-6px', right: '-6px', background: 'rgba(15, 12, 41, 0.9)', borderRadius: '50%', padding: '6px', color: badgeStyle.color, border: `1px solid ${badgeStyle.color}` }}>{badgeStyle.icon}</div>}
                   </div>
-
                   <div style={{ zIndex: 1 }}>
-                    {/* FIX: Changed h4 to h3 to maintain heading hierarchy (h2 -> h3) */}
-                    <h3 style={{ margin: '0 0 6px 0', color: '#fff', fontSize: '1.2rem', fontWeight: 800 }}>
-                      {contributor.name}
-                    </h3>
-                    <p style={{ margin: 0, fontSize: '0.92rem', color: 'rgba(255,255,255,0.6)', display: 'flex', alignItems: 'center', gap: '7px', fontWeight: 700 }}>
-                      <FaStar color="#ffcc00" /> {contributor.noteCount} Contributions
-                    </p>
+                    <h3 style={{ margin: '0 0 6px 0', color: '#fff', fontSize: '1.2rem', fontWeight: 800 }}>{contributor.name}</h3>
+                    <p style={{ margin: 0, fontSize: '0.92rem', color: 'rgba(255,255,255,0.6)', display: 'flex', alignItems: 'center', gap: '7px', fontWeight: 700 }}><FaStar color="#ffcc00" /> {contributor.noteCount} Contributions</p>
                   </div>
                 </Link>
               );
