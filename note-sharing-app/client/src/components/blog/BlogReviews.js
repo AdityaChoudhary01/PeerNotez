@@ -8,7 +8,7 @@ import RoleBadge from '../common/RoleBadge';
 import { optimizeCloudinaryUrl } from '../../utils/cloudinaryHelper';
 
 // --- CONFIGURATION ---
-const MAIN_ADMIN_EMAIL = process.env.REACT_APP_MAIN_ADMIN_EMAIL;
+const MAIN_ADMIN_EMAIL = import.meta.env.VITE_MAIN_ADMIN_EMAIL;
 
 // --- UTILITIES ---
 const formatDate = (dateString) =>
