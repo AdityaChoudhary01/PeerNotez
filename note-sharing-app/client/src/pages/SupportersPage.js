@@ -255,18 +255,19 @@ const SupportersPage = () => {
     return (
         <div style={styles.wrapper}>
              <Helmet>
-     <title>Our Valued Supporters | PeerNotez Wall of Fame</title> <meta name="description" content="Meet the incredible individuals who support PeerNotez and help us keep education free and accessible. Our Wall of Fame celebrates every generous contribution." /> 
-  <meta name="keywords" content="PeerNotez, supporters, donations, education, open learning, wall of fame, community support, students, free resources, contribute" />
-  <meta property="og:title" content="Our Valued Supporters | PeerNotez Wall of Fame" />
-  <meta property="og:description" content="Meet the incredible individuals who support PeerNotez and help us keep education free and accessible. Our Wall of Fame celebrates every generous contribution." />
-  <meta property="og:type" content="website" /> 
-  <meta property="og:url" content="https://peernotez.netlify.app/supporters" /> {/* Replace with your actual URL */} 
-  <meta property="og:image" content="https://www.yourwebsite.com/social-share-image.jpg" /> {/* Optional: Add a relevant image for social sharing */} 
-  <meta name="twitter:card" content="summary_large_image" /> 
-  <meta name="twitter:title" content="Our Valued Supporters | PeerNotez Wall of Fame" />
-  <meta name="twitter:description" content="Meet the incredible individuals who support PeerNotez and help us keep education free and accessible. Our Wall of Fame celebrates every generous contribution." /> 
-  <meta name="twitter:image" content="https://www.yourwebsite.com/social-share-image.jpg" /> {/* Optional */} 
-  <link rel="canonical" href="https://peernotez.netlify.app/supporters" />
+                <title>Our Valued Supporters | PeerNotez Wall of Fame</title> 
+                <meta name="description" content="Meet the incredible individuals who support PeerNotez and help us keep education free and accessible. Our Wall of Fame celebrates every generous contribution." /> 
+                <meta name="keywords" content="PeerNotez, supporters, donations, education, open learning, wall of fame, community support, students, free resources, contribute" />
+                <meta property="og:title" content="Our Valued Supporters | PeerNotez Wall of Fame" />
+                <meta property="og:description" content="Meet the incredible individuals who support PeerNotez and help us keep education free and accessible. Our Wall of Fame celebrates every generous contribution." />
+                <meta property="og:type" content="website" /> 
+                <meta property="og:url" content="https://peernotez.netlify.app/supporters" /> 
+                <meta property="og:image" content="https://peernotez.netlify.app/logo512.png" /> 
+                <meta name="twitter:card" content="summary_large_image" /> 
+                <meta name="twitter:title" content="Our Valued Supporters | PeerNotez Wall of Fame" />
+                <meta name="twitter:description" content="Meet the incredible individuals who support PeerNotez and help us keep education free and accessible. Our Wall of Fame celebrates every generous contribution." /> 
+                <meta name="twitter:image" content="https://peernotez.netlify.app/logo512.png" />
+                <link rel="canonical" href="https://peernotez.netlify.app/supporters" />
             </Helmet>
 
             <header style={styles.header}>
@@ -320,7 +321,13 @@ const SupportersPage = () => {
                         >
                             <div style={styles.glowBar}></div>
                             
-                            <img src={supporter.avatar} alt={supporter.name} style={styles.avatar} />
+                            {/* FIX: Empty alt and aria-hidden because name is displayed immediately below */}
+                            <img 
+                                src={supporter.avatar} 
+                                alt="" 
+                                aria-hidden="true"
+                                style={styles.avatar} 
+                            />
                             
                             <h3 style={styles.name}>{supporter.name}</h3>
                             
