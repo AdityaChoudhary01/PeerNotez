@@ -5,6 +5,12 @@ import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 import { FaSpinner } from 'react-icons/fa';
 
+// Layouts & Utils (Moved to TOP to fix ESLint errors)
+import ChatLayout from './components/layout/ChatLayout'; 
+import PrivateRoute from './utils/PrivateRoute';
+import AdminRoute from './utils/AdminRoute';
+import './App.css'; 
+
 // --- LAZY LOADED PAGES (Performance Optimization) ---
 // This splits the code into smaller chunks, so the initial load is instant.
 const HomePage = lazy(() => import('./pages/HomePage'));
@@ -31,12 +37,6 @@ const TermsOfServicePage = lazy(() => import('./pages/TermsOfServicePage'));
 const PrivacyPolicyPage = lazy(() => import('./pages/PrivacyPolicyPage'));
 const ChatListPage = lazy(() => import('./pages/ChatListPage'));
 const ChatPage = lazy(() => import('./pages/ChatPage'));
-
-// Layouts & Utils (Standard imports for critical routing logic)
-import ChatLayout from './components/layout/ChatLayout'; 
-import PrivateRoute from './utils/PrivateRoute';
-import AdminRoute from './utils/AdminRoute';
-import './App.css'; 
 
 // Loading Component for Suspense Fallback
 const PageLoader = () => (
