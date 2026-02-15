@@ -16,7 +16,7 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
     // 1. Check if on Homepage
     const isHomePage = location.pathname === '/';
 
-    // 2. Check if device is Mobile (Kept for Layout Styling)
+    // 2. Check if device is Mobile
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     const [isHovered, setIsHovered] = useState(false);
 
@@ -31,11 +31,10 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
     // 3. Apply compact styles ONLY if on Homepage AND Mobile
     const isCompact = isHomePage && isMobile;
 
-    // Safely check if savedNotes exists
     const isSaved = user?.savedNotes ? user.savedNotes.includes(note._id) : false;
     const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'demo';
 
-    // --- INTERNAL CSS: DEEP SPACE HOLOGRAPHIC THEME ---
+    // --- INTERNAL CSS ---
     const styles = {
         card: {
             background: 'rgba(255, 255, 255, 0.03)',
@@ -53,12 +52,12 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
         },
         cardHover: {
             transform: 'translateY(-8px)',
-            borderColor: 'rgba(0, 212, 255, 0.4)', // Neon Cyan Border
-            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 212, 255, 0.2)' // Neon Glow
+            borderColor: 'rgba(0, 212, 255, 0.4)',
+            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 212, 255, 0.2)'
         },
         thumbnailContainer: {
             height: isCompact ? '140px' : '180px', 
-            background: '#0f0c29', // Dark backing for images
+            background: '#0f0c29',
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
@@ -79,11 +78,8 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
         },
         overlay: {
             position: 'absolute', 
-            top: 0, 
-            left: 0, 
-            width: '100%', 
-            height: '100%',
-            background: 'rgba(15, 12, 41, 0.6)', // Deep purple tint
+            top: 0, left: 0, width: '100%', height: '100%',
+            background: 'rgba(15, 12, 41, 0.6)',
             backdropFilter: 'blur(2px)',
             display: 'flex', 
             alignItems: 'center', 
@@ -91,9 +87,7 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
             opacity: 0,
             transition: 'opacity 0.3s ease'
         },
-        overlayVisible: {
-            opacity: 1
-        },
+        overlayVisible: { opacity: 1 },
         content: {
             padding: isCompact ? '0.8rem' : '1.2rem', 
             flex: 1,
@@ -149,10 +143,10 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
             justifyContent: 'center',
             width: isCompact ? '32px' : '38px',
             height: isCompact ? '32px' : '38px',
-            borderRadius: '50%', // Circular buttons
+            borderRadius: '50%',
         },
         viewBtn: {
-            background: 'linear-gradient(135deg, #00d4ff 0%, #ff00cc 100%)', // Brand Gradient
+            background: 'linear-gradient(135deg, #00d4ff 0%, #ff00cc 100%)',
             color: '#fff',
             padding: isCompact ? '6px 14px' : '8px 20px',
             borderRadius: '50px',
@@ -173,54 +167,40 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
         }
     };
 
-    // --- LOGIC: THUMBNAIL GENERATION WITH SRCSET ---
+    // --- LOGIC: THUMBNAIL GENERATION ---
     let thumbnailUrl = '/images/icons/document-icon.png';
-    let srcSet = null;
+    let srcSet = undefined; // Use undefined to prevent rendering empty attributes
     const fileType = note.fileType || '';
 
     if (note.cloudinaryId) {
-        let baseUrl;
-        if (note.cloudinaryId.startsWith('http')) {
-             baseUrl = note.cloudinaryId;
-        } else {
-             baseUrl = `https://res.cloudinary.com/${cloudName}/image/upload/${note.cloudinaryId}.jpg`;
-        }
+        const baseUrl = note.cloudinaryId.startsWith('http') 
+            ? note.cloudinaryId 
+            : `https://res.cloudinary.com/${cloudName}/image/upload/${note.cloudinaryId}.jpg`;
         
-        // Generate responsive versions
-        // 320w (mobile) and 400w (desktop card) - maintaining approx 4:3 ratio
-        if (fileType.startsWith('image/')) {
-            // Default Fill Crop
-            thumbnailUrl = optimizeCloudinaryUrl(baseUrl, { width: 400, height: 300 });
-            const smUrl = optimizeCloudinaryUrl(baseUrl, { width: 320, height: 240 });
-            const lgUrl = optimizeCloudinaryUrl(baseUrl, { width: 400, height: 300 });
+        if (fileType.startsWith('image/') || fileType === 'application/pdf') {
+            const opts = fileType === 'application/pdf' ? { pg: 1, crop: 'pad' } : {};
             
-            srcSet = `${smUrl} 320w, ${lgUrl} 400w`;
-
-        } else if (fileType === 'application/pdf') {
-            // PDF specific opts
-            const opts = { pg: 1, crop: 'pad' };
             thumbnailUrl = optimizeCloudinaryUrl(baseUrl, { width: 400, height: 300, ...opts });
             const smUrl = optimizeCloudinaryUrl(baseUrl, { width: 320, height: 240, ...opts });
             const lgUrl = optimizeCloudinaryUrl(baseUrl, { width: 400, height: 300, ...opts });
             
-            srcSet = `${smUrl} 320w, ${lgUrl} 400w`;
+            // Only build srcSet if optimization returns valid strings
+            if (smUrl && lgUrl) {
+                srcSet = `${smUrl} 320w, ${lgUrl} 400w`;
+            }
         }
     } else {
-        // Fallback icons
         if (fileType.includes('word')) thumbnailUrl = '/images/icons/word-icon.png';
         else if (fileType.includes('excel') || fileType.includes('spreadsheet')) thumbnailUrl = '/images/icons/excel-icon.png';
         else if (fileType.includes('powerpoint')) thumbnailUrl = '/images/icons/ppt-icon.png';
     }
 
-    // --- HANDLERS ---
     const handleSaveToggle = async (e) => {
         e.preventDefault();
         e.stopPropagation();
         if (!user) return alert('Please log in to save notes.');
-
         const config = { headers: { Authorization: `Bearer ${token}` } };
         const endpoint = isSaved ? `/users/unsave/${note._id}` : `/users/save/${note._id}`;
-
         try {
             await axios.put(endpoint, {}, config);
             isSaved ? unsaveNote(note._id) : saveNote(note._id);
@@ -246,7 +226,6 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
-            {/* THUMBNAIL SECTION */}
             <Link 
                 to={`/view/${note._id}`} 
                 style={{display: 'block', position: 'relative'}}
@@ -255,29 +234,27 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
                 <div style={styles.thumbnailContainer}>
                     <img 
                         src={thumbnailUrl} 
-                        srcSet={srcSet || undefined}
+                        srcSet={srcSet} // Undefined prevents rendering the attribute
                         sizes="(max-width: 768px) 320px, 400px"
                         alt={note.title} 
-                        /* OPTIMIZATION APPLIED:
-                           1. explicit width/height
-                           2. srcset/sizes for browser-native selection
-                           3. decoding async
-                        */
                         width="400"
                         height="300"
-                        loading="lazy"
+                        // Eager load homepage images to prevent [Intervention] warnings
+                        loading={isHomePage ? "eager" : "lazy"}
                         decoding="async"
                         style={isHovered ? {...styles.thumbnail, ...styles.thumbnailHover} : styles.thumbnail}
-                        onError={(e) => { e.target.onerror = null; e.target.src = '/images/icons/document-icon.png'; }}
+                        onError={(e) => { 
+                            e.target.onerror = null; 
+                            e.target.src = '/images/icons/document-icon.png';
+                            e.target.srcset = ""; // Clear broken srcset on error
+                        }}
                     />
-                    {/* Hover Overlay */}
                     <div style={isHovered ? {...styles.overlay, ...styles.overlayVisible} : styles.overlay}>
                         <FaEye size={30} color="#00d4ff" style={{filter: 'drop-shadow(0 0 10px rgba(0,212,255,0.8))'}} />
                     </div>
                 </div>
             </Link>
 
-            {/* CONTENT SECTION */}
             <div style={styles.content}>
                 <Link 
                     to={`/view/${note._id}`} 
@@ -299,7 +276,6 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
                     <div style={styles.metaItem}><FaCalendarAlt color="#ffcc00" size={12} /> {note.year}</div>
                 </div>
 
-                {/* ADMIN/AUTHOR ACTIONS */}
                 {showActions && (
                     <div style={{display: 'flex', gap: '10px', marginBottom: '1rem', marginTop: 'auto'}}>
                          <button 
@@ -342,7 +318,6 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
                     </div>
                 )}
 
-                {/* USER ACTIONS */}
                 <div style={styles.actions}>
                     <button 
                         onClick={handleSaveToggle} 
