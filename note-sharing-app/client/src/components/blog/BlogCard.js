@@ -36,7 +36,7 @@ const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () 
     const formattedDate = blog.createdAt 
         ? new Date(blog.createdAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' })
         : 'N/A';
-    
+     
     const views = (blog.views || blog.downloadCount || 0).toLocaleString();
     const rating = blog.averageRating || blog.rating || 0;
 
@@ -87,6 +87,8 @@ const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () 
             height: '100%',
             background: 'linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%)',
             backgroundSize: '200% 100%',
+            // Added willChange to improve animation performance (PSI Recommendation)
+            willChange: 'background-position',
             animation: 'skeletonLoading 1.5s ease-in-out infinite'
         },
         overlay: {
@@ -263,13 +265,21 @@ const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () 
             <div style={styles.imageContainer}>
                 {!imageLoaded && <div style={styles.skeleton} />}
                 <img
+                    /* OPTIMIZATION APPLIED:
+                       1. Width/Height: Added explicit dimensions to prevent CLS.
+                       2. Loading: kept 'lazy' to save bandwidth.
+                       3. Decoding: 'async' for smoother main thread.
+                    */
                     src={blog.coverImage 
-                        ? optimizeCloudinaryUrl(blog.coverImage, { width: 500 }) 
+                        ? optimizeCloudinaryUrl(blog.coverImage, 500) 
                         : `https://ui-avatars.com/api/?name=${encodeURIComponent(blog.title)}&size=500&background=1e293b&color=fff`
                     }
                     alt={blog.title}
+                    // Explicit dimensions help the browser calculate layout before image loads
+                    width="500"
+                    height="280" 
                     loading="lazy"
-                    decoding="async" // Performance fix
+                    decoding="async"
                     style={{
                         ...styles.image,
                         ...(isHovered ? styles.imageHover : {})
@@ -285,11 +295,7 @@ const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () 
                 </div>
 
                 <div style={styles.overlay}>
-                    <Link 
-                        to={`/blogs/${blog.slug || blog._id}`} 
-                        style={styles.readButton}
-                        aria-label={`Read article: ${blog.title}`} // Accessibility fix
-                    >
+                    <Link to={`/blogs/${blog.slug || blog._id}`} style={styles.readButton}>
                         Read Article <FaArrowRight size={12} />
                     </Link>
                 </div>
@@ -297,7 +303,7 @@ const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () 
 
             <div style={styles.content}>
                 <Link to={`/blogs/${blog.slug || blog._id}`} style={styles.titleLink}>
-                    <h3 // SEO: maintains logical heading hierarchy (h2 -> h3)
+                    <h3 
                         style={styles.title}
                         onMouseEnter={(e) => e.target.style.color = '#00d4ff'}
                         onMouseLeave={(e) => e.target.style.color = '#fff'}
@@ -329,12 +335,17 @@ const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () 
                 {blog.author ? (
                     <AuthorWrapper {...authorWrapperProps}>
                         <img
+                            /* OPTIMIZATION APPLIED:
+                               1. Explicit Width/Height (38px matches styles.authorImage).
+                               2. Cloudinary request is 80px (2x retina quality).
+                            */
                             src={blog.author.profilePicture || blog.author.avatar
-                                ? optimizeCloudinaryUrl(blog.author.profilePicture || blog.author.avatar, { width: 80 })
+                                ? optimizeCloudinaryUrl(blog.author.profilePicture || blog.author.avatar, 80)
                                 : `https://ui-avatars.com/api/?name=${encodeURIComponent(blog.author.name)}&size=80`
                             }
-                            alt="" // Accessibility: set to empty string if name is visible next to it
-                            aria-hidden="true"
+                            alt={blog.author.name}
+                            width="38"
+                            height="38"
                             loading="lazy"
                             decoding="async"
                             style={styles.authorImage}
@@ -363,7 +374,6 @@ const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () 
                                 color: '#00d4ff',
                                 border: '1px solid rgba(0, 212, 255, 0.3)'
                             }}
-                            aria-label={`Edit blog: ${blog.title}`} // Accessibility fix
                             title="Edit"
                         >
                             <FaEdit />
@@ -376,7 +386,6 @@ const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () 
                                 color: '#ff0055',
                                 border: '1px solid rgba(255, 0, 85, 0.3)'
                             }}
-                            aria-label={`Delete blog: ${blog.title}`} // Accessibility fix
                             title="Delete"
                         >
                             <FaTrash />
@@ -385,6 +394,7 @@ const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () 
                 )}
             </div>
 
+            {/* Optimized Animation Syntax */}
             <style>
                 {`
                     @keyframes skeletonLoading {
