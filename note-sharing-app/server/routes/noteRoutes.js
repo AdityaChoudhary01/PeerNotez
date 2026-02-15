@@ -70,15 +70,19 @@ const createInQuery = (param) => {
 };
 
 // =========================================================================
-// PUBLIC & LISTING ROUTES
+// PUBLIC & LISTING ROUTES (OPTIMIZED)
 // =========================================================================
 
 // @route GET /api/notes/stats
 // @desc Get key statistics for the homepage
+// 🚀 OPTIMIZATION: Cached for 1 hour. Uses estimated count.
 router.get('/stats', async (req, res) => {
     try {
-        const totalNotes = await Note.countDocuments();
-        const totalUsers = await User.countDocuments();
+        // Edge Cache: Public content, cache for 1 hour, stale-while-revalidate for updates
+        res.setHeader('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=1800');
+
+        const totalNotes = await Note.estimatedDocumentCount(); // Fast estimate
+        const totalUsers = await User.estimatedDocumentCount(); // Fast estimate
         
         const totalDownloadsResult = await Note.aggregate([
             { $group: { _id: null, total: { $sum: "$downloadCount" } } }
@@ -99,28 +103,18 @@ router.get('/stats', async (req, res) => {
 
 // @route GET /api/notes/users/top-contributors
 // @desc Get top contributors for the homepage (based on note count)
+// 🚀 OPTIMIZATION: Removed heavy aggregation. Uses indexed sort + cache.
 router.get('/users/top-contributors', async (req, res) => {
     try {
-        const topContributors = await User.aggregate([
-            {
-                $lookup: {
-                    from: 'notes', 
-                    localField: '_id',
-                    foreignField: 'user',
-                    as: 'notes'
-                }
-            },
-            {
-                $project: {
-                    _id: 1,
-                    name: 1,
-                    avatar: 1,
-                    noteCount: { $size: '$notes' }
-                }
-            },
-            { $sort: { noteCount: -1 } },
-            { $limit: 4 }
-        ]);
+        // Cache for 15 minutes
+        res.setHeader('Cache-Control', 'public, s-maxage=900, stale-while-revalidate=600');
+
+        // Fast query: Find users with notes, sort by count, grab top 4
+        const topContributors = await User.find({ noteCount: { $gt: 0 } })
+            .sort({ noteCount: -1 })
+            .limit(4)
+            .select('name avatar noteCount')
+            .lean(); // .lean() for speed
 
         res.json({ users: topContributors });
     } catch (error) {
@@ -130,7 +124,9 @@ router.get('/users/top-contributors', async (req, res) => {
 });
 
 // @route GET /api/notes/blog-posts (Mock data, should be removed)
+// 🚀 OPTIMIZATION: Heavy caching for static data
 router.get('/blog-posts', (req, res) => {
+    res.setHeader('Cache-Control', 'public, s-maxage=86400'); // Cache for 24 hours
     const mockPosts = [
         { id: 1, title: "The Best Note-Taking Strategies for University", summary: "Learn how to optimize your study habits with these proven note-taking techniques.", slug: "best-note-taking-strategies" },
         { id: 2, title: "How PeerNotez Can Boost Your Grades", summary: "Discover how our collaborative platform gives you an edge in your academic career.", slug: "how-peernotez-boosts-grades" },
@@ -143,9 +139,12 @@ router.get('/blog-posts', (req, res) => {
 // ✅ FIX 4: NEW RELATED NOTES ROUTE (Must be before /:id)
 // =========================================================================
 // @route   GET /api/notes/related/:id
+// 🚀 OPTIMIZATION: Cached for 5 minutes
 router.get('/related/:id', async (req, res) => {
     try {
-        const currentNote = await Note.findById(req.params.id);
+        res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=120');
+
+        const currentNote = await Note.findById(req.params.id).select('subject course').lean();
         if (!currentNote) return res.status(404).json({ message: 'Note not found' });
 
         // Find notes with same subject OR course, excluding current one
@@ -159,7 +158,8 @@ router.get('/related/:id', async (req, res) => {
         .select('title description university course subject year rating numReviews downloadCount uploadDate fileType fileName cloudinaryId filePath isFeatured') 
         .populate('user', 'name avatar')
         .limit(4) // Show 4 related notes
-        .sort({ rating: -1, downloadCount: -1 }); // Show best/most popular first
+        .sort({ rating: -1, downloadCount: -1 }) // Show best/most popular first
+        .lean();
 
         res.json(relatedNotes);
     } catch (error) {
@@ -172,11 +172,18 @@ router.get('/related/:id', async (req, res) => {
 
 // @route   GET /api/notes
 // @desc    Get all notes with search and advanced filters
+// 🚀 OPTIMIZATION: Caches default view, uses .lean()
 router.get('/', async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 12;
     const page = Number(req.query.page) || 1;
     let { search, title, university, course, subject, year, sort, isFeatured } = req.query; // Use 'let' for modification
+
+    // 🚀 CACHE STRATEGY: Only cache the "Default" view (Page 1, Featured, No Search)
+    const hasSearch = search || title || university || course || subject || year;
+    if (!hasSearch && isFeatured && page === 1) {
+         res.setHeader('Cache-Control', 'public, s-maxage=600, stale-while-revalidate=300');
+    }
 
     // CRITICAL FIX 1: Decode the parameter if it looks like it was encoded
     if (subject && subject.includes('%2C')) {
@@ -282,7 +289,8 @@ router.get('/', async (req, res) => {
       .populate('user', 'name avatar')
       .sort(sortOptions)
       .limit(limit)
-      .skip(limit * (page - 1));
+      .skip(limit * (page - 1))
+      .lean(); // Use lean for speed
 
     res.json({ notes, page, totalPages: Math.ceil(count / limit) });
   } catch (error) {
@@ -295,12 +303,16 @@ router.get('/', async (req, res) => {
 // 🚀 ADDED ROUTE: GET NOTES BY USER (For Public Profile Page)
 // @route   GET /api/notes/user/:userId
 // @desc    Get all notes by a specific user
+// 🚀 OPTIMIZATION: Cached for 1 min
 router.get('/user/:userId', async (req, res) => {
     try {
+        res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=30');
+
         const notes = await Note.find({ user: req.params.userId })
             .select('title university course subject year rating numReviews downloadCount uploadDate fileType fileName cloudinaryId filePath isFeatured')
             .populate('user', 'name avatar')
-            .sort({ uploadDate: -1 });
+            .sort({ uploadDate: -1 })
+            .lean();
         res.json({ notes });
     } catch (error) {
         console.error('Error fetching user notes:', error);
@@ -326,7 +338,8 @@ router.get('/mynotes', protect, async (req, res) => {
       .select(selectFields) // Applied explicit selection
       .sort({ uploadDate: -1 })
       .limit(limit)
-      .skip(limit * (page - 1));
+      .skip(limit * (page - 1))
+      .lean();
 
     res.json({
       notes,
@@ -862,8 +875,12 @@ router.delete('/collections/:collectionId', protect, async (req, res) => {
 
 // @route   GET /api/notes/:id
 // @desc    Get a single note by ID
+// 🚀 OPTIMIZATION: Cached for 2 minutes
 router.get('/:id', async (req, res) => {
   try {
+    // Cache individual note details for 2 minutes to handle spikes
+    res.setHeader('Cache-Control', 'public, s-maxage=120, stale-while-revalidate=60');
+
     const note = await Note.findById(req.params.id)
       // 1. Populate Note Author (for AuthorInfoBlock)
       .populate('user', 'name avatar role email') 
@@ -871,7 +888,8 @@ router.get('/:id', async (req, res) => {
       .populate({
         path: 'reviews.user',
         select: 'name avatar role email' // <--- Added 'role' and 'email' here
-      });
+      })
+      .lean(); // Use lean to avoid overhead
 
     if (!note) {
       return res.status(404).json({ message: 'Note not found' });
