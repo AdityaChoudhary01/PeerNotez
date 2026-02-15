@@ -8,11 +8,21 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-  <link 
-    rel="preload" 
-    as="style" 
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Space+Grotesk:wght@500;700&display=swap"
-  >
+  <style>
+    /* Styles the Hero section immediately so the browser doesn't wait for React JS */
+    :root { --bg-primary: #0A0118; }
+    body { background: var(--bg-primary); margin: 0; padding: 0; }
+    .hero-h1 {
+      font-size: clamp(3rem, 6vw, 5.6rem);
+      font-weight: 900;
+      color: #ffffff;
+      line-height: 1.1;
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+    }
+    .main-content { margin-top: 130px; }
+  </style>
 
   <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -23,14 +33,19 @@
   <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
 
   <link 
+    rel="preload" 
+    as="style" 
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Space+Grotesk:wght@500;700&display=swap"
+  >
+  <link 
     rel="stylesheet" 
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Space+Grotesk:wght@500;700&display=swap" 
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Space+Grotesk:wght@500;700&display=swap" 
     media="print" 
     onload="this.media='all'"
   >
   
   <noscript>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
   </noscript>
 
   <meta name="google-site-verification" content="ftdUSQ0-7RzVhdMCxpKJOqlfjqOVyCy_ee4WIEwSjG0" />
