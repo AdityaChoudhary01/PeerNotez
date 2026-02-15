@@ -3,7 +3,7 @@
 # =======================================================
 [build]
   command = "npm run build"
-  publish = "build"
+  publish = "dist"
 
 # =======================================================
 # 1. Headers for caching control
@@ -24,7 +24,7 @@ for = "/service-worker.js"
   Expires = "0"
 
 [[headers]]
-# JS files contain unique hashes (e.g. main.e9e0c2d7.js), so they are safe to cache
+# JS files contain unique hashes, so they are safe to cache
 for = "/*.js"
 [headers.values]
   Cache-Control = "public, max-age=31536000, immutable"
