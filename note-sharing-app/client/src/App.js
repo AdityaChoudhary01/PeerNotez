@@ -6,13 +6,17 @@ import Footer from './components/layout/Footer';
 import { FaSpinner } from 'react-icons/fa';
 
 // Layouts & Utils
-import ChatLayout from './components/layout/ChatLayout'; 
+// FIXED: Removed static import of ChatLayout to stop Firebase DB from loading instantly
+// import ChatLayout from './components/layout/ChatLayout'; <--- DELETED THIS LINE
 import PrivateRoute from './utils/PrivateRoute';
 import AdminRoute from './utils/AdminRoute';
 import './App.css'; 
 
-// --- LAZY LOADED PAGES (Performance Optimization) ---
-// This splits the code into smaller chunks, so the initial load is instant.
+// --- LAZY LOADED PAGES & LAYOUTS (Performance Optimization) ---
+// This splits the code into smaller chunks. 
+// CRITICAL FIX: Lazy loading ChatLayout isolates the heavy Firebase Database code.
+const ChatLayout = lazy(() => import('./components/layout/ChatLayout'));
+
 const HomePage = lazy(() => import('./pages/HomePage'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 const SignupPage = lazy(() => import('./pages/SignupPage'));
@@ -109,6 +113,7 @@ function App() {
                 <Route path="/collections/:collectionId" element={<PrivateRoute><ViewCollectionPage /></PrivateRoute>} />
                 
                 {/* --- CHAT SYSTEM --- */}
+                {/* ChatLayout is now lazy loaded. It will only download when this route is hit. */}
                 <Route element={<PrivateRoute><ChatLayout /></PrivateRoute>}>
                     <Route path="/chat" element={<ChatListPage />} />
                     <Route path="/chat/:userId" element={<ChatPage />} />
