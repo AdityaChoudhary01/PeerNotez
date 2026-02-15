@@ -87,7 +87,7 @@ const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () 
             height: '100%',
             background: 'linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%)',
             backgroundSize: '200% 100%',
-            // Added willChange to improve animation performance (PSI Recommendation)
+            // Improved animation performance
             willChange: 'background-position',
             animation: 'skeletonLoading 1.5s ease-in-out infinite'
         },
@@ -295,7 +295,12 @@ const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () 
                 </div>
 
                 <div style={styles.overlay}>
-                    <Link to={`/blogs/${blog.slug || blog._id}`} style={styles.readButton}>
+                    <Link 
+                        to={`/blogs/${blog.slug || blog._id}`} 
+                        style={styles.readButton}
+                        // FIX for "Identical links": Added unique aria-label
+                        aria-label={`Read article: ${blog.title}`}
+                    >
                         Read Article <FaArrowRight size={12} />
                     </Link>
                 </div>
@@ -336,14 +341,16 @@ const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () 
                     <AuthorWrapper {...authorWrapperProps}>
                         <img
                             /* OPTIMIZATION APPLIED:
-                               1. Explicit Width/Height (38px matches styles.authorImage).
-                               2. Cloudinary request is 80px (2x retina quality).
+                               1. Explicit Width/Height.
+                               2. Cloudinary request is 80px.
+                               3. Accessibility fix: empty alt + aria-hidden to prevent redundant text.
                             */
                             src={blog.author.profilePicture || blog.author.avatar
                                 ? optimizeCloudinaryUrl(blog.author.profilePicture || blog.author.avatar, 80)
                                 : `https://ui-avatars.com/api/?name=${encodeURIComponent(blog.author.name)}&size=80`
                             }
-                            alt={blog.author.name}
+                            alt="" 
+                            aria-hidden="true"
                             width="38"
                             height="38"
                             loading="lazy"
