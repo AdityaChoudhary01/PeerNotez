@@ -31,10 +31,11 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
     // 3. Apply compact styles ONLY if on Homepage AND Mobile
     const isCompact = isHomePage && isMobile;
 
+    // Safely check if savedNotes exists
     const isSaved = user?.savedNotes ? user.savedNotes.includes(note._id) : false;
-    const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'demo';
+    const cloudName = process.env.REACT_APP_CLOUDINARY_CLOUD_NAME || 'demo';
 
-    // --- INTERNAL CSS ---
+    // --- INTERNAL CSS: DEEP SPACE HOLOGRAPHIC THEME ---
     const styles = {
         card: {
             background: 'rgba(255, 255, 255, 0.03)',
@@ -52,12 +53,12 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
         },
         cardHover: {
             transform: 'translateY(-8px)',
-            borderColor: 'rgba(0, 212, 255, 0.4)',
-            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 212, 255, 0.2)'
+            borderColor: 'rgba(0, 212, 255, 0.4)', // Neon Cyan Border
+            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 212, 255, 0.2)' // Neon Glow
         },
         thumbnailContainer: {
             height: isCompact ? '140px' : '180px', 
-            background: '#0f0c29',
+            background: '#0f0c29', // Dark backing for images
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
@@ -78,8 +79,11 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
         },
         overlay: {
             position: 'absolute', 
-            top: 0, left: 0, width: '100%', height: '100%',
-            background: 'rgba(15, 12, 41, 0.6)',
+            top: 0, 
+            left: 0, 
+            width: '100%', 
+            height: '100%',
+            background: 'rgba(15, 12, 41, 0.6)', // Deep purple tint
             backdropFilter: 'blur(2px)',
             display: 'flex', 
             alignItems: 'center', 
@@ -87,7 +91,9 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
             opacity: 0,
             transition: 'opacity 0.3s ease'
         },
-        overlayVisible: { opacity: 1 },
+        overlayVisible: {
+            opacity: 1
+        },
         content: {
             padding: isCompact ? '0.8rem' : '1.2rem', 
             flex: 1,
@@ -143,10 +149,10 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
             justifyContent: 'center',
             width: isCompact ? '32px' : '38px',
             height: isCompact ? '32px' : '38px',
-            borderRadius: '50%',
+            borderRadius: '50%', // Circular buttons
         },
         viewBtn: {
-            background: 'linear-gradient(135deg, #00d4ff 0%, #ff00cc 100%)',
+            background: 'linear-gradient(135deg, #00d4ff 0%, #ff00cc 100%)', // Brand Gradient
             color: '#fff',
             padding: isCompact ? '6px 14px' : '8px 20px',
             borderRadius: '50px',
@@ -169,38 +175,38 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
 
     // --- LOGIC: THUMBNAIL GENERATION ---
     let thumbnailUrl = '/images/icons/document-icon.png';
-    let srcSet = undefined; // Use undefined to prevent rendering empty attributes
     const fileType = note.fileType || '';
 
     if (note.cloudinaryId) {
-        const baseUrl = note.cloudinaryId.startsWith('http') 
-            ? note.cloudinaryId 
-            : `https://res.cloudinary.com/${cloudName}/image/upload/${note.cloudinaryId}.jpg`;
+        let baseUrl;
+        if (note.cloudinaryId.startsWith('http')) {
+             baseUrl = note.cloudinaryId;
+        } else {
+             baseUrl = `https://res.cloudinary.com/${cloudName}/image/upload/${note.cloudinaryId}.jpg`;
+        }
         
-        if (fileType.startsWith('image/') || fileType === 'application/pdf') {
-            const opts = fileType === 'application/pdf' ? { pg: 1, crop: 'pad' } : {};
-            
-            thumbnailUrl = optimizeCloudinaryUrl(baseUrl, { width: 400, height: 300, ...opts });
-            const smUrl = optimizeCloudinaryUrl(baseUrl, { width: 320, height: 240, ...opts });
-            const lgUrl = optimizeCloudinaryUrl(baseUrl, { width: 400, height: 300, ...opts });
-            
-            // Only build srcSet if optimization returns valid strings
-            if (smUrl && lgUrl) {
-                srcSet = `${smUrl} 320w, ${lgUrl} 400w`;
-            }
+        if (fileType.startsWith('image/')) {
+            // We request 400x300 to match the 4:3 aspect ratio explicitly set in the img tag below
+            thumbnailUrl = optimizeCloudinaryUrl(baseUrl, { width: 400, height: 300 });
+        } else if (fileType === 'application/pdf') {
+            thumbnailUrl = optimizeCloudinaryUrl(baseUrl, { width: 400, height: 300, pg: 1, crop: 'pad' });
         }
     } else {
+        // Fallback icons
         if (fileType.includes('word')) thumbnailUrl = '/images/icons/word-icon.png';
         else if (fileType.includes('excel') || fileType.includes('spreadsheet')) thumbnailUrl = '/images/icons/excel-icon.png';
         else if (fileType.includes('powerpoint')) thumbnailUrl = '/images/icons/ppt-icon.png';
     }
 
+    // --- HANDLERS ---
     const handleSaveToggle = async (e) => {
         e.preventDefault();
         e.stopPropagation();
         if (!user) return alert('Please log in to save notes.');
+
         const config = { headers: { Authorization: `Bearer ${token}` } };
         const endpoint = isSaved ? `/users/unsave/${note._id}` : `/users/save/${note._id}`;
+
         try {
             await axios.put(endpoint, {}, config);
             isSaved ? unsaveNote(note._id) : saveNote(note._id);
@@ -226,6 +232,7 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
+            {/* THUMBNAIL SECTION */}
             <Link 
                 to={`/view/${note._id}`} 
                 style={{display: 'block', position: 'relative'}}
@@ -234,27 +241,26 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
                 <div style={styles.thumbnailContainer}>
                     <img 
                         src={thumbnailUrl} 
-                        srcSet={srcSet} // Undefined prevents rendering the attribute
-                        sizes="(max-width: 768px) 320px, 400px"
                         alt={note.title} 
+                        /* OPTIMIZATION APPLIED:
+                           1. Explicit width/height to fix CLS (matches Cloudinary request ratio)
+                           2. decoding="async" for smoother scrolling
+                        */
                         width="400"
                         height="300"
-                        // Eager load homepage images to prevent [Intervention] warnings
-                        loading={isHomePage ? "eager" : "lazy"}
+                        loading="lazy"
                         decoding="async"
                         style={isHovered ? {...styles.thumbnail, ...styles.thumbnailHover} : styles.thumbnail}
-                        onError={(e) => { 
-                            e.target.onerror = null; 
-                            e.target.src = '/images/icons/document-icon.png';
-                            e.target.srcset = ""; // Clear broken srcset on error
-                        }}
+                        onError={(e) => { e.target.onerror = null; e.target.src = '/images/icons/document-icon.png'; }}
                     />
+                    {/* Hover Overlay */}
                     <div style={isHovered ? {...styles.overlay, ...styles.overlayVisible} : styles.overlay}>
                         <FaEye size={30} color="#00d4ff" style={{filter: 'drop-shadow(0 0 10px rgba(0,212,255,0.8))'}} />
                     </div>
                 </div>
             </Link>
 
+            {/* CONTENT SECTION */}
             <div style={styles.content}>
                 <Link 
                     to={`/view/${note._id}`} 
@@ -276,6 +282,7 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
                     <div style={styles.metaItem}><FaCalendarAlt color="#ffcc00" size={12} /> {note.year}</div>
                 </div>
 
+                {/* ADMIN/AUTHOR ACTIONS */}
                 {showActions && (
                     <div style={{display: 'flex', gap: '10px', marginBottom: '1rem', marginTop: 'auto'}}>
                          <button 
@@ -318,6 +325,7 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
                     </div>
                 )}
 
+                {/* USER ACTIONS */}
                 <div style={styles.actions}>
                     <button 
                         onClick={handleSaveToggle} 
