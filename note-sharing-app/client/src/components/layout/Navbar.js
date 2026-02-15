@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios'; 
 import useAuth from '../../hooks/useAuth';
-import logo from '../../assets/peernotez-logo.png';
+// Removed local logo import to fix "Improve image delivery" warning
 import { FaBars, FaTimes, FaSearch, FaSignOutAlt, FaPaperPlane } from 'react-icons/fa';
 import { optimizeCloudinaryUrl } from '../../utils/cloudinaryHelper';
 import { ref, onValue } from 'firebase/database';
@@ -23,6 +23,9 @@ const Navbar = () => {
   
   // Database URL for REST API calls
   const DB_URL = process.env.REACT_APP_FIREBASE_DATABASE_URL;
+
+  // Cloudinary Logo URL
+  const LOGO_URL = 'https://res.cloudinary.com/dmtnonxtt/image/upload/v1771173206/g0jgf1zk1mmguvzfwfnt.png';
 
   // --- Event Listeners ---
   useEffect(() => {
@@ -137,11 +140,12 @@ const Navbar = () => {
       flexShrink: 0
     },
     logo: {
-      // FIX: Adjusted dimensions to match 894x279 aspect ratio (~3.2)
+      // Dimensions handled via width/height attributes + CSS
       width: scrolled ? '120px' : '140px', 
       height: scrolled ? '38px' : '44px',
       transition: 'all 0.3s ease',
-      filter: 'drop-shadow(0 0 15px rgba(102, 126, 234, 0.6))'
+      filter: 'drop-shadow(0 0 15px rgba(102, 126, 234, 0.6))',
+      objectFit: 'contain'
     },
     navLinks: {
       display: isMobile ? 'none' : 'flex',
@@ -353,7 +357,15 @@ const Navbar = () => {
               onClick={() => setMenuOpen(false)}
               aria-label="PeerNotez Home"
             >
-              <img src={logo} alt="PeerNotez Logo" style={styles.logo} />
+              <img 
+                // We use optimizeCloudinaryUrl to auto-serve WebP/AVIF and resize
+                src={optimizeCloudinaryUrl(LOGO_URL, { width: 140 })} 
+                alt="PeerNotez Logo" 
+                style={styles.logo} 
+                // Explicit attributes help prevent layout shift
+                width="140" 
+                height="44"
+              />
             </Link>
 
             {/* Desktop Navigation */}
@@ -559,7 +571,7 @@ const Navbar = () => {
             {user ? (
               <>
                 <div style={{height: '1px', background: 'rgba(255, 255, 255, 0.1)', margin: '1.5rem 0'}} />
-                
+                 
                 <Link to="/chat" onClick={() => setMenuOpen(false)} style={styles.mobileLink}>
                     <FaPaperPlane color="#667eea"/> 
                     <span>Messages</span>
@@ -585,7 +597,7 @@ const Navbar = () => {
                   />
                   Profile
                 </Link>
-                
+                 
                 <button 
                     onClick={handleLogout} 
                     style={{...styles.mobileLink, color: '#ff3b30', marginTop: '1rem', background: 'rgba(255, 59, 48, 0.05)', cursor: 'pointer', justifyContent: 'center', width: '100%', border: 'none'}}
