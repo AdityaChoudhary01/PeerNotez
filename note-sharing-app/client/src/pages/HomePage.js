@@ -263,6 +263,9 @@ const HomePage = () => {
   };
 
   const handleMouseMove = (e) => {
+    // PERFORMANCE FIX: Disable tilt on mobile/tablets to save Main Thread
+    if (window.innerWidth < 1024) return;
+
     if (!heroRef.current) return;
     const { left, top, width, height } = heroRef.current.getBoundingClientRect();
     const x = (e.clientX - left - width / 2) / 40;
