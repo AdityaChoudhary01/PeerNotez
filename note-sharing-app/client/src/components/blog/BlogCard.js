@@ -9,7 +9,7 @@ const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () 
     const [isHovered, setIsHovered] = useState(false);
     const [imageLoaded, setImageLoaded] = useState(false);
 
-    const MAIN_ADMIN_EMAIL = process.env.REACT_APP_MAIN_ADMIN_EMAIL;
+    const MAIN_ADMIN_EMAIL = import.meta.env.VITE_MAIN_ADMIN_EMAIL;
     const isSuperAdmin = blog.author?.email === MAIN_ADMIN_EMAIL;
 
     // --- LOGIC: ACCURATE READING TIME ---
