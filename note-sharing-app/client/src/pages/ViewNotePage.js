@@ -8,7 +8,7 @@ import useAuth from '../hooks/useAuth';
 import AuthorInfoBlock from '../components/common/AuthorInfoBlock';
 import { FaBookmark, FaDownload, FaList, FaExclamationTriangle, FaSpinner, FaFileAlt, FaInfoCircle, FaCheckCircle } from 'react-icons/fa';
 import AddToCollectionModal from '../components/notes/AddToCollectionModal';
-import RelatedNotes from '../components/notes/RelatedNotes'; // RESTORED IMPORT
+import RelatedNotes from '../components/notes/RelatedNotes';
 
 // Utility function: Converts bytes to human-readable format (KB, MB)
 const formatFileSize = (bytes) => {
@@ -19,15 +19,22 @@ const formatFileSize = (bytes) => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
 };
 
+// Helper to truncate text for SEO descriptions (Bing limit ~160 chars)
+const truncateText = (text, maxLength) => {
+    if (!text) return '';
+    if (text.length <= maxLength) return text;
+    return text.substr(0, maxLength) + '...';
+};
+
 const ViewNotePage = () => {
     const [note, setNote] = useState(null);
     const [error, setError] = useState('');
     const [isSaving, setIsSaving] = useState(false);
-    const [isSaved, setIsSaved] = useState(false); // NEW STATE FOR TOGGLE
+    const [isSaved, setIsSaved] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false); 
     const [refetchIndex, setRefetchIndex] = useState(0);
     const { noteId } = useParams();
-    const { token, isAuthenticated, user: currentUser, updateUser } = useAuth(); // ADDED updateUser
+    const { token, isAuthenticated, user: currentUser, updateUser } = useAuth();
 
     // --- INTERNAL CSS: HOLOGRAPHIC THEME ---
     const styles = {
@@ -57,20 +64,19 @@ const ViewNotePage = () => {
             marginBottom: '2rem'
         },
         title: {
-            fontSize: 'clamp(1.8rem, 5vw, 2.5rem)', // Responsive font size
+            fontSize: 'clamp(1.8rem, 5vw, 2.5rem)',
             fontWeight: '800',
             background: 'linear-gradient(to right, #00d4ff, #ff00cc)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             marginBottom: '0.5rem',
-            wordBreak: 'break-word' // Prevent overflow on small screens
+            wordBreak: 'break-word'
         },
         subtitle: {
             color: 'rgba(255, 255, 255, 0.7)',
             fontSize: '1rem',
             lineHeight: 1.6
         },
-        // RESTORED DESCRIPTION STYLE
         descriptionBox: {
             background: 'rgba(255, 255, 255, 0.05)',
             padding: '1.5rem',
@@ -101,7 +107,7 @@ const ViewNotePage = () => {
             gap: '8px',
             transition: 'all 0.3s ease',
             textDecoration: 'none',
-            flex: '1 1 auto', // Allow buttons to grow/shrink nicely
+            flex: '1 1 auto',
             justifyContent: 'center'
         },
         primaryBtn: {
@@ -109,7 +115,7 @@ const ViewNotePage = () => {
             color: '#fff',
             boxShadow: '0 4px 15px rgba(0, 212, 255, 0.3)'
         },
-        savedBtn: { // STYLE FOR SAVED STATE
+        savedBtn: {
             background: 'rgba(255, 255, 255, 0.1)',
             color: '#00ffaa',
             border: '1px solid rgba(0, 255, 170, 0.3)'
@@ -185,7 +191,6 @@ const ViewNotePage = () => {
         fetchNote();
     }, [noteId, refetchIndex, fetchNote]);
 
-    // CHECK IF NOTE IS IN USER'S SAVED LIST
     useEffect(() => {
         if (currentUser && currentUser.savedNotes) {
             setIsSaved(currentUser.savedNotes.includes(noteId));
@@ -205,12 +210,10 @@ const ViewNotePage = () => {
         setIsSaving(true);
         try {
             const config = { headers: { Authorization: `Bearer ${token}` } };
-            // TOGGLE ENDPOINT BASED ON CURRENT STATE
             const endpoint = isSaved ? `/users/unsave/${noteId}` : `/users/save/${noteId}`;
 
             const { data } = await axios.put(endpoint, {}, config);
             
-            // UPDATE LOCAL CONTEXT SO OTHER PAGES SYNC
             let newSavedNotes = [...(currentUser.savedNotes || [])];
             if (isSaved) {
                 newSavedNotes = newSavedNotes.filter(id => id !== noteId);
@@ -305,11 +308,21 @@ const ViewNotePage = () => {
     const displayFileSize = formatFileSize(note.fileSize);
 
     // =========================================================
-    // MERGED SEO LOGIC: Smart Metadata & Schema
+    // OPTIMIZED SEO LOGIC: Bing-Friendly & Social Ready
     // =========================================================
-    const seoDescription = note.description 
-        ? note.description 
-        : `Download "${note.title}" - free lecture notes for ${note.course} (${note.subject}) at ${note.university}. Read reviews and study materials uploaded by ${authorName}.`;
+
+    // 1. Create a short, punchy description
+    const rawDescription = note.description || 
+        `Download "${note.title}" - free lecture notes for ${note.course} (${note.subject}) at ${note.university}. Read reviews and study materials uploaded by ${authorName}.`;
+
+    // 2. Truncate to 160 characters for Bing/Google
+    const seoDescription = truncateText(rawDescription, 160);
+
+    // 3. Determine the image to show on Social Media (WhatsApp/Twitter)
+    // If the note is an image, use it. Otherwise, use a default logo.
+    const socialImage = (note.fileType && note.fileType.startsWith('image/')) 
+        ? note.filePath 
+        : 'https://peernotez.netlify.app/logo512.png';
 
     const noteSchema = {
         "@context": "https://schema.org",
@@ -318,17 +331,19 @@ const ViewNotePage = () => {
         "description": seoDescription,
         "provider": {
             "@type": "Organization",
-            "name": "PeerNotez"
+            "name": "PeerNotez",
+            "sameAs": "https://peernotez.netlify.app"
         },
         "hasPart": {
             "@type": "LearningResource",
             "name": note.title,
             "url": window.location.href,
-            "aggregateRating": {
+            "fileFormat": note.fileType,
+            "aggregateRating": note.numReviews > 0 ? {
                 "@type": "AggregateRating",
                 "ratingValue": (note.rating || 0).toFixed(1),
                 "reviewCount": note.numReviews
-            }
+            } : undefined
         },
         "about": note.subject,
         "inLanguage": "en"
@@ -337,16 +352,29 @@ const ViewNotePage = () => {
     return (
         <div style={styles.wrapper} className="view-note-wrapper">
             <Helmet>
+                {/* Standard Meta Tags */}
                 <title>{note.title} | PeerNotez</title>
                 <meta name="description" content={seoDescription} />
                 <link rel="canonical" href={`https://peernotez.netlify.app/view/${noteId}`} />
-                {note.numReviews > 0 && (
-                    <script type="application/ld+json"
-                        dangerouslySetInnerHTML={{
-                            __html: JSON.stringify(noteSchema)
-                        }}
-                    />
-                )}
+
+                {/* Open Graph / Facebook / WhatsApp / Discord */}
+                <meta property="og:type" content="article" />
+                <meta property="og:title" content={note.title} />
+                <meta property="og:description" content={seoDescription} />
+                <meta property="og:url" content={`https://peernotez.netlify.app/view/${noteId}`} />
+                <meta property="og:site_name" content="PeerNotez" />
+                <meta property="og:image" content={socialImage} />
+
+                {/* Twitter */}
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content={note.title} />
+                <meta name="twitter:description" content={seoDescription} />
+                <meta name="twitter:image" content={socialImage} />
+
+                {/* Structured Data (JSON-LD) */}
+                <script type="application/ld+json">
+                    {JSON.stringify(noteSchema)}
+                </script>
             </Helmet>
 
             <div style={styles.card} className="view-note-card">
@@ -361,7 +389,6 @@ const ViewNotePage = () => {
                         </p>
                     </div>
 
-                    {/* RESTORED: Description UI Section */}
                     {note.description && (
                         <div style={styles.descriptionBox}>
                             <h4 style={{display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', color: '#00d4ff', fontSize: '0.9rem', textTransform: 'uppercase'}}>
@@ -417,7 +444,6 @@ const ViewNotePage = () => {
                 {renderFileViewer()}
             </div>
 
-            {/* ADDED: Related Notes Section */}
             <RelatedNotes currentNoteId={noteId} />
 
             <div style={{marginTop: '3rem'}}>
