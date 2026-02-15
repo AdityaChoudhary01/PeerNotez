@@ -6,152 +6,85 @@
   publish = "build"
 
 # =======================================================
-# 1. SECURITY HEADERS
-# =======================================================
-[[headers]]
-  for = "/*"
-  [headers.values]
-
-    # Prevent MIME sniffing
-    X-Content-Type-Options = "nosniff"
-
-    # XSS protection (legacy browsers)
-    X-XSS-Protection = "1; mode=block"
-
-    # Referrer policy
-    Referrer-Policy = "strict-origin-when-cross-origin"
-
-    # Modern Clickjacking protection (instead of X-Frame-Options)
-    # (Firebase Auth requires iframe usage)
-    
-    Content-Security-Policy = """
-      default-src 'self';
-      
-      script-src 'self' 'unsafe-inline' 'unsafe-eval'
-        https://apis.google.com
-        https://www.gstatic.com
-        https://www.googleapis.com
-        https://www.googletagmanager.com
-        https://accounts.google.com;
-
-      style-src 'self' 'unsafe-inline'
-        https://fonts.googleapis.com;
-
-      img-src 'self' data:
-        https://res.cloudinary.com
-        https://ui-avatars.com
-        https://api.dicebear.com
-        https://lh3.googleusercontent.com
-        https://*.googleusercontent.com;
-
-      font-src 'self' data:
-        https://fonts.gstatic.com;
-
-      connect-src 'self'
-        https://identitytoolkit.googleapis.com
-        https://securetoken.googleapis.com
-        https://firebaseinstallations.googleapis.com
-        https://www.googleapis.com
-        https://*.firebaseio.com
-        https://peernotez-chat-default-rtdb.asia-southeast1.firebasedatabase.app
-        https://res.cloudinary.com
-        https://peernotez.vercel.app;
-
-      frame-src 'self'
-        https://accounts.google.com
-        https://*.firebaseapp.com
-        https://*.web.app
-        https://peernotez.vercel.app;
-
-      frame-ancestors 'self';
-    """
-
-    # Prevent stale handshake caching
-    Cache-Control = "public, max-age=0, must-revalidate"
-
-
-# =======================================================
-# 2. CACHING CONTROL
+# 1. Headers for caching control
 # =======================================================
 
-# Always fetch latest index.html
 [[headers]]
-  for = "/index.html"
-  [headers.values]
-    Cache-Control = "no-cache, no-store, must-revalidate"
+# Always fetch latest index.html to prevent loading stale build assets
+for = "/index.html"
+[headers.values]
+  Cache-Control = "no-cache, no-store, must-revalidate"
 
-# Service worker MUST NOT be cached
 [[headers]]
-  for = "/service-worker.js"
-  [headers.values]
-    Cache-Control = "no-cache, no-store, must-revalidate"
-    Pragma = "no-cache"
-    Expires = "0"
+# Service worker MUST never be cached, or updates will never be detected
+for = "/service-worker.js"
+[headers.values]
+  Cache-Control = "no-cache, no-store, must-revalidate"
+  Pragma = "no-cache"
+  Expires = "0"
 
-# Cache hashed JS files
 [[headers]]
-  for = "/*.js"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
+# JS files contain unique hashes (e.g. main.e9e0c2d7.js), so they are safe to cache
+for = "/*.js"
+[headers.values]
+  Cache-Control = "public, max-age=31536000, immutable"
 
-# Cache hashed CSS files
 [[headers]]
-  for = "/*.css"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
+# CSS files contain unique hashes, safe to cache long-term
+for = "/*.css"
+[headers.values]
+  Cache-Control = "public, max-age=31536000, immutable"
 
-# Manifest
 [[headers]]
-  for = "/manifest.json"
-  [headers.values]
-    Cache-Control = "no-cache"
-    Content-Type = "application/json"
+# Manifest JSON
+for = "/manifest.json"
+[headers.values]
+  Cache-Control = "no-cache"
+  Content-Type = "application/json"
 
-# Dynamic sitemap
+# Dynamic Sitemap
 [[headers]]
-  for = "/sitemap.xml"
-  [headers.values]
-    Content-Type = "application/xml"
-    X-Robots-Tag = "all"
-    Access-Control-Allow-Origin = "*"
-    Cache-Control = "no-cache"
+for = "/sitemap.xml"
+[headers.values]
+  Content-Type = "application/xml"
+  X-Robots-Tag = "all"
+  Access-Control-Allow-Origin = "*"
+  Cache-Control = "no-cache"
 
+[[headers]]
 # Static sitemap
-[[headers]]
-  for = "/static-sitemap.xml"
-  [headers.values]
-    Content-Type = "application/xml"
-    X-Robots-Tag = "all"
-    Access-Control-Allow-Origin = "*"
-    Cache-Control = "no-cache"
-
+for = "/static-sitemap.xml"
+[headers.values]
+  Content-Type = "application/xml"
+  X-Robots-Tag = "all"
+  Access-Control-Allow-Origin = "*"
+  Cache-Control = "no-cache"
 
 # =======================================================
-# 3. REDIRECTS
+# 2. Redirects
 # =======================================================
 
 # Dynamic sitemap redirect
 [[redirects]]
-  from = "/sitemap.xml"
-  to = "https://peernotez.vercel.app/sitemap.xml"
-  status = 200
-  force = true
+from = "/sitemap.xml"
+to = "https://peernotez.vercel.app/sitemap.xml"
+status = 200
+force = true
 
-# Static sitemap
+# Static sitemap redirect (legacy)
 [[redirects]]
-  from = "/static-sitemap.xml"
-  to = "/static-sitemap.xml"
-  status = 200
+from = "/static-sitemap.xml"
+to = "/static-sitemap.xml"
+status = 200
 
-# SPA catch-all (React Router)
+# SPA catch-all route (React/Vue/Angular)
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-
+from = "/*"
+to = "/index.html"
+status = 200
 
 # =======================================================
-# 4. PRERENDERING
+# 3. Prerendering
 # =======================================================
 [prerender]
   enabled = true
