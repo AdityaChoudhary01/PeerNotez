@@ -16,7 +16,7 @@
     "react-helmet": "^6.1.0"
   },
   "scripts": {
-    "dev": "vite",
+    "start": "vite",
     "build": "vite build",
     "preview": "vite preview"
   },
@@ -40,3 +40,4 @@
     "autoprefixer": "^10.4.19"
   }
 }
+
