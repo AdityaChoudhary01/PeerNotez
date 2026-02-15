@@ -16,7 +16,7 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
     // 1. Check if on Homepage
     const isHomePage = location.pathname === '/';
 
-    // 2. Check if device is Mobile
+    // 2. Check if device is Mobile (Kept for Layout Styling)
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     const [isHovered, setIsHovered] = useState(false);
 
@@ -173,8 +173,9 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
         }
     };
 
-    // --- LOGIC: THUMBNAIL GENERATION ---
+    // --- LOGIC: THUMBNAIL GENERATION WITH SRCSET ---
     let thumbnailUrl = '/images/icons/document-icon.png';
+    let srcSet = null;
     const fileType = note.fileType || '';
 
     if (note.cloudinaryId) {
@@ -185,11 +186,24 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
              baseUrl = `https://res.cloudinary.com/${cloudName}/image/upload/${note.cloudinaryId}.jpg`;
         }
         
+        // Generate responsive versions
+        // 320w (mobile) and 400w (desktop card) - maintaining approx 4:3 ratio
         if (fileType.startsWith('image/')) {
-            // We request 400x300 to match the 4:3 aspect ratio explicitly set in the img tag below
+            // Default Fill Crop
             thumbnailUrl = optimizeCloudinaryUrl(baseUrl, { width: 400, height: 300 });
+            const smUrl = optimizeCloudinaryUrl(baseUrl, { width: 320, height: 240 });
+            const lgUrl = optimizeCloudinaryUrl(baseUrl, { width: 400, height: 300 });
+            
+            srcSet = `${smUrl} 320w, ${lgUrl} 400w`;
+
         } else if (fileType === 'application/pdf') {
-            thumbnailUrl = optimizeCloudinaryUrl(baseUrl, { width: 400, height: 300, pg: 1, crop: 'pad' });
+            // PDF specific opts
+            const opts = { pg: 1, crop: 'pad' };
+            thumbnailUrl = optimizeCloudinaryUrl(baseUrl, { width: 400, height: 300, ...opts });
+            const smUrl = optimizeCloudinaryUrl(baseUrl, { width: 320, height: 240, ...opts });
+            const lgUrl = optimizeCloudinaryUrl(baseUrl, { width: 400, height: 300, ...opts });
+            
+            srcSet = `${smUrl} 320w, ${lgUrl} 400w`;
         }
     } else {
         // Fallback icons
@@ -241,10 +255,13 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
                 <div style={styles.thumbnailContainer}>
                     <img 
                         src={thumbnailUrl} 
+                        srcSet={srcSet || undefined}
+                        sizes="(max-width: 768px) 320px, 400px"
                         alt={note.title} 
                         /* OPTIMIZATION APPLIED:
-                           1. Explicit width/height to fix CLS (matches Cloudinary request ratio)
-                           2. decoding="async" for smoother scrolling
+                           1. explicit width/height
+                           2. srcset/sizes for browser-native selection
+                           3. decoding async
                         */
                         width="400"
                         height="300"
@@ -365,4 +382,3 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
 };
 
 export default NoteCard;
-
