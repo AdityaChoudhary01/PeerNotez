@@ -19,8 +19,8 @@
     X-Content-Type-Options = "nosniff"
     # Controls how much referrer information is sent
     Referrer-Policy = "strict-origin-when-cross-origin"
-    # Content Security Policy (Adjusted to allow external resources like Firebase/Cloudinary)
-    Content-Security-Policy = "default-src 'self' https:; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; font-src 'self' https: data:; connect-src 'self' https:;"
+    # Content Security Policy (Updated to match index.html and allow Firebase/Cloudinary)
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https://res.cloudinary.com https://ui-avatars.com https://api.dicebear.com https://lh3.googleusercontent.com; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://peernotez.vercel.app https://res.cloudinary.com https://peernotez-chat-default-rtdb.asia-southeast1.firebasedatabase.app; frame-src 'self' https://peernotez.vercel.app https://peernotez-chat.firebaseapp.com;"
     # PERFORMANCE FIX: Ensures the browser re-validates the handshake to reduce latency errors
     Cache-Control = "public, max-age=0, must-revalidate"
 
