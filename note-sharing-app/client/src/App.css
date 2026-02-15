@@ -1,13 +1,15 @@
 /* src/App.css */
 
 /* =================================================================
-   ULTRA-MODERN HYPER-FUTURISTIC UI FRAMEWORK 2026 (PERF-UPDATED)
+   ULTRA-MODERN HYPER-FUTURISTIC UI FRAMEWORK 2026 (PERF-OPTIMIZED)
    Next-Generation Design System with Advanced Animations
-   Updates included:
-   - Skeleton Fix (GPU transform shimmer; avoids per-frame background recalcs)
-   - Blur Removal on Mobile/Tablet (disable backdrop-filter below 1024px)
-   - Containment (.container contain: layout style)
-   - Hardware Acceleration (will-change: transform on cards)
+   
+   PERFORMANCE UPDATES:
+   ✅ Skeleton Fix: GPU-accelerated transform shimmer (was CPU-heavy background-position)
+   ✅ Blur Removal: Disabled backdrop-filter on mobile/tablet (<1024px)
+   ✅ Containment: Added layout/style containment to .container
+   ✅ Hardware Acceleration: will-change + translateZ(0) on animated cards
+   ✅ Reduced Motion: Accessibility support for vestibular disorders
    ================================================================= */
 
 /* === ROOT VARIABLES === */
@@ -131,7 +133,7 @@ body::before {
   opacity: 0.3;
   animation: float 20s infinite ease-in-out;
   box-shadow: 0 0 10px var(--neon-blue);
-  will-change: transform; /* minor perf win for frequent movement */
+  will-change: transform;
 }
 
 @keyframes float {
@@ -152,8 +154,6 @@ body::before {
   transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
   position: relative;
   overflow: hidden;
-
-  /* Hardware Acceleration: prep compositor for hover/touch transforms */
   will-change: transform;
   transform: translateZ(0);
 }
@@ -271,8 +271,6 @@ body::before {
   padding: var(--space-xl);
   transition: transform var(--transition-base), box-shadow var(--transition-base);
   overflow: hidden;
-
-  /* Hardware Acceleration */
   will-change: transform;
   transform: translateZ(0);
 }
@@ -362,20 +360,24 @@ body::before {
   padding: 0 0.5rem;
 }
 
-/* === SKELETON LOADER (PERF FIX) === */
-/* Old approach animated background-position (main-thread heavy).
-   New approach: shimmer overlay translated via transform (compositor/GPU). */
-.skeleton {
+/* === SKELETON LOADER (GPU-ACCELERATED) === */
+/* ✅ PERFORMANCE FIX: Changed from background-position (CPU) to transform (GPU) */
+.skeleton,
+.skeletonLoading {
   position: relative;
   overflow: hidden;
   border-radius: var(--radius-md);
   background: rgba(255, 255, 255, 0.05);
 }
 
-.skeleton::after {
+.skeleton::after,
+.skeletonLoading::after {
   content: '';
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   transform: translateX(-100%);
   background: linear-gradient(
     90deg,
@@ -386,11 +388,11 @@ body::before {
     transparent 100%
   );
   will-change: transform;
-  animation: skeletonShimmer 1.2s ease-in-out infinite;
+  animation: skeletonLoading 1.5s ease-in-out infinite;
   pointer-events: none;
 }
 
-@keyframes skeletonShimmer {
+@keyframes skeletonLoading {
   0%   { transform: translateX(-100%); }
   100% { transform: translateX(100%); }
 }
@@ -546,13 +548,12 @@ body::before {
   color: white;
 }
 
-/* === CONTAINER (CONTAINMENT ADDED) === */
+/* === CONTAINER (WITH CONTAINMENT) === */
+/* ✅ PERFORMANCE FIX: Added layout/style containment */
 .container {
   max-width: 1400px;
   margin: 0 auto;
   padding: 0 var(--space-lg);
-
-  /* Containment: reduce global layout/style work */
   contain: layout style;
 }
 
@@ -706,7 +707,7 @@ body::before {
   box-shadow: 0 0 20px rgba(255, 0, 128, 0.5);
 }
 
-/* === RESPONSIVE UTILITIES + MOBILE PERF PATCHES === */
+/* === RESPONSIVE UTILITIES + MOBILE PERFORMANCE === */
 @media (max-width: 768px) {
   :root {
     --space-xl: 1.5rem;
@@ -723,9 +724,7 @@ body::before {
   }
 }
 
-/* Blur Removal (Mobile/Tablet):
-   backdrop-filter is expensive on many mobile GPUs.
-   Disable below 1024px for smoother scroll + better Speed Index. */
+/* ✅ PERFORMANCE FIX: Disable backdrop-filter on mobile/tablet */
 @media (max-width: 1024px) {
   .glass-card,
   .holo-card,
@@ -734,7 +733,7 @@ body::before {
     -webkit-backdrop-filter: none !important;
   }
 
-  /* Optional: slightly boost solid bg since blur is gone */
+  /* Compensate with slightly stronger solid backgrounds */
   .glass-card {
     background: rgba(255, 255, 255, 0.06);
   }
@@ -744,9 +743,11 @@ body::before {
   }
 }
 
-/* Reduced Motion accessibility */
+/* === ACCESSIBILITY: REDUCED MOTION === */
 @media (prefers-reduced-motion: reduce) {
-  * {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
@@ -758,5 +759,9 @@ body::before {
   .neon-text { animation: none !important; }
   .gradient-text { animation: none !important; }
   .holo-card::before { animation: none !important; }
-  .skeleton::after { animation: none !important; transform: translateX(0) !important; }
+  .skeleton::after,
+  .skeletonLoading::after { 
+    animation: none !important; 
+    transform: translateX(0) !important; 
+  }
 }
