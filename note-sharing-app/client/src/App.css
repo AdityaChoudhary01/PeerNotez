@@ -4,9 +4,6 @@
    ULTRA-MODERN HYPER-FUTURISTIC UI FRAMEWORK 2026
    Next-Generation Design System with Advanced Animations
    ================================================================= */
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Sans:wght@400;500;700&family=Orbitron:wght@400;700;900&display=swap');
-
 /* === ROOT VARIABLES === */
 :root {
   /* Premium Color Palette */
@@ -685,3 +682,4 @@ body::before {
 .z-30 { z-index: 30; }
 .z-40 { z-index: 40; }
 .z-50 { z-index: 50; }
+
