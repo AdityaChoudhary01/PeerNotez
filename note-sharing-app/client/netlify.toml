@@ -6,7 +6,24 @@
   publish = "build"
 
 # =======================================================
-# 1. Headers for caching control
+# 1. SECURITY HEADERS (NEW - Fixes PageSpeed "Best Practices")
+# =======================================================
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # Protects against clickjacking
+    X-Frame-Options = "DENY"
+    # Protects against XSS attacks
+    X-XSS-Protection = "1; mode=block"
+    # Prevents MIME-type sniffing
+    X-Content-Type-Options = "nosniff"
+    # Controls how much referrer information is sent
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    # Content Security Policy (Adjusted to allow external resources like Firebase/Cloudinary)
+    Content-Security-Policy = "default-src 'self' https:; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; font-src 'self' https: data:; connect-src 'self' https:;"
+
+# =======================================================
+# 2. Caching Control Headers
 # =======================================================
 
 [[headers]]
@@ -61,7 +78,7 @@ for = "/static-sitemap.xml"
   Cache-Control = "no-cache"
 
 # =======================================================
-# 2. Redirects
+# 3. Redirects
 # =======================================================
 
 # Dynamic sitemap redirect
@@ -84,7 +101,7 @@ to = "/index.html"
 status = 200
 
 # =======================================================
-# 3. Prerendering
+# 4. Prerendering
 # =======================================================
 [prerender]
   enabled = true
