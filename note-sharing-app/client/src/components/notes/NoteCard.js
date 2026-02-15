@@ -175,6 +175,7 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
 
     // --- LOGIC: THUMBNAIL GENERATION ---
     let thumbnailUrl = '/images/icons/document-icon.png';
+    let srcSet = undefined; // Initialize srcSet
     const fileType = note.fileType || '';
 
     if (note.cloudinaryId) {
@@ -185,11 +186,22 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
              baseUrl = `https://res.cloudinary.com/${cloudName}/image/upload/${note.cloudinaryId}.jpg`;
         }
         
+        // PERFORMANCE FIX: Generate responsive image variants
         if (fileType.startsWith('image/')) {
-            // We request 400x300 to match the 4:3 aspect ratio explicitly set in the img tag below
-            thumbnailUrl = optimizeCloudinaryUrl(baseUrl, { width: 400, height: 300 });
+            // Small variant (300px width) for Mobile
+            const imgSmall = optimizeCloudinaryUrl(baseUrl, { width: 300, height: 225 });
+            // Large variant (400px width) for Desktop
+            const imgLarge = optimizeCloudinaryUrl(baseUrl, { width: 400, height: 300 });
+
+            thumbnailUrl = imgSmall; // Default src
+            srcSet = `${imgSmall} 300w, ${imgLarge} 400w`;
+
         } else if (fileType === 'application/pdf') {
-            thumbnailUrl = optimizeCloudinaryUrl(baseUrl, { width: 400, height: 300, pg: 1, crop: 'pad' });
+            const imgSmall = optimizeCloudinaryUrl(baseUrl, { width: 300, height: 225, pg: 1, crop: 'pad' });
+            const imgLarge = optimizeCloudinaryUrl(baseUrl, { width: 400, height: 300, pg: 1, crop: 'pad' });
+
+            thumbnailUrl = imgSmall;
+            srcSet = `${imgSmall} 300w, ${imgLarge} 400w`;
         }
     } else {
         // Fallback icons
@@ -240,7 +252,9 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
             >
                 <div style={styles.thumbnailContainer}>
                     <img 
-                        src={thumbnailUrl} 
+                        src={thumbnailUrl}
+                        srcSet={srcSet} // Added for responsive loading
+                        sizes="(max-width: 768px) 100vw, 400px" // Tells browser to use smaller image on mobile
                         alt={note.title} 
                         /* OPTIMIZATION APPLIED:
                            1. Explicit width/height to fix CLS (matches Cloudinary request ratio)
