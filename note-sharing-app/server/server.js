@@ -3,10 +3,8 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
-const path = require('path');
 require('dotenv').config();
 
 // --- Schema Imports ---
@@ -34,6 +32,7 @@ app.use(xss());
 // --- CORS Configuration ---
 const allowedOrigins = [
   'https://peernotez.netlify.app',
+  'http://localhost:3000' // Useful for local dev
 ];
 const corsOptions = {
   origin: function (origin, callback) {
@@ -49,39 +48,52 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
-// --- Rate Limiting ---
-const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  message: 'Too many requests from this IP, please try again after 15 minutes.',
-});
-app.use('/api/', apiLimiter);
+// NOTE: Rate Limiting removed for Vercel. 
+// In serverless, memory is ephemeral, making memory-store rate limiters ineffective and slow.
 
-// --- Database Connection (Serverless Optimized) ---
-let isConnected = false;
+// --- Database Connection (Serverless Optimized Pattern) ---
+let cachedDb = null;
+let cachedPromise = null;
 
 const connectDB = async () => {
-    if (isConnected) return;
+    // 1. If we have a connection, use it immediately.
+    if (cachedDb && mongoose.connection.readyState === 1) {
+        return cachedDb;
+    }
 
-    try {
-        // REMOVED deprecated options to clean up Vercel logs
-        const db = await mongoose.connect(process.env.MONGO_URI, {
-            maxPoolSize: 10,
+    // 2. If a connection is already being established, wait for that same promise.
+    // This prevents multiple requests from spawning multiple connections.
+    if (!cachedPromise) {
+        const opts = {
+            maxPoolSize: 5, // Lower pool size is better for serverless (prevents connection exhaustion)
             serverSelectionTimeoutMS: 5000,
             socketTimeoutMS: 45000,
+            bufferCommands: false, // Fail fast if DB is down
+        };
+
+        cachedPromise = mongoose.connect(process.env.MONGO_URI, opts).then((mongoose) => {
+            console.log('✅ New MongoDB connection established.');
+            return mongoose;
+        }).catch((err) => {
+            console.error('❌ MongoDB Connection Error:', err);
+            cachedPromise = null; // Reset promise on failure so we can try again
+            throw err;
         });
-        isConnected = db.connections[0].readyState;
-        console.log('✅ MongoDB connected successfully.');
-    } catch (err) {
-        console.error('❌ MongoDB Connection Error:', err);
-        isConnected = false;
     }
+
+    cachedDb = await cachedPromise;
+    return cachedDb;
 };
 
-// Middleware to ensure DB is connected on every request before hitting routes
+// Middleware to ensure DB is connected on every request
+// This is now efficient because it reuses the pending promise if one exists
 app.use(async (req, res, next) => {
-    await connectDB();
-    next();
+    try {
+        await connectDB();
+        next();
+    } catch (error) {
+        next(error);
+    }
 });
 
 // --- Route Mounting (API Routes) ---
@@ -111,7 +123,7 @@ app.use((err, req, res, next) => {
 module.exports = app;
 
 // Only start the standalone server if running locally
-if (process.env.NODE_ENV !== 'production') {
+if (require.main === module) {
     const PORT = process.env.PORT || 5001;
     app.listen(PORT, () => console.log(`🚀 Local Server is running on port ${PORT}`));
 }
