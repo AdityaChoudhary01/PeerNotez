@@ -33,7 +33,7 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
 
     // Safely check if savedNotes exists
     const isSaved = user?.savedNotes ? user.savedNotes.includes(note._id) : false;
-    const cloudName = process.env.REACT_APP_CLOUDINARY_CLOUD_NAME || 'demo';
+    const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'demo';
 
     // --- INTERNAL CSS: DEEP SPACE HOLOGRAPHIC THEME ---
     const styles = {
@@ -365,3 +365,4 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
 };
 
 export default NoteCard;
+
