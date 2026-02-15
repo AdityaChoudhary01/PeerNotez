@@ -1,9 +1,15 @@
 /* src/App.css */
 
 /* =================================================================
-   ULTRA-MODERN HYPER-FUTURISTIC UI FRAMEWORK 2026
+   ULTRA-MODERN HYPER-FUTURISTIC UI FRAMEWORK 2026 (PERF-UPDATED)
    Next-Generation Design System with Advanced Animations
+   Updates included:
+   - Skeleton Fix (GPU transform shimmer; avoids per-frame background recalcs)
+   - Blur Removal on Mobile/Tablet (disable backdrop-filter below 1024px)
+   - Containment (.container contain: layout style)
+   - Hardware Acceleration (will-change: transform on cards)
    ================================================================= */
+
 /* === ROOT VARIABLES === */
 :root {
   /* Premium Color Palette */
@@ -11,7 +17,7 @@
   --bg-secondary: #120828;
   --bg-tertiary: #1A0F35;
   --bg-card: rgba(255, 255, 255, 0.03);
-  
+
   /* Vibrant Gradient System */
   --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #00f2fe 100%);
   --gradient-secondary: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
@@ -19,7 +25,7 @@
   --gradient-sunset: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 25%, #f093fb 50%, #4facfe 100%);
   --gradient-ocean: linear-gradient(135deg, #2afadf 0%, #4c83ff 50%, #bc3cff 100%);
   --gradient-fire: linear-gradient(135deg, #ff0844 0%, #ffb199 50%, #ff0000 100%);
-  
+
   /* Neon Accent Colors */
   --neon-blue: #00f2fe;
   --neon-purple: #b388ff;
@@ -27,17 +33,17 @@
   --neon-green: #00ff9f;
   --neon-yellow: #ffea00;
   --neon-orange: #ff6f00;
-  
+
   /* Glass Effects */
   --glass-bg: rgba(255, 255, 255, 0.05);
   --glass-border: rgba(255, 255, 255, 0.1);
   --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-  
+
   /* Typography */
   --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-display: 'Space Grotesk', sans-serif;
   --font-accent: 'Orbitron', monospace;
-  
+
   /* Spacing Scale */
   --space-xs: 0.25rem;
   --space-sm: 0.5rem;
@@ -46,14 +52,14 @@
   --space-xl: 2rem;
   --space-2xl: 3rem;
   --space-3xl: 4rem;
-  
+
   /* Border Radius */
   --radius-sm: 8px;
   --radius-md: 16px;
   --radius-lg: 24px;
   --radius-xl: 32px;
   --radius-full: 9999px;
-  
+
   /* Transitions */
   --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-base: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -91,7 +97,7 @@ body::before {
   left: 0;
   width: 100%;
   height: 100%;
-  background: 
+  background:
     radial-gradient(circle at 20% 50%, rgba(40, 90, 72, 0.15) 0%, transparent 50%),
     radial-gradient(circle at 80% 80%, rgba(47, 30, 65, 0.15) 0%, transparent 50%),
     radial-gradient(circle at 40% 20%, rgba(12, 70, 50, 0.1) 0%, transparent 50%);
@@ -125,6 +131,7 @@ body::before {
   opacity: 0.3;
   animation: float 20s infinite ease-in-out;
   box-shadow: 0 0 10px var(--neon-blue);
+  will-change: transform; /* minor perf win for frequent movement */
 }
 
 @keyframes float {
@@ -142,9 +149,13 @@ body::before {
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--glass-shadow);
-  transition: all var(--transition-base);
+  transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
   position: relative;
   overflow: hidden;
+
+  /* Hardware Acceleration: prep compositor for hover/touch transforms */
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 .glass-card::before {
@@ -163,9 +174,9 @@ body::before {
 }
 
 .glass-card:hover {
-  transform: translateY(-5px) scale(1.02);
+  transform: translateY(-5px) scale(1.02) translateZ(0);
   border-color: rgba(255, 255, 255, 0.2);
-  box-shadow: 
+  box-shadow:
     0 20px 60px rgba(31, 38, 135, 0.5),
     0 0 40px rgba(102, 126, 234, 0.3);
 }
@@ -183,8 +194,10 @@ body::before {
   font-size: 1rem;
   cursor: pointer;
   overflow: hidden;
-  transition: all var(--transition-elastic);
+  transition: transform var(--transition-elastic), box-shadow var(--transition-elastic);
   box-shadow: 0 10px 40px rgba(102, 126, 234, 0.4);
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 .btn-magnetic::before {
@@ -206,12 +219,12 @@ body::before {
 }
 
 .btn-magnetic:hover {
-  transform: translateY(-3px) scale(1.05);
+  transform: translateY(-3px) scale(1.05) translateZ(0);
   box-shadow: 0 15px 50px rgba(102, 126, 234, 0.6);
 }
 
 .btn-magnetic:active {
-  transform: translateY(-1px) scale(0.98);
+  transform: translateY(-1px) scale(0.98) translateZ(0);
 }
 
 /* === NEON TEXT === */
@@ -252,11 +265,16 @@ body::before {
   position: relative;
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
   backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-xl);
   padding: var(--space-xl);
-  transition: all var(--transition-base);
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
   overflow: hidden;
+
+  /* Hardware Acceleration */
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 .holo-card::before {
@@ -289,8 +307,8 @@ body::before {
 }
 
 .holo-card:hover {
-  transform: translateY(-10px) scale(1.03);
-  box-shadow: 
+  transform: translateY(-10px) scale(1.03) translateZ(0);
+  box-shadow:
     0 30px 80px rgba(102, 126, 234, 0.4),
     inset 0 0 40px rgba(255, 255, 255, 0.05);
 }
@@ -311,7 +329,7 @@ body::before {
   color: white;
   font-family: var(--font-primary);
   font-size: 1rem;
-  transition: all var(--transition-base);
+  transition: border-color var(--transition-base), box-shadow var(--transition-base), background var(--transition-base);
   outline: none;
 }
 
@@ -344,22 +362,37 @@ body::before {
   padding: 0 0.5rem;
 }
 
-/* === SKELETON LOADER === */
+/* === SKELETON LOADER (PERF FIX) === */
+/* Old approach animated background-position (main-thread heavy).
+   New approach: shimmer overlay translated via transform (compositor/GPU). */
 .skeleton {
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.05) 25%,
-    rgba(255, 255, 255, 0.1) 50%,
-    rgba(255, 255, 255, 0.05) 75%
-  );
-  background-size: 200% 100%;
-  animation: skeletonLoading 1.5s ease-in-out infinite;
+  position: relative;
+  overflow: hidden;
   border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.05);
 }
 
-@keyframes skeletonLoading {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.10) 35%,
+    rgba(255, 255, 255, 0.18) 50%,
+    rgba(255, 255, 255, 0.10) 65%,
+    transparent 100%
+  );
+  will-change: transform;
+  animation: skeletonShimmer 1.2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes skeletonShimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
 
 /* === PROGRESS BAR === */
@@ -390,6 +423,7 @@ body::before {
   height: 100%;
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
   animation: progressShine 1.5s infinite;
+  will-change: transform;
 }
 
 @keyframes progressShine {
@@ -407,8 +441,11 @@ body::before {
   font-size: 0.75rem;
   font-weight: 600;
   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border: 1px solid;
-  transition: all var(--transition-base);
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 .badge-primary {
@@ -436,7 +473,7 @@ body::before {
 }
 
 .badge:hover {
-  transform: scale(1.1);
+  transform: scale(1.1) translateZ(0);
   box-shadow: 0 0 20px currentColor;
 }
 
@@ -509,87 +546,14 @@ body::before {
   color: white;
 }
 
-/* === RESPONSIVE UTILITIES === */
-@media (max-width: 768px) {
-  :root {
-    --space-xl: 1.5rem;
-    --space-2xl: 2rem;
-    --space-3xl: 2.5rem;
-  }
-  
-  .glass-card:hover {
-    transform: translateY(-2px) scale(1.01);
-  }
-  
-  .holo-card:hover {
-    transform: translateY(-5px) scale(1.01);
-  }
-}
-
-/* === ANIMATION UTILITIES === */
-.fade-in {
-  animation: fadeIn 0.6s ease-in-out;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.slide-in-left {
-  animation: slideInLeft 0.6s ease-out;
-}
-
-@keyframes slideInLeft {
-  from { opacity: 0; transform: translateX(-50px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-
-.slide-in-right {
-  animation: slideInRight 0.6s ease-out;
-}
-
-@keyframes slideInRight {
-  from { opacity: 0; transform: translateX(50px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-
-.scale-in {
-  animation: scaleIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-}
-
-@keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.5); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-.rotate-in {
-  animation: rotateIn 0.6s ease-out;
-}
-
-@keyframes rotateIn {
-  from { opacity: 0; transform: rotate(-180deg) scale(0); }
-  to { opacity: 1; transform: rotate(0) scale(1); }
-}
-
-/* === GLOW EFFECTS === */
-.glow-blue {
-  box-shadow: 0 0 20px rgba(0, 242, 254, 0.5);
-}
-
-.glow-purple {
-  box-shadow: 0 0 20px rgba(179, 136, 255, 0.5);
-}
-
-.glow-pink {
-  box-shadow: 0 0 20px rgba(255, 0, 128, 0.5);
-}
-
-/* === CONTAINER === */
+/* === CONTAINER (CONTAINMENT ADDED) === */
 .container {
   max-width: 1400px;
   margin: 0 auto;
   padding: 0 var(--space-lg);
+
+  /* Containment: reduce global layout/style work */
+  contain: layout style;
 }
 
 /* === GRID SYSTEM === */
@@ -683,3 +647,116 @@ body::before {
 .z-40 { z-index: 40; }
 .z-50 { z-index: 50; }
 
+/* === ANIMATION UTILITIES === */
+.fade-in {
+  animation: fadeIn 0.6s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.slide-in-left {
+  animation: slideInLeft 0.6s ease-out;
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-50px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.slide-in-right {
+  animation: slideInRight 0.6s ease-out;
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(50px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.scale-in {
+  animation: scaleIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.5); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.rotate-in {
+  animation: rotateIn 0.6s ease-out;
+}
+
+@keyframes rotateIn {
+  from { opacity: 0; transform: rotate(-180deg) scale(0); }
+  to { opacity: 1; transform: rotate(0) scale(1); }
+}
+
+/* === GLOW EFFECTS === */
+.glow-blue {
+  box-shadow: 0 0 20px rgba(0, 242, 254, 0.5);
+}
+
+.glow-purple {
+  box-shadow: 0 0 20px rgba(179, 136, 255, 0.5);
+}
+
+.glow-pink {
+  box-shadow: 0 0 20px rgba(255, 0, 128, 0.5);
+}
+
+/* === RESPONSIVE UTILITIES + MOBILE PERF PATCHES === */
+@media (max-width: 768px) {
+  :root {
+    --space-xl: 1.5rem;
+    --space-2xl: 2rem;
+    --space-3xl: 2.5rem;
+  }
+
+  .glass-card:hover {
+    transform: translateY(-2px) scale(1.01) translateZ(0);
+  }
+
+  .holo-card:hover {
+    transform: translateY(-5px) scale(1.01) translateZ(0);
+  }
+}
+
+/* Blur Removal (Mobile/Tablet):
+   backdrop-filter is expensive on many mobile GPUs.
+   Disable below 1024px for smoother scroll + better Speed Index. */
+@media (max-width: 1024px) {
+  .glass-card,
+  .holo-card,
+  .badge {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* Optional: slightly boost solid bg since blur is gone */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  .holo-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.03) 100%);
+  }
+}
+
+/* Reduced Motion accessibility */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  body::before { animation: none !important; }
+  .particle { animation: none !important; }
+  .neon-text { animation: none !important; }
+  .gradient-text { animation: none !important; }
+  .holo-card::before { animation: none !important; }
+  .skeleton::after { animation: none !important; transform: translateX(0) !important; }
+}
