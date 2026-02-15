@@ -1,11 +1,11 @@
-import React, { Suspense, lazy } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import React, { Suspense, lazy, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 import { FaSpinner } from 'react-icons/fa';
 
-// Layouts & Utils (Moved to TOP to fix ESLint errors)
+// Layouts & Utils
 import ChatLayout from './components/layout/ChatLayout'; 
 import PrivateRoute from './utils/PrivateRoute';
 import AdminRoute from './utils/AdminRoute';
@@ -38,17 +38,31 @@ const PrivacyPolicyPage = lazy(() => import('./pages/PrivacyPolicyPage'));
 const ChatListPage = lazy(() => import('./pages/ChatListPage'));
 const ChatPage = lazy(() => import('./pages/ChatPage'));
 
-// Loading Component for Suspense Fallback
+// --- UTILITY COMPONENTS ---
+
+// 1. Loading Spinner for Suspense
 const PageLoader = () => (
   <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh', color: '#00d4ff' }}>
     <FaSpinner className="fa-spin" style={{ fontSize: '2rem' }} aria-hidden="true" />
   </div>
 );
 
+// 2. ScrollToTop: Ensures page starts at top on navigation
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+};
+
 function App() {
   return (
     <AuthProvider>
       <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        {/* Fixes scroll position on route change */}
+        <ScrollToTop />
+        
         <div className="app-wrapper">
           <Navbar />
           
