@@ -11,7 +11,7 @@ const AuthorInfoBlock = ({ author }) => {
     
     // --- SUPER ADMIN LOGIC ---
     // If author is missing, default to false to prevent errors
-    const MAIN_ADMIN_EMAIL = process.env.REACT_APP_MAIN_ADMIN_EMAIL;
+    const MAIN_ADMIN_EMAIL = import.meta.env.VITE_MAIN_ADMIN_EMAIL;
     const isSuperAdmin = author?.email === MAIN_ADMIN_EMAIL;
 
     // Determine if the current viewer is the author
