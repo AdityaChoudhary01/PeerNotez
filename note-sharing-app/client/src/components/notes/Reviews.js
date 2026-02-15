@@ -8,7 +8,7 @@ import RoleBadge from '../common/RoleBadge'; // Import Badge
 import { optimizeCloudinaryUrl } from '../../utils/cloudinaryHelper';
 
 // Super Admin Config
-const MAIN_ADMIN_EMAIL = process.env.REACT_APP_MAIN_ADMIN_EMAIL;
+const MAIN_ADMIN_EMAIL = import.meta.env.VITE_MAIN_ADMIN_EMAIL;
 
 const formatDate = (dateString) => {
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
@@ -527,3 +527,4 @@ const Reviews = ({ noteId, reviews, onReviewAdded }) => {
 };
 
 export default Reviews;
+
