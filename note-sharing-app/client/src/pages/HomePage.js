@@ -831,7 +831,8 @@ const HomePage = () => {
                   <div style={{ position: 'relative', zIndex: 1 }}>
                     <img
                       src={avatarUrl}
-                      alt="" // Empty alt because name is displayed next to it
+                      alt="" // Empty alt as name is below
+                      aria-hidden="true"
                       loading="lazy"
                       decoding="async"
                       width="72"
@@ -864,9 +865,10 @@ const HomePage = () => {
                   </div>
 
                   <div style={{ zIndex: 1 }}>
-                    <h4 style={{ margin: '0 0 6px 0', color: '#fff', fontSize: '1.2rem', fontWeight: 800 }}>
+                    {/* FIX: Changed h4 to h3 to maintain heading hierarchy (h2 -> h3) */}
+                    <h3 style={{ margin: '0 0 6px 0', color: '#fff', fontSize: '1.2rem', fontWeight: 800 }}>
                       {contributor.name}
-                    </h4>
+                    </h3>
                     <p style={{ margin: 0, fontSize: '0.92rem', color: 'rgba(255,255,255,0.6)', display: 'flex', alignItems: 'center', gap: '7px', fontWeight: 700 }}>
                       <FaStar color="#ffcc00" /> {contributor.noteCount} Contributions
                     </p>
