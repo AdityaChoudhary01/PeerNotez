@@ -621,7 +621,7 @@ const HomePage = () => {
             </div>
           </div>
 
-          <h1 style={styles.heroTitle}>
+        <h1 style={styles.heroTitle} className="hero-h1">
             Master Your <br />
             <span>Coursework</span> with PeerNotez Notes.
           </h1>
