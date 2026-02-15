@@ -11,47 +11,60 @@ import PrivateRoute from './utils/PrivateRoute';
 import AdminRoute from './utils/AdminRoute';
 import './App.css'; 
 
-// --- LAZY LOADED PAGES (Performance Optimization) ---
-// This splits the code into smaller chunks, so the initial load is instant.
-const HomePage = lazy(() => import('./pages/HomePage'));
-const LoginPage = lazy(() => import('./pages/LoginPage'));
-const SignupPage = lazy(() => import('./pages/SignupPage'));
-const UploadPage = lazy(() => import('./pages/UploadPage'));
-const ViewNotePage = lazy(() => import('./pages/ViewNotePage'));
-const SearchPage = lazy(() => import('./pages/SearchPage'));
-const AboutPage = lazy(() => import('./pages/AboutPage'));
-const ContactPage = lazy(() => import('./pages/ContactPage'));
-const DonatePage = lazy(() => import('./pages/DonatePage'));
-const ProfilePage = lazy(() => import('./pages/ProfilePage')); 
-const PublicProfilePage = lazy(() => import('./pages/PublicProfilePage')); 
-const AdminDashboardPage = lazy(() => import('./pages/AdminDashboardPage'));
-const SupportersPage = lazy(() => import('./pages/SupportersPage')); 
-const BlogPage = lazy(() => import('./pages/BlogPage'));
-const PostBlogPage = lazy(() => import('./pages/PostBlogPage'));
-const MyBlogsPage = lazy(() => import('./pages/MyBlogsPage'));
-const MyFeedPage = lazy(() => import('./pages/MyFeedPage'));
-const ViewCollectionPage = lazy(() => import('./pages/ViewCollectionPage'));
-const NotFoundPage = lazy(() => import('./pages/NotFoundPage')); 
-const DMCAPolicyPage = lazy(() => import('./pages/DMCAPolicyPage'));
-const TermsOfServicePage = lazy(() => import('./pages/TermsOfServicePage')); 
-const PrivacyPolicyPage = lazy(() => import('./pages/PrivacyPolicyPage'));
-const ChatListPage = lazy(() => import('./pages/ChatListPage'));
-const ChatPage = lazy(() => import('./pages/ChatPage'));
+// --- PERFORMANCE OPTIMIZED LAZY LOADING ---
+// Using a helper to allow manual prefetching of chunks
+const lazyWithPreload = (importFn) => {
+  const Component = lazy(importFn);
+  Component.preload = importFn;
+  return Component;
+};
+
+const HomePage = lazyWithPreload(() => import('./pages/HomePage'));
+const LoginPage = lazyWithPreload(() => import('./pages/LoginPage'));
+const SignupPage = lazyWithPreload(() => import('./pages/SignupPage'));
+const UploadPage = lazyWithPreload(() => import('./pages/UploadPage'));
+const ViewNotePage = lazyWithPreload(() => import('./pages/ViewNotePage'));
+const SearchPage = lazyWithPreload(() => import('./pages/SearchPage'));
+const AboutPage = lazyWithPreload(() => import('./pages/AboutPage'));
+const ContactPage = lazyWithPreload(() => import('./pages/ContactPage'));
+const DonatePage = lazyWithPreload(() => import('./pages/DonatePage'));
+const ProfilePage = lazyWithPreload(() => import('./pages/ProfilePage')); 
+const PublicProfilePage = lazyWithPreload(() => import('./pages/PublicProfilePage')); 
+const AdminDashboardPage = lazyWithPreload(() => import('./pages/AdminDashboardPage'));
+const SupportersPage = lazyWithPreload(() => import('./pages/SupportersPage')); 
+const BlogPage = lazyWithPreload(() => import('./pages/BlogPage'));
+const PostBlogPage = lazyWithPreload(() => import('./pages/PostBlogPage'));
+const MyBlogsPage = lazyWithPreload(() => import('./pages/MyBlogsPage'));
+const MyFeedPage = lazyWithPreload(() => import('./pages/MyFeedPage'));
+const ViewCollectionPage = lazyWithPreload(() => import('./pages/ViewCollectionPage'));
+const NotFoundPage = lazyWithPreload(() => import('./pages/NotFoundPage')); 
+const DMCAPolicyPage = lazyWithPreload(() => import('./pages/DMCAPolicyPage'));
+const TermsOfServicePage = lazyWithPreload(() => import('./pages/TermsOfServicePage')); 
+const PrivacyPolicyPage = lazyWithPreload(() => import('./pages/PrivacyPolicyPage'));
+const ChatListPage = lazyWithPreload(() => import('./pages/ChatListPage'));
+const ChatPage = lazyWithPreload(() => import('./pages/ChatPage'));
 
 // --- UTILITY COMPONENTS ---
 
-// 1. Loading Spinner for Suspense
+// 1. Loading Spinner (Minimalist to keep Main Thread free)
 const PageLoader = () => (
-  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh', color: '#00d4ff' }}>
-    <FaSpinner className="fa-spin" style={{ fontSize: '2rem' }} aria-hidden="true" />
+  <div style={{ 
+    display: 'flex', 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    height: '60vh', 
+    background: 'transparent'
+  }}>
+    <FaSpinner className="fa-spin" style={{ fontSize: '2rem', color: '#00f2fe' }} />
   </div>
 );
 
-// 2. ScrollToTop: Ensures page starts at top on navigation
+// 2. ScrollToTop: Performance optimized scroll reset
 const ScrollToTop = () => {
   const { pathname } = useLocation();
   useEffect(() => {
-    window.scrollTo(0, 0);
+    // Use 'instant' to prevent smooth scroll from blocking thread on mobile
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
   }, [pathname]);
   return null;
 };
@@ -60,7 +73,6 @@ function App() {
   return (
     <AuthProvider>
       <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        {/* Fixes scroll position on route change */}
         <ScrollToTop />
         
         <div className="app-wrapper">
@@ -73,10 +85,10 @@ function App() {
               flex: 1, 
               position: 'relative', 
               zIndex: 1,
-              minHeight: '80vh' 
+              minHeight: '80vh',
+              contain: 'content' // CSS Performance optimization
             }}
           >
-            {/* Suspense handles the loading state while the lazy chunk is fetched */}
             <Suspense fallback={<PageLoader />}>
               <Routes>
                 {/* --- PUBLIC ROUTES --- */}
