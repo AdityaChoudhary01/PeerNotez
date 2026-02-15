@@ -186,6 +186,7 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
         }
         
         if (fileType.startsWith('image/')) {
+            // We request 400x300 to match the 4:3 aspect ratio explicitly set in the img tag below
             thumbnailUrl = optimizeCloudinaryUrl(baseUrl, { width: 400, height: 300 });
         } else if (fileType === 'application/pdf') {
             thumbnailUrl = optimizeCloudinaryUrl(baseUrl, { width: 400, height: 300, pg: 1, crop: 'pad' });
@@ -235,13 +236,20 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
             <Link 
                 to={`/view/${note._id}`} 
                 style={{display: 'block', position: 'relative'}}
-                aria-label={`View note: ${note.title}`} // Improved accessibility
+                aria-label={`View note: ${note.title}`}
             >
                 <div style={styles.thumbnailContainer}>
                     <img 
                         src={thumbnailUrl} 
                         alt={note.title} 
+                        /* OPTIMIZATION APPLIED:
+                           1. Explicit width/height to fix CLS (matches Cloudinary request ratio)
+                           2. decoding="async" for smoother scrolling
+                        */
+                        width="400"
+                        height="300"
                         loading="lazy"
+                        decoding="async"
                         style={isHovered ? {...styles.thumbnail, ...styles.thumbnailHover} : styles.thumbnail}
                         onError={(e) => { e.target.onerror = null; e.target.src = '/images/icons/document-icon.png'; }}
                     />
@@ -270,7 +278,6 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
                 <div style={styles.metaContainer}>
                     <div style={styles.metaItem}><FaGraduationCap color="#ff00cc" size={12} /> {note.university}</div>
                     <div style={styles.metaItem}><FaBook color="#00d4ff" size={12} /> {note.course}</div>
-                    {/* RESTORED SUBJECT INFO */}
                     <div style={styles.metaItem}><FaFileAlt color="#00ff99" size={12} /> {note.subject}</div>
                     <div style={styles.metaItem}><FaCalendarAlt color="#ffcc00" size={12} /> {note.year}</div>
                 </div>
@@ -287,13 +294,12 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
                                 color: '#00d4ff', 
                                 flex: 1, 
                                 padding: '6px',
-                                // CENTERED ICONS logic:
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 gap: '8px'
                             }}
-                            aria-label={`Edit ${note.title}`} // Added aria-label
+                            aria-label={`Edit ${note.title}`}
                          >
                              <FaEdit /> Edit
                          </button>
@@ -307,13 +313,12 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
                                 flex: 1, 
                                 padding: '6px', 
                                 boxShadow: 'none',
-                                // CENTERED ICONS logic:
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 gap: '8px'
                             }}
-                            aria-label={`Delete ${note.title}`} // Added aria-label
+                            aria-label={`Delete ${note.title}`}
                          >
                              <FaTrash /> Delete
                          </button>
@@ -326,7 +331,7 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
                         onClick={handleSaveToggle} 
                         style={styles.iconBtn}
                         title={isSaved ? "Unsave" : "Save"}
-                        aria-label={isSaved ? "Unsave note" : "Save note"} // Added accessible label
+                        aria-label={isSaved ? "Unsave note" : "Save note"}
                         onMouseEnter={(e) => { e.currentTarget.style.color = '#ff0055'; e.currentTarget.style.borderColor = '#ff0055'; }}
                         onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(255,255,255,0.8)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
                     >
@@ -337,7 +342,7 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
                         onClick={handleDownload} 
                         style={styles.iconBtn}
                         title="Download"
-                        aria-label={`Download ${note.title}`} // Added accessible label
+                        aria-label={`Download ${note.title}`}
                         onMouseEnter={(e) => { e.currentTarget.style.color = '#00d4ff'; e.currentTarget.style.borderColor = '#00d4ff'; }}
                         onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(255,255,255,0.8)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
                     >
@@ -347,7 +352,7 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
                     <Link 
                         to={`/view/${note._id}`} 
                         style={styles.viewBtn}
-                        aria-label={`View details for ${note.title}`} // Critical fix for identical links
+                        aria-label={`View details for ${note.title}`}
                         onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(255, 0, 204, 0.4)'; }}
                         onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 212, 255, 0.3)'; }}
                     >
