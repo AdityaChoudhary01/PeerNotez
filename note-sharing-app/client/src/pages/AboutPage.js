@@ -232,7 +232,9 @@ const AboutPage = () => {
                     {/* Placeholder image: Replace 'developer.jpg' in your public/images folder */}
                     <img 
                         src="/images/developer.jpg" 
-                        alt="Aditya Choudhary" 
+                        // FIX: Empty alt + aria-hidden to fix "Redundant Alt Text" accessibility warning
+                        alt="" 
+                        aria-hidden="true"
                         style={styles.devImage} 
                         onError={(e) => {e.target.src = 'https://res.cloudinary.com/dmtnonxtt/image/upload/v1770372018/ffls1v2ohyjhc67ikdpe.png'}}
                     />
