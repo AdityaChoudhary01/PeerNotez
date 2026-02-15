@@ -12,6 +12,13 @@ import StarRating from '../components/common/StarRating';
 import AuthorInfoBlock from '../components/common/AuthorInfoBlock';
 import { optimizeCloudinaryUrl } from '../utils/cloudinaryHelper';
 
+// --- HELPER: Truncate for SEO (Bing/Google Friendly) ---
+const truncateText = (text, maxLength) => {
+  if (!text) return '';
+  if (text.length <= maxLength) return text;
+  return text.substr(0, maxLength) + '...';
+};
+
 // --- INTERNAL CSS: HOLOGRAPHIC BLOG PAGE ---
 const styles = {
   wrapper: {
@@ -139,7 +146,6 @@ const styles = {
     boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
     marginBottom: '3rem',
     overflow: 'hidden'
-    // NOTE: removed permanent translate3d + will-change to reduce mobile GPU/memory glitches
   },
   articleBanner: {
     width: '100%',
@@ -430,9 +436,15 @@ const FullBlogContent = ({ blog, onRefetch }) => {
   const authorName = blog?.author?.name || 'PeerNotez Contributor';
   const canonicalUrl = `https://peernotez.netlify.app/blogs/${blog?.slug || ''}`;
 
+  // SEO: Description Logic (Bing Friendly)
+  const seoDescription = truncateText(blog?.summary || blog?.title, 160);
+
+  // SEO: Social Image Logic
   const optimizedBanner = blog?.coverImage
     ? optimizeCloudinaryUrl(blog.coverImage, { width: 1000, height: 500, crop: 'fill' })
     : null;
+    
+  const socialImage = optimizedBanner || "https://peernotez.netlify.app/logo512.png";
 
   const optimizedMiniAvatar = blog?.author?.avatar
     ? optimizeCloudinaryUrl(blog.author.avatar, { width: 90, height: 90, isProfile: true })
@@ -444,8 +456,8 @@ const FullBlogContent = ({ blog, onRefetch }) => {
       "@type": "BlogPosting",
       "mainEntityOfPage": { "@type": "WebPage", "@id": canonicalUrl },
       "headline": blog?.title || 'Blog Post',
-      "description": blog?.summary || '',
-      "image": blog?.coverImage || "https://peernotez.netlify.app/logo512.png",
+      "description": seoDescription,
+      "image": socialImage,
       "datePublished": blog?.createdAt,
       "dateModified": blog?.updatedAt || blog?.createdAt,
       "author": { "@type": "Person", "name": authorName },
@@ -455,15 +467,32 @@ const FullBlogContent = ({ blog, onRefetch }) => {
         "logo": { "@type": "ImageObject", "url": "https://peernotez.netlify.app/logo192.png" }
       }
     }),
-    [blog, canonicalUrl, authorName]
+    [blog, canonicalUrl, authorName, seoDescription, socialImage]
   );
 
   return (
     <main style={styles.articleContainer} className="blog-article-wrapper">
       <Helmet>
+        {/* Standard SEO */}
         <title>{`${blog?.title ? `${blog.title} | PeerNotez Blog` : 'Blog Post | PeerNotez'}`}</title>
-        <meta name="description" content={blog?.summary || ''} />
+        <meta name="description" content={seoDescription} />
         <link rel="canonical" href={canonicalUrl} />
+
+        {/* Open Graph / Facebook / LinkedIn */}
+        <meta property="og:type" content="article" />
+        <meta property="og:title" content={blog?.title} />
+        <meta property="og:description" content={seoDescription} />
+        <meta property="og:url" content={canonicalUrl} />
+        <meta property="og:site_name" content="PeerNotez" />
+        <meta property="og:image" content={socialImage} />
+        
+        {/* Twitter Cards */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={blog?.title} />
+        <meta name="twitter:description" content={seoDescription} />
+        <meta name="twitter:image" content={socialImage} />
+
+        {/* Structured Data */}
         <script type="application/ld+json">{JSON.stringify(articleSchema)}</script>
       </Helmet>
 
@@ -546,16 +575,10 @@ const FullBlogContent = ({ blog, onRefetch }) => {
       </section>
 
       <style>{`
-        /* Keep the same theme; move hover effects to CSS (no JS hover handlers) */
         .pn-back-link:hover { color: #fff !important; }
         .pn-cta-btn:hover { transform: translateY(-3px); }
         .pn-cta-btn { will-change: transform; }
 
-        /* MOBILE FIX:
-           Mobile Chrome can glitch with large backdrop-filter blur.
-           Keep the same look by slightly increasing opacity + disabling blur only on small screens.
-           The theme remains "holographic", just safer for mobile rendering.
-        */
         @media (max-width: 768px) {
           .blog-article-wrapper {
             padding-left: 0.5rem;
@@ -564,15 +587,9 @@ const FullBlogContent = ({ blog, onRefetch }) => {
           .blog-article-card {
             padding: 1.5rem !important;
             border-radius: 16px !important;
-
-            /* RESTORED HOLOGRAPHIC EFFECT but safer */
             background: rgba(255, 255, 255, 0.06) !important;
-
-            /* Disable blur on mobile to prevent Chrome flicker/glitch */
             backdrop-filter: none !important;
             -webkit-backdrop-filter: none !important;
-
-            /* keep depth */
             box-shadow: 0 8px 32px rgba(0,0,0,0.15) !important;
           }
           .blog-article-meta {
@@ -583,7 +600,6 @@ const FullBlogContent = ({ blog, onRefetch }) => {
           }
         }
 
-        /* Extra safety for users who prefer reduced motion (also helps low-end phones) */
         @media (prefers-reduced-motion: reduce) {
           .pn-cta-btn { transition: none !important; }
           .pn-cta-btn:hover { transform: none !important; }
@@ -593,8 +609,6 @@ const FullBlogContent = ({ blog, onRefetch }) => {
           .blog-list-header {
             padding: 2rem 1rem !important;
             margin-bottom: 2rem !important;
-
-            /* Holographic header on mobile but safer */
             background: rgba(255, 255, 255, 0.05) !important;
             backdrop-filter: none !important;
             -webkit-backdrop-filter: none !important;
@@ -609,15 +623,13 @@ const FullBlogContent = ({ blog, onRefetch }) => {
           }
         }
         @media (max-width: 768px) {
-          /* Reduce list indentation for markdown on small devices */
           .blog-article-card ul,
           .blog-article-card ol {
-            margin-left: 0.6rem !important;   /* was 1.2rem in inline styles */
-            padding-left: 0.9rem !important;  /* ensures bullets/numbers still visible */
+            margin-left: 0.6rem !important;   
+            padding-left: 0.9rem !important;  
           }
-      
           .blog-article-card li {
-            padding-left: 0.15rem !important; /* was 0.3rem */
+            padding-left: 0.15rem !important; 
             margin-bottom: 0.35rem !important;
           }
         }
@@ -695,7 +707,7 @@ const BlogPage = () => {
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     setPage(1);
-    // Let useEffect refetch via state changes; no need to call fetchBlogs directly here
+    // Let useEffect refetch via state changes
   };
 
   if (slug) {
@@ -727,6 +739,13 @@ const BlogPage = () => {
           content="Explore articles on study hacks, developer insights, community stories, and open education written by the PeerNotez community."
         />
         <link rel="canonical" href="https://peernotez.netlify.app/blogs" />
+        
+        {/* Open Graph for Main Listing */}
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="PeerNotez Blog" />
+        <meta property="og:description" content="Deep dive into study hacks, developer insights, and community stories." />
+        <meta property="og:url" content="https://peernotez.netlify.app/blogs" />
+        <meta property="og:image" content="https://peernotez.netlify.app/logo512.png" />
       </Helmet>
 
       <header style={styles.header} className="blog-list-header">
