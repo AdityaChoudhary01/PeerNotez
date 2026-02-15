@@ -22,7 +22,7 @@ const Navbar = () => {
   const auth = getAuth();
   
   // Database URL for REST API calls
-  const DB_URL = process.env.REACT_APP_FIREBASE_DATABASE_URL;
+  const DB_URL = import.meta.env.VITE_FIREBASE_DATABASE_URL;
 
   // Cloudinary Logo URL
   const LOGO_URL = 'https://res.cloudinary.com/dmtnonxtt/image/upload/v1771173206/g0jgf1zk1mmguvzfwfnt.png';
@@ -635,3 +635,4 @@ const Navbar = () => {
 };
 
 export default Navbar;
+
