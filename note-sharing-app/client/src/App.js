@@ -11,6 +11,11 @@ import PrivateRoute from './utils/PrivateRoute';
 import AdminRoute from './utils/AdminRoute';
 import './App.css'; 
 
+// --- CRITICAL PERFORMANCE FIX ---
+// Load HomePage directly so the browser doesn't wait for a second round-trip
+// to fetch the landing page chunk. This improves LCP significantly.
+import HomePage from './pages/HomePage';
+
 // --- PERFORMANCE OPTIMIZED LAZY LOADING ---
 // Using a helper to allow manual prefetching of chunks
 const lazyWithPreload = (importFn) => {
@@ -19,7 +24,7 @@ const lazyWithPreload = (importFn) => {
   return Component;
 };
 
-const HomePage = lazyWithPreload(() => import('./pages/HomePage'));
+// Secondary pages remain lazy loaded to save bandwidth
 const LoginPage = lazyWithPreload(() => import('./pages/LoginPage'));
 const SignupPage = lazyWithPreload(() => import('./pages/SignupPage'));
 const UploadPage = lazyWithPreload(() => import('./pages/UploadPage'));
@@ -92,7 +97,9 @@ function App() {
             <Suspense fallback={<PageLoader />}>
               <Routes>
                 {/* --- PUBLIC ROUTES --- */}
+                {/* HomePage is now a standard component, rendering instantly */}
                 <Route path="/" element={<HomePage />} />
+                
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/signup" element={<SignupPage />} />
                 <Route path="/search" element={<SearchPage />} />
