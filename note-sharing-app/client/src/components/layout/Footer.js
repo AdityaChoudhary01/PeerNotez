@@ -195,10 +195,10 @@ const Footer = () => {
   };
 
   const socialLinks = [
-    { icon: <FaLinkedin />, url: "https://www.linkedin.com/in/aditya-kumar-38093a304/", gradient: 'linear-gradient(135deg, #0077b5, #00a0dc)' },
-    { icon: <FaGithub />, url: "https://github.com/AdityaChoudhary01", gradient: 'linear-gradient(135deg, #333, #666)' },
-    { icon: <FaYoutube />, url: "https://www.youtube.com/@AdeeChoudhary", gradient: 'linear-gradient(135deg, #ff0000, #ff4444)' },
-    { icon: <FaInstagram />, url: "https://www.instagram.com/aditya_choudhary__021/", gradient: 'linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)' }
+    { icon: <FaLinkedin />, url: "https://www.linkedin.com/in/aditya-kumar-38093a304/", gradient: 'linear-gradient(135deg, #0077b5, #00a0dc)', label: "LinkedIn" },
+    { icon: <FaGithub />, url: "https://github.com/AdityaChoudhary01", gradient: 'linear-gradient(135deg, #333, #666)', label: "GitHub" },
+    { icon: <FaYoutube />, url: "https://www.youtube.com/@AdeeChoudhary", gradient: 'linear-gradient(135deg, #ff0000, #ff4444)', label: "YouTube" },
+    { icon: <FaInstagram />, url: "https://www.instagram.com/aditya_choudhary__021/", gradient: 'linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)', label: "Instagram" }
   ];
 
   return (
@@ -221,6 +221,7 @@ const Footer = () => {
                     href={social.url}
                     target="_blank"
                     rel="noopener noreferrer"
+                    aria-label={social.label} // FIX: Added accessible label
                     style={styles.socialIcon}
                     className="social-icon-hover"
                     onMouseEnter={(e) => {
@@ -281,6 +282,7 @@ const Footer = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Your email..."
                   autoComplete="email"
+                  aria-label="Email address"
                   style={{
                     flex: 1,
                     padding: '0.75rem 1rem',
@@ -295,6 +297,7 @@ const Footer = () => {
                 <button 
                   type="submit"
                   disabled={status.loading}
+                  aria-label="Subscribe to newsletter" // FIX: Added accessible label
                   style={{
                     padding: '0.75rem 1.25rem',
                     background: status.success ? '#00ffaa' : 'var(--gradient-primary)',
