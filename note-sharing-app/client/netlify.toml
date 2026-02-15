@@ -6,78 +6,63 @@
   publish = "dist"
 
 # =======================================================
-# 1. Headers for caching control
+# 1. Headers (Performance Optimized)
 # =======================================================
 
+# Always fetch fresh HTML (prevents stale JS issues)
 [[headers]]
-# Always fetch latest index.html to prevent loading stale build assets
 for = "/index.html"
 [headers.values]
   Cache-Control = "no-cache, no-store, must-revalidate"
 
+# Service worker must NEVER be cached
 [[headers]]
-# Service worker MUST never be cached, or updates will never be detected
 for = "/service-worker.js"
 [headers.values]
   Cache-Control = "no-cache, no-store, must-revalidate"
   Pragma = "no-cache"
   Expires = "0"
 
+# Vite hashed assets (JS, CSS, chunks) — safe to cache 1 year
 [[headers]]
-# JS files contain unique hashes, so they are safe to cache
-for = "/*.js"
+for = "/assets/*"
 [headers.values]
   Cache-Control = "public, max-age=31536000, immutable"
 
+# Manifest
 [[headers]]
-# CSS files contain unique hashes, safe to cache long-term
-for = "/*.css"
-[headers.values]
-  Cache-Control = "public, max-age=31536000, immutable"
-
-[[headers]]
-# Manifest JSON
 for = "/manifest.json"
 [headers.values]
   Cache-Control = "no-cache"
   Content-Type = "application/json"
 
-# Dynamic Sitemap
+# Dynamic Sitemap (proxied to backend)
 [[headers]]
 for = "/sitemap.xml"
 [headers.values]
   Content-Type = "application/xml"
   X-Robots-Tag = "all"
-  Access-Control-Allow-Origin = "*"
-  Cache-Control = "no-cache"
-
-[[headers]]
-# Static sitemap
-for = "/static-sitemap.xml"
-[headers.values]
-  Content-Type = "application/xml"
-  X-Robots-Tag = "all"
-  Access-Control-Allow-Origin = "*"
   Cache-Control = "no-cache"
 
 # =======================================================
-# 2. Redirects
+# 2. Redirects & Proxy
 # =======================================================
 
-# Dynamic sitemap redirect
+# 🔥 API Proxy (REMOVES CORS + improves LCP)
+[[redirects]]
+from = "/api/*"
+to = "https://peernotez.vercel.app/:splat"
+status = 200
+force = true
+
+# Dynamic sitemap proxy
 [[redirects]]
 from = "/sitemap.xml"
 to = "https://peernotez.vercel.app/sitemap.xml"
 status = 200
 force = true
 
-# Static sitemap redirect (legacy)
-[[redirects]]
-from = "/static-sitemap.xml"
-to = "/static-sitemap.xml"
-status = 200
-
-# SPA catch-all route (React/Vue/Angular)
+# SPA fallback (must be LAST)
 [[redirects]]
 from = "/*"
 to = "/index.html"
