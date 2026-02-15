@@ -16,7 +16,7 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
     // 1. Check if on Homepage
     const isHomePage = location.pathname === '/';
 
-    // 2. Check if device is Mobile
+    // 2. Check if device is Mobile (Kept for Layout Styling)
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     const [isHovered, setIsHovered] = useState(false);
 
@@ -33,7 +33,7 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
 
     // Safely check if savedNotes exists
     const isSaved = user?.savedNotes ? user.savedNotes.includes(note._id) : false;
-    const cloudName = process.env.REACT_APP_CLOUDINARY_CLOUD_NAME || 'demo';
+    const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'demo';
 
     // --- INTERNAL CSS: DEEP SPACE HOLOGRAPHIC THEME ---
     const styles = {
@@ -173,9 +173,9 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
         }
     };
 
-    // --- LOGIC: THUMBNAIL GENERATION ---
+    // --- LOGIC: THUMBNAIL GENERATION WITH SRCSET ---
     let thumbnailUrl = '/images/icons/document-icon.png';
-    let srcSet = undefined; // Initialize srcSet
+    let srcSet = null;
     const fileType = note.fileType || '';
 
     if (note.cloudinaryId) {
@@ -186,22 +186,24 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
              baseUrl = `https://res.cloudinary.com/${cloudName}/image/upload/${note.cloudinaryId}.jpg`;
         }
         
-        // PERFORMANCE FIX: Generate responsive image variants
+        // Generate responsive versions
+        // 320w (mobile) and 400w (desktop card) - maintaining approx 4:3 ratio
         if (fileType.startsWith('image/')) {
-            // Small variant (300px width) for Mobile
-            const imgSmall = optimizeCloudinaryUrl(baseUrl, { width: 300, height: 225 });
-            // Large variant (400px width) for Desktop
-            const imgLarge = optimizeCloudinaryUrl(baseUrl, { width: 400, height: 300 });
-
-            thumbnailUrl = imgSmall; // Default src
-            srcSet = `${imgSmall} 300w, ${imgLarge} 400w`;
+            // Default Fill Crop
+            thumbnailUrl = optimizeCloudinaryUrl(baseUrl, { width: 400, height: 300 });
+            const smUrl = optimizeCloudinaryUrl(baseUrl, { width: 320, height: 240 });
+            const lgUrl = optimizeCloudinaryUrl(baseUrl, { width: 400, height: 300 });
+            
+            srcSet = `${smUrl} 320w, ${lgUrl} 400w`;
 
         } else if (fileType === 'application/pdf') {
-            const imgSmall = optimizeCloudinaryUrl(baseUrl, { width: 300, height: 225, pg: 1, crop: 'pad' });
-            const imgLarge = optimizeCloudinaryUrl(baseUrl, { width: 400, height: 300, pg: 1, crop: 'pad' });
-
-            thumbnailUrl = imgSmall;
-            srcSet = `${imgSmall} 300w, ${imgLarge} 400w`;
+            // PDF specific opts
+            const opts = { pg: 1, crop: 'pad' };
+            thumbnailUrl = optimizeCloudinaryUrl(baseUrl, { width: 400, height: 300, ...opts });
+            const smUrl = optimizeCloudinaryUrl(baseUrl, { width: 320, height: 240, ...opts });
+            const lgUrl = optimizeCloudinaryUrl(baseUrl, { width: 400, height: 300, ...opts });
+            
+            srcSet = `${smUrl} 320w, ${lgUrl} 400w`;
         }
     } else {
         // Fallback icons
@@ -252,13 +254,14 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
             >
                 <div style={styles.thumbnailContainer}>
                     <img 
-                        src={thumbnailUrl}
-                        srcSet={srcSet} // Added for responsive loading
-                        sizes="(max-width: 768px) 100vw, 400px" // Tells browser to use smaller image on mobile
+                        src={thumbnailUrl} 
+                        srcSet={srcSet || undefined}
+                        sizes="(max-width: 768px) 320px, 400px"
                         alt={note.title} 
                         /* OPTIMIZATION APPLIED:
-                           1. Explicit width/height to fix CLS (matches Cloudinary request ratio)
-                           2. decoding="async" for smoother scrolling
+                           1. explicit width/height
+                           2. srcset/sizes for browser-native selection
+                           3. decoding async
                         */
                         width="400"
                         height="300"
