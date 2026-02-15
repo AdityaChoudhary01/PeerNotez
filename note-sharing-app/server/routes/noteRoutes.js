@@ -179,10 +179,14 @@ router.get('/', async (req, res) => {
     const page = Number(req.query.page) || 1;
     let { search, title, university, course, subject, year, sort, isFeatured } = req.query; // Use 'let' for modification
 
-    // 🚀 CACHE STRATEGY: Only cache the "Default" view (Page 1, Featured, No Search)
+    // 🚀 CACHE STRATEGY FIX: Cache ALL default page 1 views
+    // This covers "Featured Notes" AND "Academic Library" (latest uploads)
     const hasSearch = search || title || university || course || subject || year;
-    if (!hasSearch && isFeatured && page === 1) {
-         res.setHeader('Cache-Control', 'public, s-maxage=600, stale-while-revalidate=300');
+    
+    // If it's page 1 and there are NO search filters, we cache it.
+    // This solves the 2.2s latency for standard homepage visitors.
+    if (!hasSearch && page === 1) {
+         res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=150');
     }
 
     // CRITICAL FIX 1: Decode the parameter if it looks like it was encoded
