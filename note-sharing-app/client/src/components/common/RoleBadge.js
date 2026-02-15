@@ -4,7 +4,7 @@ import { FaCrown, FaShieldAlt } from 'react-icons/fa';
 const RoleBadge = ({ user }) => {
     if (!user) return null;
 
-    const MAIN_ADMIN_EMAIL = process.env.REACT_APP_MAIN_ADMIN_EMAIL;
+    const MAIN_ADMIN_EMAIL = import.meta.env.VITE_MAIN_ADMIN_EMAIL;
     const isMainAdmin = user.email === MAIN_ADMIN_EMAIL;
     const isAdmin = user.role === 'admin';
 
