@@ -232,7 +232,11 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
             onMouseLeave={() => setIsHovered(false)}
         >
             {/* THUMBNAIL SECTION */}
-            <Link to={`/view/${note._id}`} style={{display: 'block', position: 'relative'}}>
+            <Link 
+                to={`/view/${note._id}`} 
+                style={{display: 'block', position: 'relative'}}
+                aria-label={`View note: ${note.title}`} // Improved accessibility
+            >
                 <div style={styles.thumbnailContainer}>
                     <img 
                         src={thumbnailUrl} 
@@ -289,6 +293,7 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
                                 justifyContent: 'center',
                                 gap: '8px'
                             }}
+                            aria-label={`Edit ${note.title}`} // Added aria-label
                          >
                              <FaEdit /> Edit
                          </button>
@@ -308,6 +313,7 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
                                 justifyContent: 'center',
                                 gap: '8px'
                             }}
+                            aria-label={`Delete ${note.title}`} // Added aria-label
                          >
                              <FaTrash /> Delete
                          </button>
@@ -320,6 +326,7 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
                         onClick={handleSaveToggle} 
                         style={styles.iconBtn}
                         title={isSaved ? "Unsave" : "Save"}
+                        aria-label={isSaved ? "Unsave note" : "Save note"} // Added accessible label
                         onMouseEnter={(e) => { e.currentTarget.style.color = '#ff0055'; e.currentTarget.style.borderColor = '#ff0055'; }}
                         onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(255,255,255,0.8)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
                     >
@@ -330,6 +337,7 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
                         onClick={handleDownload} 
                         style={styles.iconBtn}
                         title="Download"
+                        aria-label={`Download ${note.title}`} // Added accessible label
                         onMouseEnter={(e) => { e.currentTarget.style.color = '#00d4ff'; e.currentTarget.style.borderColor = '#00d4ff'; }}
                         onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(255,255,255,0.8)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
                     >
@@ -339,6 +347,7 @@ const NoteCard = ({ note, showActions = false, onEdit = () => {}, onDelete = () 
                     <Link 
                         to={`/view/${note._id}`} 
                         style={styles.viewBtn}
+                        aria-label={`View details for ${note.title}`} // Critical fix for identical links
                         onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(255, 0, 204, 0.4)'; }}
                         onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 212, 255, 0.3)'; }}
                     >
