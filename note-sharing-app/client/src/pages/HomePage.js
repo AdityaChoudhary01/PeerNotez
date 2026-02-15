@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo, Suspense } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
@@ -9,31 +9,39 @@ import {
   FaFireAlt, FaRegClock, FaRegLightbulb
 } from 'react-icons/fa';
 
-// --- CRITICAL COMPONENTS (Standard Import) ---
-// Loading these instantly avoids the "Loading..." flash and second round-trip
+// --- CRITICAL COMPONENTS (Eager Load) ---
+// Loading these instantly prevents layout shifts (CLS) and LCP delays
 import NoteCard from '../components/notes/NoteCard';
 import FilterBar from '../components/common/FilterBar';
 import Pagination from '../components/common/Pagination';
 
-// --- NON-CRITICAL COMPONENTS (Lazy Import) ---
-// BlogCard is usually below the fold, so we can load it later
+// --- NON-CRITICAL COMPONENTS (Lazy Load) ---
+// BlogCard is below the fold, so we load it later to save initial bandwidth
 const BlogCard = React.lazy(() => import('../components/blog/BlogCard'));
 
 const DOWNLOAD_LINK = 'https://github.com/AdityaChoudhary01/public-peernotez/releases/download/v1.0.3/PeerNotez.apk';
 
-// --- LOADING SKELETON (For Blogs only) ---
+// --- STATIC DATA (Moved outside to save memory) ---
+const ACTIVITIES = [
+  { user: 'Aditya', action: 'uploaded React Notes', icon: <FaBolt color="#ffcc00" /> },
+  { user: 'Sneha', action: 'shared DBMS PDF', icon: <FaStar color="#00d4ff" /> },
+  { user: 'Rahul', action: 'just joined PeerNotez', icon: <FaRocket color="#ff00cc" /> }
+];
+
+// --- LOADING SKELETON ---
 const ComponentLoader = () => (
   <div style={{ 
     height: '200px', 
     width: '100%', 
     background: 'rgba(255,255,255,0.02)', 
     borderRadius: '18px', 
+    border: '1px solid rgba(255,255,255,0.05)',
     display: 'flex', 
     alignItems: 'center', 
     justifyContent: 'center',
     color: 'rgba(255,255,255,0.3)'
   }}>
-    Loading...
+    <div className="spinner-border" role="status"></div>
   </div>
 );
 
@@ -59,24 +67,19 @@ const HomePage = () => {
   const [isFilterBarOpen, setIsFilterBarOpen] = useState(typeof window !== 'undefined' ? window.innerWidth > 768 : true);
   const [showAppButton, setShowAppButton] = useState(true);
 
-  // --- 3D Tilt & Animation State ---
+  // --- 3D Tilt State ---
   const heroRef = useRef(null);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
 
   // --- Ticker State ---
   const [currentActivity, setCurrentActivity] = useState(0);
-  const activities = useMemo(() => ([
-    { user: 'Aditya', action: 'uploaded React Notes', icon: <FaBolt color="#ffcc00" /> },
-    { user: 'Sneha', action: 'shared DBMS PDF', icon: <FaStar color="#00d4ff" /> },
-    { user: 'Rahul', action: 'just joined PeerNotez', icon: <FaRocket color="#ff00cc" /> }
-  ]), []);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentActivity((prev) => (prev + 1) % activities.length);
+      setCurrentActivity((prev) => (prev + 1) % ACTIVITIES.length);
     }, 4000);
     return () => clearInterval(interval);
-  }, [activities.length]);
+  }, []);
 
   // --- Styling Objects ---
   const styles = {
@@ -296,7 +299,6 @@ const HomePage = () => {
   };
 
   // --- API Calls ---
-  
   // 1. Fetching Library Notes (Filtered)
   useEffect(() => {
     const controller = new AbortController();
@@ -318,9 +320,9 @@ const HomePage = () => {
       }
     };
 
+    // Parallel Fetch Strategy Check
     const hasFilters = Object.keys(filters).length > 0 || page > 1 || sortBy !== 'uploadDate';
     
-    // OPTIMIZATION: Check for preloaded data before making a new request
     if (!hasFilters && window.preloadData?.recentNotes) {
         window.preloadData.recentNotes.then(data => {
             setNotes(data.notes || []);
@@ -335,13 +337,12 @@ const HomePage = () => {
     return () => controller.abort();
   }, [filters, sortBy, page]);
 
-  // 2. Fetching Static Homepage Data
+  // 2. Fetching Static Homepage Data (Featured, Stats, Contributors)
   useEffect(() => {
     const controller = new AbortController();
 
     const fetchData = async () => {
       try {
-        // PRELOAD STRATEGY: Hook into window.preloadData from index.html
         const notesPromise = window.preloadData?.featuredNotes || axios.get('/notes', { params: { isFeatured: true, limit: 3 }, signal: controller.signal }).then(res => res.data);
         const blogsPromise = window.preloadData?.featuredBlogs || axios.get('/blogs', { params: { isFeatured: true, limit: 3 }, signal: controller.signal }).then(res => res.data);
         const statsPromise = window.preloadData?.stats || axios.get('/notes/stats', { signal: controller.signal }).then(res => res.data);
@@ -395,7 +396,15 @@ const HomePage = () => {
         <meta name="description" content="PeerNotez: The student platform for sharing handwritten notes and academic insights. Ace your exams now!" />
         <meta name="keywords" content="PeerNotez, peernotes, peer notez, notez, notes, handwritten notes, student notes, engineering notes, study materials, Aditya Choudhary, college notes app" />
         <link rel="canonical" href="https://peernotez.netlify.app/" />
-        {/* Open Graph & Twitter tags omitted for brevity but should remain */}
+        {/* Open Graph & Twitter */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://peernotez.netlify.app/" />
+        <meta property="og:title" content="PeerNotez | The Ultimate Note Sharing Platform" />
+        <meta property="og:description" content="Join thousands of students sharing quality handwritten notes globally. Find your course material on PeerNotez." />
+        <meta property="og:image" content="https://peernotez.netlify.app/logo512.png" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="PeerNotez – Student Powered Learning" />
+        
         <script type="application/ld+json">
           {`{"@context": "https://schema.org", "@type": "WebSite", "name": "PeerNotez", "url": "https://peernotez.netlify.app/", "potentialAction": { "@type": "SearchAction", "target": "https://peernotez.netlify.app/search?q={search_term_string}", "query-input": "required name=search_term_string" }}`}
         </script>
@@ -445,8 +454,8 @@ const HomePage = () => {
         <div style={styles.heroContent}>
           <div style={styles.tickerPill}>
             <div className="ticker-anim" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              {activities[currentActivity].icon}
-              <span style={{ fontSize: '0.9rem', color: '#eee' }}><strong>{activities[currentActivity].user}</strong> {activities[currentActivity].action}</span>
+              {ACTIVITIES[currentActivity].icon}
+              <span style={{ fontSize: '0.9rem', color: '#eee' }}><strong>{ACTIVITIES[currentActivity].user}</strong> {ACTIVITIES[currentActivity].action}</span>
             </div>
           </div>
           <h1 style={styles.heroTitle} className="hero-h1">Master Your <br /><span>Coursework</span> with PeerNotez Notes.</h1>
@@ -543,9 +552,9 @@ const HomePage = () => {
           <div style={{ textAlign: 'center' }}>Loading blogs...</div>
         ) : featuredBlogs.length > 0 ? (
           <div className="blog-grid">
-            <Suspense fallback={<ComponentLoader />}>
+            <React.Suspense fallback={<ComponentLoader />}>
               {featuredBlogs.map(blog => <div key={blog._id} className="pn-card-shell"><BlogCard blog={blog} /></div>)}
-            </Suspense>
+            </React.Suspense>
           </div>
         ) : (
           <p style={{ textAlign: 'center', opacity: 0.5 }}>No blogs available.</p>
