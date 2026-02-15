@@ -149,8 +149,6 @@ const HomePage = () => {
       boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
       animation: 'fadeInDown 1s ease-out'
     },
-
-    // Modern Stats Container (still same theme)
     statsContainer: {
       display: 'grid',
       gridTemplateColumns: 'repeat(3, 1fr)',
@@ -178,7 +176,6 @@ const HomePage = () => {
       position: 'relative',
       overflow: 'hidden'
     },
-
     sectionHeader: { textAlign: 'center', marginBottom: '3rem', position: 'relative' },
     sectionTitle: {
       fontSize: '2.5rem',
@@ -188,7 +185,6 @@ const HomePage = () => {
       paddingBottom: '10px',
       borderBottom: '2px solid #00d4ff'
     },
-
     fixedBtnWrapper: {
       position: 'fixed',
       bottom: '20px',
@@ -225,7 +221,6 @@ const HomePage = () => {
       alignItems: 'center',
       justifyContent: 'center'
     },
-
     filterToggle: {
       display: 'flex',
       alignItems: 'center',
@@ -243,7 +238,6 @@ const HomePage = () => {
       transition: 'all 0.3s ease',
       width: 'fit-content'
     },
-
     controlsHeader: {
       display: 'flex',
       justifyContent: 'space-between',
@@ -583,8 +577,20 @@ const HomePage = () => {
       {/* App Download Button */}
       {showAppButton && (
         <div style={styles.fixedBtnWrapper}>
-          <button onClick={() => setShowAppButton(false)} style={styles.closeFixedBtn}><FaTimes /></button>
-          <a href={DOWNLOAD_LINK} download style={styles.fixedBtn} title="Download App">
+          <button 
+            onClick={() => setShowAppButton(false)} 
+            style={styles.closeFixedBtn} 
+            aria-label="Close download button"
+          >
+            <FaTimes />
+          </button>
+          <a 
+            href={DOWNLOAD_LINK} 
+            download 
+            style={styles.fixedBtn} 
+            title="Download App" 
+            aria-label="Download PeerNotez Android App"
+          >
             <FaDownload />
           </a>
         </div>
@@ -613,9 +619,9 @@ const HomePage = () => {
           </div>
 
           <h1 style={styles.heroTitle}>
-  Master Your <br />
-  <span>Coursework</span> with PeerNotez Notes.
-</h1>
+            Master Your <br />
+            <span>Coursework</span> with PeerNotez Notes.
+          </h1>
 
           <p style={styles.heroSubtitle}>
             Join the fastest-growing community of students sharing handwritten notes, project insights, and exam strategies.
@@ -696,6 +702,7 @@ const HomePage = () => {
         <button
           style={styles.filterToggle}
           onClick={() => setIsFilterBarOpen(!isFilterBarOpen)}
+          aria-label={isFilterBarOpen ? 'Hide filters' : 'Show filters'}
         >
           <FaFilter /> {isFilterBarOpen ? 'Hide Filters' : 'Filter Library'}
         </button>
@@ -719,6 +726,7 @@ const HomePage = () => {
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
               style={styles.select}
+              aria-label="Sort notes"
             >
               <option value="uploadDate">Newest</option>
               <option value="highestRated">Top Rated</option>
@@ -823,7 +831,7 @@ const HomePage = () => {
                   <div style={{ position: 'relative', zIndex: 1 }}>
                     <img
                       src={avatarUrl}
-                      alt={contributor.name}
+                      alt="" // Empty alt because name is displayed next to it
                       loading="lazy"
                       decoding="async"
                       width="72"
