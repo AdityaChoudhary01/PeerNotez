@@ -2,12 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios'; 
 import useAuth from '../../hooks/useAuth';
-// Removed local logo import to fix "Improve image delivery" warning
 import { FaBars, FaTimes, FaSearch, FaSignOutAlt, FaPaperPlane } from 'react-icons/fa';
 import { optimizeCloudinaryUrl } from '../../utils/cloudinaryHelper';
-import { ref, onValue } from 'firebase/database';
+// REMOVED: import { ref, onValue } from 'firebase/database'; (This was the heavy import)
+// REMOVED: import { db } from '../../services/firebase';
 import { getAuth } from 'firebase/auth'; 
-import { db } from '../../services/firebase';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -23,8 +22,6 @@ const Navbar = () => {
   
   // Database URL for REST API calls
   const DB_URL = process.env.REACT_APP_FIREBASE_DATABASE_URL;
-
-  // Cloudinary Logo URL
   const LOGO_URL = 'https://res.cloudinary.com/dmtnonxtt/image/upload/v1771173206/g0jgf1zk1mmguvzfwfnt.png';
 
   // --- Event Listeners ---
@@ -43,13 +40,11 @@ const Navbar = () => {
     };
   }, []);
 
-  // --- HYBRID NOTIFICATION LOGIC ---
+  // --- LIGHTWEIGHT NOTIFICATION LOGIC (REST ONLY) ---
+  // This replaces the heavy socket listener with a simple HTTP request
   useEffect(() => {
     if (!user?._id) return;
 
-    const isChatPage = location.pathname.startsWith('/chat');
-
-    // Helper to calculate count from data object
     const calcCount = (data) => {
         if (!data) return 0;
         let total = 0;
@@ -59,27 +54,30 @@ const Navbar = () => {
         return total;
     };
 
-    if (isChatPage) {
-        const inboxRef = ref(db, `user_chats/${user._id}`);
-        const unsubscribe = onValue(inboxRef, (snapshot) => {
-            setUnreadCount(calcCount(snapshot.val()));
-        });
-        return () => unsubscribe();
-    } else {
-        const fetchUnreadREST = async () => {
-            try {
-                const token = await auth.currentUser?.getIdToken();
-                if (!token || !DB_URL) return;
+    const fetchUnreadREST = async () => {
+        try {
+            // Wait for auth to be ready
+            if (!auth.currentUser) return;
+            
+            const token = await auth.currentUser.getIdToken();
+            if (!token || !DB_URL) return;
 
-                const response = await axios.get(`${DB_URL}/user_chats/${user._id}.json?auth=${token}`);
-                setUnreadCount(calcCount(response.data));
-            } catch (error) {
-                console.error("Notification fetch error:", error);
-            }
-        };
+            // Direct REST call - No SDK required
+            const response = await axios.get(`${DB_URL}/user_chats/${user._id}.json?auth=${token}`);
+            setUnreadCount(calcCount(response.data));
+        } catch (error) {
+            // Silent fail is fine for notifications
+            console.error("Notification check failed", error);
+        }
+    };
 
-        fetchUnreadREST();
-    }
+    // Fetch on mount and when location changes (e.g. leaving chat)
+    fetchUnreadREST();
+
+    // Optional: Poll every 60 seconds to keep fresh without heavy websockets
+    const interval = setInterval(fetchUnreadREST, 60000);
+    return () => clearInterval(interval);
+
   }, [user?._id, location.pathname, auth.currentUser, DB_URL]); 
 
   const handleSearch = (e) => {
@@ -99,7 +97,7 @@ const Navbar = () => {
 
   const isActive = (path) => location.pathname === path;
 
-  // --- Updated Styles ---
+  // --- Styles ---
   const styles = {
     navWrapper: {
       position: 'fixed',
@@ -140,7 +138,6 @@ const Navbar = () => {
       flexShrink: 0
     },
     logo: {
-      // Dimensions handled via width/height attributes + CSS
       width: scrolled ? '120px' : '140px', 
       height: scrolled ? '38px' : '44px',
       transition: 'all 0.3s ease',
@@ -251,7 +248,7 @@ const Navbar = () => {
       justifyContent: 'center',
       cursor: 'pointer',
       transition: 'all 0.3s ease',
-      padding: 0 // Reset padding for button
+      padding: 0 
     },
     badge: {
       position: 'absolute',
@@ -358,11 +355,9 @@ const Navbar = () => {
               aria-label="PeerNotez Home"
             >
               <img 
-                // We use optimizeCloudinaryUrl to auto-serve WebP/AVIF and resize
                 src={optimizeCloudinaryUrl(LOGO_URL, { width: 140 })} 
                 alt="PeerNotez Logo" 
                 style={styles.logo} 
-                // Explicit attributes help prevent layout shift
                 width="140" 
                 height="44"
               />
@@ -453,7 +448,7 @@ const Navbar = () => {
                             ? optimizeCloudinaryUrl(user.profilePicture || user.avatar, { width: 80, height: 80 }) 
                             : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&size=80`
                           }
-                          alt="" // Empty alt because it's a decorative avatar link
+                          alt="" 
                           aria-hidden="true"
                           width="38"
                           height="38"
