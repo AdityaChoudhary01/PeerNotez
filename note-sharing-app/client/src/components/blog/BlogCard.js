@@ -40,7 +40,7 @@ const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () 
     const views = (blog.views || blog.downloadCount || 0).toLocaleString();
     const rating = blog.averageRating || blog.rating || 0;
 
-    // --- STYLES (Kept identical to your theme) ---
+    // --- STYLES ---
     const styles = {
         card: {
             position: 'relative',
@@ -263,18 +263,13 @@ const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () 
             <div style={styles.imageContainer}>
                 {!imageLoaded && <div style={styles.skeleton} />}
                 <img
-                    /* OPTIMIZATION: 
-                       1. Reduced width request to 500px (plenty for card).
-                       2. Added loading="lazy" for off-screen images.
-                       3. Added decoding="async" to prevent UI freeze.
-                    */
                     src={blog.coverImage 
-                        ? optimizeCloudinaryUrl(blog.coverImage, 500) 
+                        ? optimizeCloudinaryUrl(blog.coverImage, { width: 500 }) 
                         : `https://ui-avatars.com/api/?name=${encodeURIComponent(blog.title)}&size=500&background=1e293b&color=fff`
                     }
                     alt={blog.title}
                     loading="lazy"
-                    decoding="async"
+                    decoding="async" // Performance fix
                     style={{
                         ...styles.image,
                         ...(isHovered ? styles.imageHover : {})
@@ -290,7 +285,11 @@ const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () 
                 </div>
 
                 <div style={styles.overlay}>
-                    <Link to={`/blogs/${blog.slug || blog._id}`} style={styles.readButton}>
+                    <Link 
+                        to={`/blogs/${blog.slug || blog._id}`} 
+                        style={styles.readButton}
+                        aria-label={`Read article: ${blog.title}`} // Accessibility fix
+                    >
                         Read Article <FaArrowRight size={12} />
                     </Link>
                 </div>
@@ -298,7 +297,7 @@ const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () 
 
             <div style={styles.content}>
                 <Link to={`/blogs/${blog.slug || blog._id}`} style={styles.titleLink}>
-                    <h3 
+                    <h3 // SEO: maintains logical heading hierarchy (h2 -> h3)
                         style={styles.title}
                         onMouseEnter={(e) => e.target.style.color = '#00d4ff'}
                         onMouseLeave={(e) => e.target.style.color = '#fff'}
@@ -330,15 +329,12 @@ const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () 
                 {blog.author ? (
                     <AuthorWrapper {...authorWrapperProps}>
                         <img
-                            /* OPTIMIZATION: 
-                               1. Request 80px (for 2x pixel density on 40px circle).
-                               2. Lazy load and async decode.
-                            */
                             src={blog.author.profilePicture || blog.author.avatar
-                                ? optimizeCloudinaryUrl(blog.author.profilePicture || blog.author.avatar, 80)
+                                ? optimizeCloudinaryUrl(blog.author.profilePicture || blog.author.avatar, { width: 80 })
                                 : `https://ui-avatars.com/api/?name=${encodeURIComponent(blog.author.name)}&size=80`
                             }
-                            alt={blog.author.name}
+                            alt="" // Accessibility: set to empty string if name is visible next to it
+                            aria-hidden="true"
                             loading="lazy"
                             decoding="async"
                             style={styles.authorImage}
@@ -367,6 +363,7 @@ const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () 
                                 color: '#00d4ff',
                                 border: '1px solid rgba(0, 212, 255, 0.3)'
                             }}
+                            aria-label={`Edit blog: ${blog.title}`} // Accessibility fix
                             title="Edit"
                         >
                             <FaEdit />
@@ -379,6 +376,7 @@ const BlogCard = ({ blog, showActions = false, onDelete = () => {}, onEdit = () 
                                 color: '#ff0055',
                                 border: '1px solid rgba(255, 0, 85, 0.3)'
                             }}
+                            aria-label={`Delete blog: ${blog.title}`} // Accessibility fix
                             title="Delete"
                         >
                             <FaTrash />
