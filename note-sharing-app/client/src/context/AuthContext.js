@@ -13,7 +13,7 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem("token"));
 
   // Base URL Setup
-  const baseURL = process.env.REACT_APP_API_URL || "http://localhost:5001/api";
+  const baseURL = import.meta.env.VITE_API_URL || "http://localhost:5001/api";
   axios.defaults.baseURL = baseURL;
 
   // --- 1. INITIALIZATION & REFRESH LOGIC ---
@@ -164,3 +164,4 @@ export const AuthProvider = ({ children }) => {
 };
 
 export default AuthContext;
+
