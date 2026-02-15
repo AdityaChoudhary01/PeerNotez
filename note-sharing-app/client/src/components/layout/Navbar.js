@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios'; // ✅ IMPORT AXIOS
+import axios from 'axios'; 
 import useAuth from '../../hooks/useAuth';
 import logo from '../../assets/peernotez-logo.png';
 import { FaBars, FaTimes, FaSearch, FaSignOutAlt, FaPaperPlane } from 'react-icons/fa';
 import { optimizeCloudinaryUrl } from '../../utils/cloudinaryHelper';
 import { ref, onValue } from 'firebase/database';
-import { getAuth } from 'firebase/auth'; // ✅ IMPORT getAuth for Token
+import { getAuth } from 'firebase/auth'; 
 import { db } from '../../services/firebase';
 
 const Navbar = () => {
@@ -57,19 +57,14 @@ const Navbar = () => {
     };
 
     if (isChatPage) {
-        // SCENARIO A: User is in Chat (Connection is ALREADY open via ChatLayout)
-        // We can safely use onValue (Real-time)
         const inboxRef = ref(db, `user_chats/${user._id}`);
         const unsubscribe = onValue(inboxRef, (snapshot) => {
             setUnreadCount(calcCount(snapshot.val()));
         });
         return () => unsubscribe();
     } else {
-        // SCENARIO B: User is Browsing (Connection is CLOSED to save quota)
-        // We use REST API (HTTP Request) to fetch count without opening a socket.
         const fetchUnreadREST = async () => {
             try {
-                // We need the ID Token to authorize the REST request
                 const token = await auth.currentUser?.getIdToken();
                 if (!token || !DB_URL) return;
 
@@ -81,9 +76,6 @@ const Navbar = () => {
         };
 
         fetchUnreadREST();
-        // Optional: Poll every 2 minutes if you really want updates while browsing
-        // const interval = setInterval(fetchUnreadREST, 120000);
-        // return () => clearInterval(interval);
     }
   }, [user?._id, location.pathname, auth.currentUser, DB_URL]); 
 
@@ -145,7 +137,8 @@ const Navbar = () => {
       flexShrink: 0
     },
     logo: {
-      width: scrolled ? '100px' : '110px',
+      // FIX: Adjusted dimensions to match 894x279 aspect ratio (~3.2)
+      width: scrolled ? '120px' : '140px', 
       height: scrolled ? '38px' : '44px',
       transition: 'all 0.3s ease',
       filter: 'drop-shadow(0 0 15px rgba(102, 126, 234, 0.6))'
@@ -202,7 +195,7 @@ const Navbar = () => {
       fontSize: '0.85rem',
       padding: '0 10px',
       fontFamily: "'Inter', sans-serif', system-ui",
-      minWidth: 0 // Allows flex shrink
+      minWidth: 0
     },
     searchButton: {
       background: 'linear-gradient(135deg, #667eea, #764ba2)',
@@ -253,7 +246,8 @@ const Navbar = () => {
       alignItems: 'center',
       justifyContent: 'center',
       cursor: 'pointer',
-      transition: 'all 0.3s ease'
+      transition: 'all 0.3s ease',
+      padding: 0 // Reset padding for button
     },
     badge: {
       position: 'absolute',
@@ -353,8 +347,13 @@ const Navbar = () => {
         <div style={{...styles.navContainer, margin: isMobile ? '0 1rem' : '0 auto'}}>
           <div style={styles.navContent}>
             {/* Logo */}
-            <Link to="/" style={styles.logoSection} onClick={() => setMenuOpen(false)}>
-              <img src={logo} alt="PeerNotez" style={styles.logo} />
+            <Link 
+              to="/" 
+              style={styles.logoSection} 
+              onClick={() => setMenuOpen(false)}
+              aria-label="PeerNotez Home"
+            >
+              <img src={logo} alt="PeerNotez Logo" style={styles.logo} />
             </Link>
 
             {/* Desktop Navigation */}
@@ -408,10 +407,12 @@ const Navbar = () => {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   style={styles.searchInput}
+                  aria-label="Search notes"
                 />
                 <button 
                   type="submit" 
                   style={styles.searchButton}
+                  aria-label="Perform search"
                   onMouseEnter={(e) => e.target.style.transform = 'scale(1.1)'}
                   onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
                 >
@@ -425,7 +426,7 @@ const Navbar = () => {
               {!isMobile && (
                   user ? (
                     <>
-                      <Link to="/chat" style={styles.iconButton} title="Messages">
+                      <Link to="/chat" style={styles.iconButton} title="Messages" aria-label="Messages">
                         <FaPaperPlane size={14} />
                         {unreadCount > 0 && (
                           <span style={styles.badge}>
@@ -434,13 +435,14 @@ const Navbar = () => {
                         )}
                       </Link>
                       
-                      <Link to="/profile" title="View Profile">
+                      <Link to="/profile" title="View Profile" aria-label="View Profile">
                         <img
                           src={user.profilePicture || user.avatar 
                             ? optimizeCloudinaryUrl(user.profilePicture || user.avatar, { width: 80, height: 80 }) 
                             : `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&size=80`
                           }
-                          alt={user.name}
+                          alt="" // Empty alt because it's a decorative avatar link
+                          aria-hidden="true"
                           width="38"
                           height="38"
                           decoding="async"
@@ -448,15 +450,16 @@ const Navbar = () => {
                         />
                       </Link>
 
-                      <div 
+                      <button 
                         onClick={handleLogout} 
                         style={styles.logoutButton}
                         title="Logout"
+                        aria-label="Logout"
                         onMouseEnter={(e) => e.target.style.background = 'rgba(255, 59, 48, 0.2)'}
                         onMouseLeave={(e) => e.target.style.background = 'rgba(255, 59, 48, 0.1)'}
                       >
                         <FaSignOutAlt size={14} />
-                      </div>
+                      </button>
                     </>
                   ) : (
                     <>
@@ -478,7 +481,11 @@ const Navbar = () => {
 
               {/* Mobile Menu Toggle - Always visible on mobile */}
               {isMobile && (
-                <button style={styles.mobileMenuButton} onClick={() => setMenuOpen(!menuOpen)}>
+                <button 
+                  style={styles.mobileMenuButton} 
+                  onClick={() => setMenuOpen(!menuOpen)}
+                  aria-label={menuOpen ? "Close menu" : "Open menu"}
+                >
                   {menuOpen ? <FaTimes /> : <FaBars />}
                 </button>
               )}
@@ -501,9 +508,13 @@ const Navbar = () => {
            {/* Mobile Header */}
            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
               <span style={{ color: 'white', fontWeight: 'bold', fontSize: '1.2rem' }}>Menu</span>
-              <div onClick={() => setMenuOpen(false)} style={{ color: 'rgba(255,255,255,0.6)', cursor: 'pointer' }}>
+              <button 
+                onClick={() => setMenuOpen(false)} 
+                style={{ background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', padding: 0 }}
+                aria-label="Close menu"
+              >
                   <FaTimes size={24} />
-              </div>
+              </button>
            </div>
 
           {/* Mobile Search */}
@@ -515,8 +526,9 @@ const Navbar = () => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 style={styles.searchInput}
+                aria-label="Search notes"
               />
-              <button type="submit" style={styles.searchButton}>
+              <button type="submit" style={styles.searchButton} aria-label="Search">
                 <FaSearch size={14} />
               </button>
             </form>
@@ -568,17 +580,19 @@ const Navbar = () => {
                     height="24"
                     decoding="async"
                     style={{width: '24px', height: '24px', borderRadius: '50%'}}
-                    alt="profile"
+                    alt="" 
+                    aria-hidden="true"
                   />
                   Profile
                 </Link>
                 
-                <div 
+                <button 
                     onClick={handleLogout} 
-                    style={{...styles.mobileLink, color: '#ff3b30', marginTop: '1rem', background: 'rgba(255, 59, 48, 0.05)', cursor: 'pointer', justifyContent: 'center'}}
+                    style={{...styles.mobileLink, color: '#ff3b30', marginTop: '1rem', background: 'rgba(255, 59, 48, 0.05)', cursor: 'pointer', justifyContent: 'center', width: '100%', border: 'none'}}
+                    aria-label="Logout"
                 >
                   <FaSignOutAlt /> Logout
-                </div>
+                </button>
               </>
             ) : (
               <>
