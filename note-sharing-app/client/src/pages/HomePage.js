@@ -9,30 +9,31 @@ import {
   FaFireAlt, FaRegClock, FaRegLightbulb
 } from 'react-icons/fa';
 
-// --- LAZY LOAD COMPONENTS ---
-// Reduces initial bundle size by splitting these components out
-const NoteCard = React.lazy(() => import('../components/notes/NoteCard'));
+// --- CRITICAL COMPONENTS (Standard Import) ---
+// Loading these instantly avoids the "Loading..." flash and second round-trip
+import NoteCard from '../components/notes/NoteCard';
+import FilterBar from '../components/common/FilterBar';
+import Pagination from '../components/common/Pagination';
+
+// --- NON-CRITICAL COMPONENTS (Lazy Import) ---
+// BlogCard is usually below the fold, so we can load it later
 const BlogCard = React.lazy(() => import('../components/blog/BlogCard'));
-const FilterBar = React.lazy(() => import('../components/common/FilterBar'));
-const Pagination = React.lazy(() => import('../components/common/Pagination'));
 
 const DOWNLOAD_LINK = 'https://github.com/AdityaChoudhary01/public-peernotez/releases/download/v1.0.3/PeerNotez.apk';
 
-// --- LOADING SKELETON ---
-// Prevents layout shift while lazy components load
+// --- LOADING SKELETON (For Blogs only) ---
 const ComponentLoader = () => (
   <div style={{ 
     height: '200px', 
     width: '100%', 
     background: 'rgba(255,255,255,0.02)', 
     borderRadius: '18px', 
-    border: '1px solid rgba(255,255,255,0.05)',
     display: 'flex', 
     alignItems: 'center', 
     justifyContent: 'center',
     color: 'rgba(255,255,255,0.3)'
   }}>
-    <div className="spinner-border" role="status"></div>
+    Loading...
   </div>
 );
 
@@ -284,7 +285,9 @@ const HomePage = () => {
   };
 
   const handleMouseMove = (e) => {
-    if (window.innerWidth < 1024) return; // Optimization for mobile
+    // PERFORMANCE FIX: Disable tilt on mobile/tablets to save Main Thread
+    if (window.innerWidth < 1024) return;
+
     if (!heroRef.current) return;
     const { left, top, width, height } = heroRef.current.getBoundingClientRect();
     const x = (e.clientX - left - width / 2) / 40;
@@ -294,7 +297,7 @@ const HomePage = () => {
 
   // --- API Calls ---
   
-  // 1. Fetch Library Notes (Filtered)
+  // 1. Fetching Library Notes (Filtered)
   useEffect(() => {
     const controller = new AbortController();
 
@@ -315,16 +318,16 @@ const HomePage = () => {
       }
     };
 
-    // OPTIMIZATION: Check if this is the default view and if preloaded data exists
     const hasFilters = Object.keys(filters).length > 0 || page > 1 || sortBy !== 'uploadDate';
     
+    // OPTIMIZATION: Check for preloaded data before making a new request
     if (!hasFilters && window.preloadData?.recentNotes) {
         window.preloadData.recentNotes.then(data => {
             setNotes(data.notes || []);
             setPage(data.page || 1);
             setTotalPages(data.totalPages || 0);
             setLoading(false);
-        }).catch(() => fetchNotes()); // Fallback on error
+        }).catch(() => fetchNotes()); 
     } else {
         fetchNotes();
     }
@@ -332,13 +335,13 @@ const HomePage = () => {
     return () => controller.abort();
   }, [filters, sortBy, page]);
 
-  // 2. Fetch Static Data (Stats, Featured, Contributors)
+  // 2. Fetching Static Homepage Data
   useEffect(() => {
     const controller = new AbortController();
 
     const fetchData = async () => {
       try {
-        // Use preloaded promises if available (Parallel Fetching)
+        // PRELOAD STRATEGY: Hook into window.preloadData from index.html
         const notesPromise = window.preloadData?.featuredNotes || axios.get('/notes', { params: { isFeatured: true, limit: 3 }, signal: controller.signal }).then(res => res.data);
         const blogsPromise = window.preloadData?.featuredBlogs || axios.get('/blogs', { params: { isFeatured: true, limit: 3 }, signal: controller.signal }).then(res => res.data);
         const statsPromise = window.preloadData?.stats || axios.get('/notes/stats', { signal: controller.signal }).then(res => res.data);
@@ -476,7 +479,7 @@ const HomePage = () => {
         </div>
       )}
 
-      {/* --- EDITOR'S PICKS (Lazy Loaded) --- */}
+      {/* --- EDITOR'S PICKS --- */}
       <section className="pn-section">
         <div style={styles.sectionHeader}>
           <h2 style={styles.sectionTitle}>Editor's Picks</h2>
@@ -486,16 +489,14 @@ const HomePage = () => {
           <div style={{ textAlign: 'center' }}>Loading...</div>
         ) : featuredNotes.length > 0 ? (
           <div className="responsive-grid">
-            <Suspense fallback={<ComponentLoader />}>
-              {featuredNotes.map(note => <div key={note._id} className="pn-card-shell"><NoteCard note={note} /></div>)}
-            </Suspense>
+            {featuredNotes.map(note => <div key={note._id} className="pn-card-shell"><NoteCard note={note} /></div>)}
           </div>
         ) : (
           <p style={{ textAlign: 'center', opacity: 0.5 }}>No featured notes.</p>
         )}
       </section>
 
-      {/* --- ACADEMIC LIBRARY (Lazy Loaded) --- */}
+      {/* --- ACADEMIC LIBRARY --- */}
       <section className="pn-section" id="notes-library">
         <div style={styles.sectionHeader}>
           <h2 style={styles.sectionTitle}>Academic Library</h2>
@@ -505,9 +506,7 @@ const HomePage = () => {
           <FaFilter /> {isFilterBarOpen ? 'Hide Filters' : 'Filter Library'}
         </button>
         <div style={{ display: isFilterBarOpen ? 'block' : 'none', marginBottom: '2rem', transition: 'all 0.3s' }}>
-          <Suspense fallback={<div>Loading filters...</div>}>
-            <FilterBar onFilterSubmit={handleFilterSubmit} />
-          </Suspense>
+          <FilterBar onFilterSubmit={handleFilterSubmit} />
         </div>
         <div style={styles.controlsHeader}>
           <div style={{ fontWeight: '700', color: '#fff', display: 'flex', alignItems: 'center', gap: '10px' }}><FaRegClock style={{ opacity: 0.9 }} /> Showing {notes.length} results</div>
@@ -525,13 +524,9 @@ const HomePage = () => {
         ) : notes.length > 0 ? (
           <>
             <div className="responsive-grid">
-              <Suspense fallback={<ComponentLoader />}>
-                {notes.map(note => <div key={note._id} className="pn-card-shell"><NoteCard note={note} /></div>)}
-              </Suspense>
+              {notes.map(note => <div key={note._id} className="pn-card-shell"><NoteCard note={note} /></div>)}
             </div>
-            <Suspense fallback={null}>
-              <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
-            </Suspense>
+            <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
           </>
         ) : (
           <p style={{ textAlign: 'center', opacity: 0.5, padding: '2rem' }}>No notes found.</p>
