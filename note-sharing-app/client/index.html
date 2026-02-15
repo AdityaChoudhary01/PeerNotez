@@ -2,138 +2,26 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  
+
   <link rel="preconnect" href="https://res.cloudinary.com">
   <link rel="preconnect" href="https://peernotez.vercel.app" crossorigin>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-  <script>
-    window.preloadData = {};
-    const fetchAPI = (url, key) => {
-      window.preloadData[key] = fetch(url).then(res => res.json()).catch(err => console.error(err));
-    };
-
-    // Preload the exact endpoints your HomePage.js uses
-    const API_BASE = 'https://peernotez.vercel.app/api';
-    fetchAPI(`${API_BASE}/notes/stats`, 'stats');
-    fetchAPI(`${API_BASE}/notes?isFeatured=true&limit=3`, 'featuredNotes');
-    fetchAPI(`${API_BASE}/blogs?isFeatured=true&limit=3`, 'featuredBlogs');
-    fetchAPI(`${API_BASE}/notes/users/top-contributors`, 'topContributors');
-    // Also preload the "Recent Notes" list which was causing the 2.2s delay
-    fetchAPI(`${API_BASE}/notes?sort=uploadDate&page=1`, 'recentNotes');
-  </script>
-
   <style>
-    :root {
-      --bg-primary: #0A0118;
-      --text-primary: #ffffff;
-    }
-    body {
-      margin: 0;
-      padding: 0;
-      background-color: var(--bg-primary);
-      color: var(--text-primary);
-      font-family: 'Inter', sans-serif;
-      overflow-x: hidden;
-      -webkit-font-smoothing: antialiased;
-    }
-    /* Static Navbar Placeholder */
-    .static-navbar {
-      height: 80px;
-      width: 100%;
-      position: fixed;
-      top: 0;
-      z-index: 100;
-      background: rgba(15, 12, 41, 0.8);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-    }
-    /* Layout */
-    .app-wrapper {
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-    }
-    .main-content {
-      margin-top: 130px;
-      flex: 1;
-      padding: 0 1.5rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    /* Hero Section */
-    .hero-section-static {
-      width: 100%;
-      max-width: 1050px;
-      min-height: 70vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      margin-top: -30px;
-    }
-    .hero-title-static {
-      font-family: 'Space Grotesk', sans-serif;
+    /* Styles the Hero section immediately so the browser doesn't wait for React JS */
+    :root { --bg-primary: #0A0118; }
+    body { background: var(--bg-primary); margin: 0; padding: 0; }
+    .hero-h1 {
       font-size: clamp(3rem, 6vw, 5.6rem);
       font-weight: 900;
-      color: #fff;
-      background: linear-gradient(to right, #00d4ff, #ff00cc);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 1.2rem;
-      line-height: 1.05;
-      letter-spacing: -1px;
+      color: #ffffff;
+      line-height: 1.1;
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
     }
-    .hero-subtitle-static {
-      font-size: 1.15rem;
-      color: rgba(255, 255, 255, 0.85);
-      max-width: 760px;
-      margin: 0 auto 2.3rem;
-      line-height: 1.65;
-    }
-    .btn-group-static {
-      display: flex;
-      gap: 1.2rem;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-    .btn-static {
-      padding: 16px 40px;
-      border-radius: 50px;
-      text-decoration: none;
-      font-weight: 800;
-      font-size: 1.08rem;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-    }
-    .btn-primary-static {
-      background: linear-gradient(135deg, #00d4ff 0%, #333399 100%);
-      color: #fff;
-      box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
-    }
-    .btn-secondary-static {
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      color: #fff;
-    }
-    .ticker-static {
-      background: rgba(15, 12, 41, 0.6);
-      border: 1px solid rgba(0, 212, 255, 0.3);
-      border-radius: 100px;
-      padding: 8px 22px;
-      display: inline-flex;
-      align-items: center;
-      margin-bottom: 1.8rem;
-      color: #eee;
-      font-size: 0.9rem;
-      gap: 10px;
-    }
+    .main-content { margin-top: 130px; }
   </style>
 
   <link rel="icon" href="/favicon.ico" />
@@ -155,6 +43,7 @@
     media="print" 
     onload="this.media='all'"
   >
+  
   <noscript>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
   </noscript>
@@ -169,38 +58,7 @@
     You need to enable JavaScript to run PeerNotez – The student-powered note sharing platform.
   </noscript>
 
-  <div id="root">
-    <div class="app-wrapper">
-      <nav class="static-navbar"></nav> 
-      
-      <main class="main-content">
-        <section class="hero-section-static">
-          <div class="ticker-static">
-            <span style="color:#ffcc00">★</span>
-            <span><strong>Aditya</strong> uploaded React Notes</span>
-          </div>
-
-          <h1 class="hero-title-static">
-            Master Your <br />
-            <span>Coursework</span> with PeerNotez Notes.
-          </h1>
-
-          <p class="hero-subtitle-static">
-            Join the fastest-growing community of students sharing handwritten notes, project insights, and exam strategies.
-          </p>
-
-          <div class="btn-group-static">
-            <a href="/search" class="btn-static btn-primary-static">
-              Start Learning
-            </a>
-            <a href="/upload" class="btn-static btn-secondary-static">
-              Share Notes
-            </a>
-          </div>
-        </section>
-      </main>
-    </div>
-  </div>
+  <div id="root"></div>
 
   <script type="module" src="/src/index.js"></script>
 </body>
