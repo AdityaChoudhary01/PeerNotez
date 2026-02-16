@@ -1,28 +1,24 @@
 export const optimizeCloudinaryUrl = (url, options = {}) => {
-    // 1. Basic validation: return empty string if url is invalid, or original if not Cloudinary
-    if (!url || typeof url !== 'string') return '';
-    if (!url.includes('res.cloudinary.com')) return url;
+    if (!url || !url.includes('res.cloudinary.com')) return url;
 
-    // 2. Normalize options: Handle case where options is just a number (e.g., from BlogCard passing 500)
-    const settings = typeof options === 'number' ? { width: options } : (options || {});
-    const { width, height, crop = 'fill', pg } = settings;
+    // 1. Robustness: Handle case where options is just a number (legacy/simple usage)
+    // This fixes potential issues in components like BlogCard.js passing '500' directly
+    const { width, height, crop = 'fill', pg } = typeof options === 'number' 
+        ? { width: options } 
+        : options;
 
-    // 3. Determine Viewport/Quality Settings
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-    const targetWidth = width || (isMobile ? 320 : 400); 
+    const optimizedWidth = width || (isMobile ? 320 : 400); // Audit suggested ~300
     const quality = isMobile ? 'q_auto:eco' : 'q_auto:good';
     
-    // 4. CRITICAL FIX: Use SLASHES ('/') instead of COMMAS (',')
-    // Browser 'srcset' parsing fails if URLs contain commas.
-    // Cloudinary supports slashes as separators (e.g., .../upload/f_auto/w_300/...)
-    let paramsParts = [`f_auto`, quality, `w_${targetWidth}`, `c_${crop}`];
+    // 2. Fix for 'srcset' Warnings:
+    // We use slashes ('/') instead of commas (',') to separate parameters.
+    // Commas in URLs break the 'srcset' attribute because 'srcset' uses commas to separate candidates.
+    let params = `f_auto/${quality}/w_${optimizedWidth}/c_${crop}`;
     
-    if (height) paramsParts.push(`h_${height}`);
-    if (pg) paramsParts.push(`pg_${pg}`);
+    if (height) params += `/h_${height}`;
+    if (pg) params += `/pg_${pg}`;
 
-    const params = paramsParts.join('/');
-
-    // 5. Inject params into URL
-    // We replace the first instance of '/upload/' with '/upload/<params>/'
+    // Replace '/upload/' with '/upload/params/' safely
     return url.replace('/upload/', `/upload/${params}/`);
 };
