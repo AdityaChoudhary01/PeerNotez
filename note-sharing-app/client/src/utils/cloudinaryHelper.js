@@ -1,22 +1,25 @@
 export const optimizeCloudinaryUrl = (url, options = {}) => {
-    if (!url || !url.includes('res.cloudinary.com')) return url;
+    // 1. Basic validation
+    if (!url || typeof url !== 'string') return '';
+    if (!url.includes('res.cloudinary.com')) return url;
 
-    // 1. FIX: Handle case where options is just a number (e.g. from BlogCard)
-    const settings = typeof options === 'number' ? { width: options } : options;
+    // 2. Normalize options: Handle case where options is just a number (e.g. from BlogCard)
+    const settings = typeof options === 'number' ? { width: options } : (options || {});
     const { width, height, crop = 'fill', pg } = settings;
 
-    // Use a safer replacement logic that doesn't destroy the path
+    // 3. Determine Viewport/Quality Settings
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-    const optimizedWidth = width || (isMobile ? 320 : 400); 
+    const targetWidth = width || (isMobile ? 320 : 400); 
     const quality = isMobile ? 'q_auto:eco' : 'q_auto:good';
     
-    // 2. FIX: Use SLASHES ('/') instead of COMMAS (',')
-    // Commas inside the URL break the 'srcset' attribute parsing.
-    let params = `f_auto/${quality}/w_${optimizedWidth}/c_${crop}`;
+    // 4. CRITICAL FIX: Use SLASHES ('/') instead of COMMAS (',')
+    // Commas in the URL break the 'srcset' attribute parsing in browsers.
+    let params = `f_auto/${quality}/w_${targetWidth}/c_${crop}`;
     
     if (height) params += `/h_${height}`;
     if (pg) params += `/pg_${pg}`;
 
-    // Replace '/upload/' with '/upload/params/' safely
+    // 5. Inject params into URL
+    // Replaces '/upload/' with '/upload/<params>/'
     return url.replace('/upload/', `/upload/${params}/`);
 };
