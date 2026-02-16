@@ -65,7 +65,7 @@ const HomePage = () => {
       alignItems: 'center',
       justifyContent: 'center',
       position: 'relative',
-      marginTop: '-50px',
+      marginTop: '-20px',
       marginBottom: '2rem',
       perspective: '1000px',
       zIndex: 1,
