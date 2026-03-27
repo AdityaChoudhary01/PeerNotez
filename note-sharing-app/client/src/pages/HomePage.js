@@ -90,7 +90,8 @@ const HomePage = () => {
       marginBottom: '1.2rem',
       lineHeight: 1.05,
       letterSpacing: '-1px',
-      textShadow: '0 10px 30px rgba(0,0,0,0.3)'
+      textShadow: '0 10px 30px rgba(0,0,0,0.3)',
+      animation: 'fadeIn 1s ease-out'
     },
     heroSubtitle: {
       fontSize: '1.15rem',
@@ -98,9 +99,10 @@ const HomePage = () => {
       maxWidth: '760px',
       margin: '0 auto 2.3rem',
       lineHeight: 1.65,
-      fontWeight: '400'
+      fontWeight: '400',
+      animation: 'fadeIn 1s ease-out 0.2s both'
     },
-    btnGroup: { display: 'flex', gap: '1.2rem', justifyContent: 'center', flexWrap: 'wrap' },
+    btnGroup: { display: 'flex', gap: '1.2rem', justifyContent: 'center', flexWrap: 'wrap', animation: 'fadeIn 1s ease-out 0.4s both' },
     primaryBtn: {
       padding: '16px 40px',
       borderRadius: '50px',
@@ -174,7 +176,9 @@ const HomePage = () => {
       border: '1px solid rgba(255,255,255,0.08)',
       boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.15)',
       position: 'relative',
-      overflow: 'hidden'
+      overflow: 'hidden',
+      transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+      cursor: 'pointer'
     },
     sectionHeader: { textAlign: 'center', marginBottom: '3rem', position: 'relative' },
     sectionTitle: {
@@ -235,8 +239,10 @@ const HomePage = () => {
       cursor: 'pointer',
       fontSize: '0.95rem',
       fontWeight: '700',
-      transition: 'all 0.3s ease',
-      width: 'fit-content'
+      transition: 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
+      width: 'fit-content',
+      position: 'relative',
+      overflow: 'hidden'
     },
     controlsHeader: {
       display: 'flex',
@@ -435,7 +441,8 @@ const HomePage = () => {
           border: 1px solid rgba(255,255,255,0.08);
           box-shadow: 0 18px 55px rgba(0,0,0,0.25);
           overflow: hidden;
-          transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+          transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+          will-change: transform;
         }
         .pn-card-shell::before {
           content: "";
@@ -446,15 +453,37 @@ const HomePage = () => {
           filter: blur(20px);
           opacity: 0.9;
           pointer-events: none;
+          transition: opacity 0.5s ease;
+        }
+        .pn-card-shell::after {
+          content: "";
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 100%;
+          height: 100%;
+          background: radial-gradient(circle, rgba(0, 212, 255, 0.15) 0%, transparent 70%);
+          transform: translate(-50%, -50%) scale(0);
+          transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+          pointer-events: none;
         }
         .pn-card-shell > * {
           position: relative;
           z-index: 1;
         }
         .pn-card-shell:hover {
-          transform: translateY(-6px);
-          border-color: rgba(0,212,255,0.22);
-          box-shadow: 0 22px 65px rgba(0,0,0,0.34);
+          transform: translateY(-10px) scale(1.02);
+          border-color: rgba(0,212,255,0.35);
+          box-shadow: 0 28px 80px rgba(0,0,0,0.4), 0 0 40px rgba(0,212,255,0.2);
+        }
+        .pn-card-shell:hover::before {
+          opacity: 1;
+        }
+        .pn-card-shell:hover::after {
+          transform: translate(-50%, -50%) scale(1.5);
+        }
+        .pn-card-shell:active {
+          transform: translateY(-5px) scale(1.01);
         }
 
         /* Featured Insights header bar - cleaner look */
@@ -479,11 +508,31 @@ const HomePage = () => {
           border-radius: 999px;
           border: 1px solid rgba(0,212,255,0.25);
           background: rgba(0, 212, 255, 0.06);
-          transition: transform 0.2s ease, background 0.2s ease;
+          transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+          position: relative;
+          overflow: hidden;
+        }
+        .pn-view-all::before {
+          content: "";
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 0;
+          height: 0;
+          border-radius: 50%;
+          background: rgba(0, 212, 255, 0.2);
+          transform: translate(-50%, -50%);
+          transition: width 0.5s, height 0.5s;
+        }
+        .pn-view-all:hover::before {
+          width: 200px;
+          height: 200px;
         }
         .pn-view-all:hover {
-          transform: translateY(-2px);
-          background: rgba(0, 212, 255, 0.10);
+          transform: translateY(-3px) scale(1.05);
+          background: rgba(0, 212, 255, 0.15);
+          box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3);
+          border-color: rgba(0,212,255,0.5);
         }
 
         /* Responsive Typography for Stats */
@@ -513,14 +562,41 @@ const HomePage = () => {
         }
 
         /* CTA buttons hover via CSS (avoid inline hover logic) */
-        .pn-primary-btn:hover { transform: translateY(-3px); }
-        .pn-secondary-btn:hover { transform: translateY(-3px); background: rgba(255,255,255,0.14); }
+        .pn-primary-btn { 
+          transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+          position: relative;
+        }
+        .pn-primary-btn:hover { 
+          transform: translateY(-5px) scale(1.08);
+          box-shadow: 0 20px 60px rgba(0, 212, 255, 0.5);
+        }
+        .pn-primary-btn:active {
+          transform: translateY(-2px) scale(1.02);
+        }
+        .pn-secondary-btn {
+          transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .pn-secondary-btn:hover { 
+          transform: translateY(-5px) scale(1.08); 
+          background: rgba(255,255,255,0.18);
+          box-shadow: 0 15px 45px rgba(255, 255, 255, 0.2);
+        }
+        .pn-secondary-btn:active {
+          transform: translateY(-2px) scale(1.02);
+        }
 
         /* Contributor hover */
-        .contributor-card { transition: all 0.3s ease; }
+        .contributor-card { 
+          transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+          cursor: pointer;
+        }
         .contributor-card:hover {
-          transform: translateY(-5px);
+          transform: translateY(-8px) scale(1.02);
           background: rgba(255,255,255,0.08) !important;
+          box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .contributor-card:active {
+          transform: translateY(-4px) scale(1.01);
         }
 
         /* Subtle section separators (theme consistent) */
@@ -574,6 +650,20 @@ const HomePage = () => {
           transform: skewX(-12deg);
           animation: shimmer 5.5s ease-in-out infinite;
           pointer-events: none;
+        }
+
+        /* Stat Card Hover Effects */
+        .stat-card:hover {
+          transform: translateY(-5px) scale(1.05);
+          box-shadow: 0 15px 45px rgba(0,0,0,0.3);
+          border-color: rgba(255,255,255,0.15);
+        }
+
+        /* Filter Toggle Hover */
+        .filter-toggle:hover {
+          transform: scale(1.08) translateY(-2px);
+          background: linear-gradient(90deg, rgba(255,255,255,0.15), rgba(255,255,255,0.1));
+          box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3);
         }
       `}</style>
 
@@ -644,8 +734,8 @@ const HomePage = () => {
 
       {/* --- STATS GRID --- */}
       {!loadingStats && (
-        <div style={styles.statsContainer}>
-          <div style={styles.statCard}>
+        <div style={styles.statsContainer} className="fade-in">
+          <div style={styles.statCard} className="stat-card">
             <span className="stat-value" style={{ color: '#ff00cc' }}>
               {stats.totalNotes.toLocaleString()}+
             </span>
@@ -653,7 +743,7 @@ const HomePage = () => {
             <span className="stat-hint"><FaRegLightbulb color="#ff00cc" /> curated study material</span>
           </div>
 
-          <div style={styles.statCard}>
+          <div style={styles.statCard} className="stat-card">
             <span className="stat-value" style={{ color: '#00d4ff' }}>
               {stats.totalUsers.toLocaleString()}+
             </span>
@@ -661,7 +751,7 @@ const HomePage = () => {
             <span className="stat-hint"><FaUserAstronaut color="#00d4ff" /> peer-driven learning</span>
           </div>
 
-          <div style={styles.statCard}>
+          <div style={styles.statCard} className="stat-card">
             <span className="stat-value" style={{ color: '#ffcc00' }}>
               {stats.downloadsThisMonth.toLocaleString()}+
             </span>
@@ -704,6 +794,7 @@ const HomePage = () => {
 
         <button
           style={styles.filterToggle}
+          className="filter-toggle"
           onClick={() => setIsFilterBarOpen(!isFilterBarOpen)}
           aria-label={isFilterBarOpen ? 'Hide filters' : 'Show filters'}
         >

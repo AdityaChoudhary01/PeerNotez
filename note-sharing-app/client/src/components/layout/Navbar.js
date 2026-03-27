@@ -107,7 +107,7 @@ const Navbar = () => {
       left: 0,
       right: 0,
       zIndex: 1000,
-      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      transition: 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
       padding: scrolled ? '0.5rem 0' : '0.8rem 0'
     },
     navContainer: {
@@ -124,7 +124,7 @@ const Navbar = () => {
       boxShadow: scrolled 
         ? '0 20px 60px rgba(0, 0, 0, 0.5), 0 0 20px rgba(102, 126, 234, 0.1)' 
         : '0 10px 30px rgba(0, 0, 0, 0.2)',
-      transition: 'all 0.3s ease'
+      transition: 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
     },
     navContent: {
       display: 'flex',
@@ -143,7 +143,7 @@ const Navbar = () => {
       // Dimensions handled via width/height attributes + CSS
       width: scrolled ? '120px' : '140px', 
       height: scrolled ? '38px' : '44px',
-      transition: 'all 0.3s ease',
+      transition: 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
       filter: 'drop-shadow(0 0 15px rgba(102, 126, 234, 0.6))',
       objectFit: 'contain'
     },
@@ -161,7 +161,7 @@ const Navbar = () => {
       borderRadius: '20px',
       fontWeight: '500',
       fontSize: '0.9rem',
-      transition: 'all 0.3s ease',
+      transition: 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
       fontFamily: "'Inter', sans-serif",
       position: 'relative',
       whiteSpace: 'nowrap'
@@ -186,7 +186,7 @@ const Navbar = () => {
       padding: '3px',
       borderRadius: '50px',
       border: '1px solid rgba(255, 255, 255, 0.15)',
-      transition: 'all 0.3s ease',
+      transition: 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
       minWidth: '220px', 
       boxShadow: 'inset 0 2px 5px rgba(0,0,0,0.2)'
     },
@@ -214,7 +214,7 @@ const Navbar = () => {
       alignItems: 'center',
       justifyContent: 'center',
       cursor: 'pointer',
-      transition: 'all 0.2s ease',
+      transition: 'all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)',
       color: '#fff',
       boxShadow: '0 2px 10px rgba(102, 126, 234, 0.4)'
     },
@@ -234,7 +234,7 @@ const Navbar = () => {
       alignItems: 'center',
       justifyContent: 'center',
       cursor: 'pointer',
-      transition: 'all 0.3s ease',
+      transition: 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
       color: '#fff',
       position: 'relative',
       textDecoration: 'none'
@@ -250,7 +250,7 @@ const Navbar = () => {
       alignItems: 'center',
       justifyContent: 'center',
       cursor: 'pointer',
-      transition: 'all 0.3s ease',
+      transition: 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
       padding: 0 // Reset padding for button
     },
     badge: {
@@ -275,7 +275,7 @@ const Navbar = () => {
       borderRadius: '50%',
       border: '2px solid rgba(102, 126, 234, 0.5)',
       cursor: 'pointer',
-      transition: 'all 0.3s ease',
+      transition: 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
       objectFit: 'cover',
       boxShadow: '0 0 15px rgba(102, 126, 234, 0.2)'
     },
